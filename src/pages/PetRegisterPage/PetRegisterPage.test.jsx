@@ -4,10 +4,10 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import PetRegisterPage from './PetRegisterPage'
 import { getSession } from '../../config/session'
-import { createPet } from '../../services/petService'
+import { addPetPhoto, createPet } from '../../services/petService'
 import { todayISO } from '../../utils/dates'
 
-vi.mock('../../services/petService', () => ({ createPet: vi.fn() }))
+vi.mock('../../services/petService', () => ({ createPet: vi.fn(), addPetPhoto: vi.fn() }))
 vi.mock('../../config/session', () => ({
   ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
@@ -284,5 +284,115 @@ describe('PetRegisterPage', () => {
     await submit(user)
 
     expect(await screen.findByText(message)).toBeInTheDocument()
+  })
+
+  describe('profile photo', () => {
+    const PHOTO_URL = 'https://fotos.example.com/luna.png'
+    const photoUrlField = () => screen.getByRole('textbox', { name: 'Enlace de la fotografía' })
+
+    async function registerWithPhoto(user, url = PHOTO_URL) {
+      renderPage()
+      await fillRequiredFields(user)
+      await fillArrivalEvent(user)
+      await user.type(photoUrlField(), url)
+      await submit(user)
+    }
+
+    it('is optional: a pet without photo does not call the photos endpoint', async () => {
+      const user = userEvent.setup()
+      createPet.mockResolvedValue({ id: 7 })
+      renderPage()
+      expect(photoUrlField()).toHaveAttribute('aria-required', 'false')
+      await fillRequiredFields(user)
+      await fillArrivalEvent(user)
+
+      await submit(user)
+
+      await screen.findByText(/Perfil de la mascota/)
+      expect(addPetPhoto).not.toHaveBeenCalled()
+    })
+
+    it('previews the photo and picks its format from the link', async () => {
+      const user = userEvent.setup()
+      renderPage()
+
+      await user.type(photoUrlField(), PHOTO_URL)
+
+      expect(screen.getByRole('img', { name: 'Vista previa de la fotografía' })).toHaveAttribute(
+        'src',
+        PHOTO_URL,
+      )
+      expect(combobox('Formato')).toHaveValue('PNG')
+    })
+
+    it('says so when the preview cannot be loaded', async () => {
+      const user = userEvent.setup()
+      renderPage()
+      await user.type(photoUrlField(), PHOTO_URL)
+
+      fireEvent.error(screen.getByRole('img', { name: 'Vista previa de la fotografía' }))
+
+      expect(screen.queryByRole('img')).not.toBeInTheDocument()
+      expect(screen.getByText('No se pudo cargar la imagen.')).toBeInTheDocument()
+    })
+
+    it('saves the photo of the created pet and then opens its profile', async () => {
+      const user = userEvent.setup()
+      createPet.mockResolvedValue({ id: 12 })
+      addPetPhoto.mockResolvedValue({ id: 1 })
+
+      await registerWithPhoto(user)
+
+      expect(await screen.findByText(/Perfil de la mascota/)).toHaveTextContent(
+        'Mascota registrada con éxito.',
+      )
+      expect(addPetPhoto).toHaveBeenCalledWith(12, {
+        url: PHOTO_URL,
+        type: 'PNG',
+        description: 'Foto de perfil',
+      })
+    })
+
+    it('does not create the pet when the link is not valid and focuses it', async () => {
+      const user = userEvent.setup()
+
+      await registerWithPhoto(user, 'luna.png')
+
+      expect(createPet).not.toHaveBeenCalled()
+      expect(photoUrlField()).toHaveFocus()
+      expect(photoUrlField()).toHaveAccessibleDescription(
+        'Ingrese un enlace válido que empiece por http:// o https://.',
+      )
+    })
+
+    it('asks for the format when it cannot be read from the link', async () => {
+      const user = userEvent.setup()
+
+      await registerWithPhoto(user, 'https://fotos.example.com/luna')
+
+      expect(createPet).not.toHaveBeenCalled()
+      expect(combobox('Formato')).toHaveAccessibleDescription('Seleccione el formato de la imagen.')
+    })
+
+    it('keeps the registered pet when only the photo fails and tells the user', async () => {
+      const user = userEvent.setup()
+      createPet.mockResolvedValue({ id: 12 })
+      addPetPhoto.mockRejectedValue(new Error('Photo format is not valid'))
+
+      await registerWithPhoto(user)
+
+      expect(await screen.findByText(/Perfil de la mascota/)).toHaveTextContent(
+        'Mascota registrada con éxito, pero la foto no se pudo guardar: Photo format is not valid',
+      )
+    })
+  })
+
+  it('lets the user cancel and go back to the pets', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    expect(screen.queryByRole('form', { name: 'Registro de mascota' })).not.toBeInTheDocument()
   })
 })

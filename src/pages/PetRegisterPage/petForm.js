@@ -1,5 +1,6 @@
 // Pure logic of the "register a pet" form (HU06): initial values, client validation,
 // request payload and the mapping of backend messages to form fields.
+import { detectPhotoFormat, validatePhoto } from './photoForm'
 
 export const EMPTY_PET = {
   name: '',
@@ -17,6 +18,8 @@ export const EMPTY_PET = {
   description: '',
   temperament: '',
   specificNeeds: '',
+  photoUrl: '',
+  photoType: '',
 }
 
 export const EMPTY_EVENT = { date: '', type: '', description: '' }
@@ -46,6 +49,14 @@ export const eventKey = (index, field) => `events.${index}.${field}`
 
 const isBlank = (value) => String(value).trim() === ''
 
+// Returns the form values after `name` changed. Writing a photo link also picks its format
+// when the extension reveals it (the user can still change it).
+export function updateValues(values, name, value) {
+  const updated = { ...values, [name]: value }
+  if (name === 'photoUrl') updated.photoType = detectPhotoFormat(value) ?? values.photoType
+  return updated
+}
+
 function validateAge(value) {
   if (isBlank(value)) return REQUIRED_MESSAGE
   const age = Number(value)
@@ -59,10 +70,10 @@ function validatePetField(field, values, today) {
   return null
 }
 
-// Returns { fieldName: message } with one entry per invalid field. It is empty when the
-// form can be sent. The backend validates again (CT4).
+// Returns { fieldName: message } with one entry per invalid field, in the order they appear
+// on screen. It is empty when the form can be sent. The backend validates again (CT4).
 export function validatePet(values, events, today) {
-  const errors = {}
+  const errors = validatePhoto(values)
   REQUIRED_PET_FIELDS.forEach((field) => {
     const message = validatePetField(field, values, today)
     if (message) errors[field] = message

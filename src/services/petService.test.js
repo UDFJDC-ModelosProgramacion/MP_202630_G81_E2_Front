@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from './apiClient'
-import { createPet } from './petService'
+import { addPetPhoto, createPet } from './petService'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -43,5 +43,25 @@ describe('createPet', () => {
     expect(error).toBeInstanceOf(ApiError)
     expect(error.message).toBe('Pet name cannot be null or empty')
     expect(error.status).toBe(412)
+  })
+})
+
+describe('addPetPhoto', () => {
+  it('posts the photo to the photos of the pet', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: () => Promise.resolve({ id: 4 }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const photo = { url: 'https://x.com/luna.jpg', type: 'JPG', description: 'Foto de perfil' }
+
+    const result = await addPetPhoto(12, photo)
+
+    expect(result).toEqual({ id: 4 })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/pets/12/photos')
+    expect(options.method).toBe('POST')
+    expect(JSON.parse(options.body)).toEqual(photo)
   })
 })

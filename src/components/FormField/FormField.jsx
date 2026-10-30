@@ -6,10 +6,11 @@ const asOption = (option) =>
 // Label + control + error message. The control is rendered by `children`, which receives
 // the accessibility props (id, aria-required, aria-invalid, aria-describedby).
 // Validation is done by our own code (CT4), so controls never use the native `required`.
-export default function FormField({ id, label, required = false, error, children }) {
+// A `wide` field takes the whole row of the grid it is in.
+export default function FormField({ id, label, required = false, error, wide = false, children }) {
   const errorId = `${id}-error`
   return (
-    <div className={styles.field}>
+    <div className={wide ? `${styles.field} ${styles.wide}` : styles.field}>
       <label htmlFor={id}>
         {label}
         {required && <span aria-hidden="true">*</span>}
@@ -29,10 +30,18 @@ export default function FormField({ id, label, required = false, error, children
   )
 }
 
-export function TextField({ id, label, required, error, ...inputProps }) {
+export function TextField({ id, label, required, error, wide, ...inputProps }) {
   return (
-    <FormField id={id} label={label} required={required} error={error}>
+    <FormField id={id} label={label} required={required} error={error} wide={wide}>
       {(accessibility) => <input {...accessibility} {...inputProps} />}
+    </FormField>
+  )
+}
+
+export function TextAreaField({ id, label, required, error, wide, ...textAreaProps }) {
+  return (
+    <FormField id={id} label={label} required={required} error={error} wide={wide}>
+      {(accessibility) => <textarea {...accessibility} {...textAreaProps} />}
     </FormField>
   )
 }
@@ -42,12 +51,13 @@ export function SelectField({
   label,
   required,
   error,
+  wide,
   options,
   placeholder = 'Seleccione',
   ...selectProps
 }) {
   return (
-    <FormField id={id} label={label} required={required} error={error}>
+    <FormField id={id} label={label} required={required} error={error} wide={wide}>
       {(accessibility) => (
         <select {...accessibility} {...selectProps}>
           <option value="">{placeholder}</option>

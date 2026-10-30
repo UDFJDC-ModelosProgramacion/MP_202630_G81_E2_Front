@@ -5,3 +5,10 @@ import { api } from './apiClient'
 export function createPet(pet) {
   return api.post('/pets', pet)
 }
+
+
+// Adds a photo to an existing pet. The backend answers 201 with the created photo or an
+// apierror with a 404/412 message.
+export function addPetPhoto(petId, photo) {
+  return api.post(`/pets/${petId}/photos`, photo)
+}

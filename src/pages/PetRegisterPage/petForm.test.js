@@ -7,8 +7,10 @@ import {
   FUTURE_DATE_MESSAGE,
   fieldOfBackendMessage,
   REQUIRED_MESSAGE,
+  updateValues,
   validatePet,
 } from './petForm'
+import { PHOTO_URL_MESSAGE } from './photoForm'
 
 const TODAY = '2026-10-28'
 
@@ -148,5 +150,39 @@ describe('fieldOfBackendMessage', () => {
   it('returns null for the messages that do not belong to a field', () => {
     expect(fieldOfBackendMessage('Pet must be associated with an existing shelter')).toBeNull()
     expect(fieldOfBackendMessage('The shelter with the given id was not found')).toBeNull()
+  })
+})
+
+describe('photo in the pet form', () => {
+  it('reports the photo errors before the other fields', () => {
+    const errors = validatePet({ ...EMPTY_PET, photoUrl: 'luna.jpg' }, [EMPTY_EVENT], TODAY)
+
+    expect(Object.keys(errors)[0]).toBe('photoUrl')
+    expect(errors.photoUrl).toBe(PHOTO_URL_MESSAGE)
+  })
+
+  it('picks the format when the link reveals it and keeps it otherwise', () => {
+    const withPng = updateValues(EMPTY_PET, 'photoUrl', 'https://x.com/luna.png')
+    const manual = updateValues({ ...EMPTY_PET, photoType: 'GIF' }, 'photoUrl', 'https://x.com/photo')
+
+    expect(withPng.photoType).toBe('PNG')
+    expect(manual.photoType).toBe('GIF')
+  })
+
+  it('updates any other field without touching the photo format', () => {
+    const updated = updateValues({ ...EMPTY_PET, photoType: 'PNG' }, 'name', 'Luna')
+
+    expect(updated).toMatchObject({ name: 'Luna', photoType: 'PNG' })
+  })
+
+  it('does not send the photo inside the pet', () => {
+    const payload = buildPetPayload(
+      { ...VALID_PET, photoUrl: 'https://x.com/luna.png', photoType: 'PNG' },
+      [VALID_EVENT],
+      1,
+    )
+
+    expect(payload).not.toHaveProperty('photoUrl')
+    expect(payload).not.toHaveProperty('photoType')
   })
 })

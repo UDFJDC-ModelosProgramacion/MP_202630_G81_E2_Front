@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { SelectField, TextField } from './FormField'
+import { SelectField, TextAreaField, TextField } from './FormField'
 
 describe('TextField', () => {
   it('links the label to the input and marks it as required', () => {
@@ -38,5 +38,15 @@ describe('SelectField', () => {
     const options = screen.getAllByRole('option').map((option) => option.textContent)
     expect(options).toEqual(['Seleccione', 'Perro', 'Sí'])
     expect(screen.getByRole('option', { name: 'Sí' })).toHaveValue('true')
+  })
+})
+
+describe('TextAreaField', () => {
+  it('renders a multi-line textbox linked to its label', () => {
+    render(<TextAreaField id="description" label="Descripción" rows={4} value="" onChange={() => {}} />)
+
+    const textarea = screen.getByRole('textbox', { name: 'Descripción' })
+    expect(textarea.tagName).toBe('TEXTAREA')
+    expect(textarea).toHaveAttribute('rows', '4')
   })
 })

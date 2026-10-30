@@ -10,3 +10,6 @@ export const ARRIVAL_EVENT_TYPES = [
   'Entrega voluntaria',
   'Traslado desde otro refugio',
 ]
+
+// Image formats accepted by the backend (PhotoService.VALID_FORMATS).
+export const PHOTO_FORMATS = ['JPG', 'PNG', 'WEBP', 'GIF', 'BMP']
