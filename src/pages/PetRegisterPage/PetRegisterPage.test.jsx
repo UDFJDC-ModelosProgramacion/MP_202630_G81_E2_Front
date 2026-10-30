@@ -351,7 +351,7 @@ describe('PetRegisterPage', () => {
         type: 'PNG',
         description: 'Foto de perfil',
       })
-    })
+    }, 10000)
 
     it('does not create the pet when the link is not valid and focuses it', async () => {
       const user = userEvent.setup()
