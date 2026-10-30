@@ -1,0 +1,6 @@
+projectKey=MP_202630_G81_E2_Front
+serverUrl=http://localhost:9000
+serverVersion=26.10.0.133078
+dashboardUrl=http://localhost:9000/dashboard?id=MP_202630_G81_E2_Front
+ceTaskId=cf88051f-ebe5-40b4-bc42-03a022e09167
+ceTaskUrl=http://localhost:9000/api/ce/task?id=cf88051f-ebe5-40b4-bc42-03a022e09167

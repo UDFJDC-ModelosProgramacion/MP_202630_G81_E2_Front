@@ -37,6 +37,12 @@ describe('App', () => {
     expect(await screen.findByText('Aún no hay veterinarios registrados.')).toBeInTheDocument()
   })
 
+  it('shows the pet registration form', () => {
+    renderAt('/pets/new')
+
+    expect(screen.getByRole('heading', { name: 'Registre su Mascota' })).toBeInTheDocument()
+  })
+
   it('keeps the pages of other stories as pending', () => {
     renderAt('/pets')
 
