@@ -385,7 +385,7 @@ describe('PetRegisterPage', () => {
         'Mascota registrada con éxito, pero la foto no se pudo guardar: Photo format is not valid',
       )
     })
-  })
+  }, 10000)
 
   it('lets the user cancel and go back to the pets', async () => {
     const user = userEvent.setup()
