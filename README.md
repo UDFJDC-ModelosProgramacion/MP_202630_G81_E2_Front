@@ -37,16 +37,6 @@ npm run build
 
 Automated tests run in a Jenkins pipeline (install, lint, build, tests with coverage and static analysis), and the quality results are reviewed in SonarQube.
 
-Screenshots from [DD/MM/YYYY], commit `[hash]`.
-
-### Jenkins
-
-![Jenkins: pipeline stages](docs/jenkins-stages.png)
-
-### SonarQube
-
-![SonarQube: project overview](docs/sonar-resumen.png)
-
 ## HU70 – View the list of veterinarians with filters
 
 Routes: `/veterinarians` (list) and `/veterinarians/:veterinarianId` (profile).
