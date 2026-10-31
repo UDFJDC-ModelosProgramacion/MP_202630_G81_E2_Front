@@ -1,70 +1,216 @@
-# Pets – Front-end (G81 · E2)
+﻿# Pets ÔÇô Front-end
 
-Web application to manage pet adoptions. Universidad Distrital, group 81, team 2.
+Web application for managing pet adoptions. This project was developed for the **Programming Models** course at Universidad Distrital Francisco Jos├® de Caldas, group **G81**, team **E2**.
+
+The front-end consumes the REST API provided by the back-end (Spring Boot), developed during Cycle 1.
+
+## Table of Contents
+
+1. [Team](#team)
+2. [Technologies](#technologies)
+3. [Requirements](#requirements)
+4. [Installation and Setup](#installation-and-setup)
+5. [Environment Variables](#environment-variables)
+6. [Scripts](#scripts)
+7. [Project Structure](#project-structure)
+8. [Application Routes](#application-routes)
+9. [Simulated User and Role](#simulated-user-and-role)
+10. [Implemented User Stories](#implemented-user-stories)
+11. [Testing](#testing)
+12. [Quality: Jenkins and SonarQube](#quality-jenkins-and-sonarqube)
+13. [Git Workflow](#git-workflow)
+14. [Troubleshooting](#troubleshooting)
+
+## Team
+
+| Team Member |
+|---|
+| Ardila Duran, Camilo Andr├®s |
+| Escobar Barrios, Alejandro |
+| Leal Rivera, Anggel Felipe |
+| Nossa Orjuela, Isabella |
+| Sandoval Rodr├¡guez, Luna Alejandra |
 
 ## Technologies
 
-- React + Vite
+- **React** with **Vite**
 - JavaScript (JSX)
-- React Router
-- CSS Modules
-- Vitest and React Testing Library
+- **React Router** for navigation
+- **CSS Modules** for styling
+- **Vitest** and **React Testing Library** for automated testing
+- **ESLint** for code style analysis
+- **Jenkins** and **SonarQube** for continuous integration and code quality analysis
 
 ## Requirements
 
-- Node.js compatible with the Vite version defined in `package.json`.
-- Spring Boot backend running at `http://localhost:8080`.
+- **Node.js 20 or higher** (with npm)
+- **Git**
+- The platform's **back-end** running (Spring Boot, requires JDK 21)
+- Optional: **Postman** for creating test data in the back-end
 
-## Installation and execution
+## Installation and Setup
 
-```bash
-npm ci
-npm run dev
-```
+1. Start the back-end. The API context path is `/api`; by default, it runs at `http://localhost:8080/api`. Data is stored in an **in-memory H2 database**, so it is lost whenever the application restarts.
+2. Create the test data required by the user story you want to test, such as a shelter or some veterinarians (see [Troubleshooting](#troubleshooting)).
+3. Clone the repository and install the front-end dependencies:
 
-Open the URL shown by Vite (usually `http://localhost:5173`). The Vite configuration forwards `/api` requests to `http://localhost:8080`.
+   ```bash
+   git clone <FRONT-END REPOSITORY URL>
+   cd MP_202630_G81_E2_Front
+   npm ci
+   ```
+
+4. If your back-end is **not** running at `http://localhost:8080`, create a `.env` file (see [Environment Variables](#environment-variables)).
+5. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+6. Open the URL displayed by Vite (usually `http://localhost:5173`).
+
+As long as `VITE_API_BASE_URL` is not defined, Vite forwards requests from `/api` to `http://localhost:8080` (see `vite.config.js`).
+
+## Environment Variables
+
+Copy `.env` and adjust the values as needed. The `.env` file is local and **must not be committed to Git**.
+
+| Variable | Purpose | Default Value |
+|---|---|---|
+| `VITE_API_BASE_URL` | Full API URL, for example `http://localhost:8999/api` if the back-end runs on port 8999 | `/api` (proxied to `localhost:8080`) |
+| `VITE_SHELTER_ID` | ID of the shelter assigned to the simulated administrator. **It must exist in the back-end.** | `1` |
+
+Automated tests ignore these variables (see `vite.config.js`), so they run successfully regardless of the `.env` configuration.
 
 ## Scripts
 
-```bash
-npm test
-npm run test:coverage
-npm run lint
-npm run build
+| Command | Description |
+|---|---|
+| `npm run dev` | Starts the development server |
+| `npm run build` | Generates the production build in `dist/` |
+| `npm run lint` | Runs code style analysis with ESLint |
+| `npm test` | Runs unit and component tests |
+| `npm run test:coverage` | Runs tests and generates a coverage report (`coverage/lcov.info`), which is read by SonarQube |
+
+## Project Structure
+
+```text
+src/
+Ôö£ÔöÇÔöÇ components/        Reusable components
+Ôö£ÔöÇÔöÇ config/
+Ôö£ÔöÇÔöÇ constants/
+Ôö£ÔöÇÔöÇ pages/             One folder per screen (component, styles, and tests)
+Ôö£ÔöÇÔöÇ services/
+ÔööÔöÇÔöÇ utils/
 ```
 
-## Automated test evidence
+Each screen lives in its own folder alongside its CSS Module and tests. Logic that does not depend on React (such as validation and request body construction) is kept in separate modules, such as `PetRegisterPage/petForm.js`, so it can be tested independently.
 
-Automated tests run in a Jenkins pipeline (install, lint, build, tests with coverage and static analysis), and the quality results are reviewed in SonarQube.
+## Application Routes
 
-## HU70 – View the list of veterinarians with filters
+| Route | Screen | Status |
+|---|---|---|
+| `/veterinarians` | Veterinarian list with filters (HU70) | Implemented |
+| `/veterinarians/:veterinarianId` | Veterinarian profile (HU70) | Implemented |
+| `/pets/new` | Register a pet (HU06) | Implemented |
+| `/pets` | Pet search (HU07) | Placeholder, pending |
+| `/pets/:petId` | Pet profile (HU08) | Placeholder, pending |
+| `/notifications` | Notifications | Placeholder, pending |
 
-Routes: `/veterinarians` (list) and `/veterinarians/:veterinarianId` (profile).
+The `/` route redirects to `/veterinarians`.
 
-The screen shows veterinarians as cards with their name, specialty and availability, and lets the user filter them with the "Especialización" and "Disponibilidad" lists (the "Todas" option is selected by default) and the SEARCH button. If none match, an informative message is shown, and opening a veterinarian's profile shows their follow-ups and medical events.
+## Simulated User and Role
 
-### Integration status
+The back-end does not yet implement authentication. For now, the user and their role are simulated in `src/config/session.js`: the default user is **AdminUser**, a shelter administrator, and their shelter is configured through `VITE_SHELTER_ID`.
 
-The service (`veterinarianService.js`) consumes the backend endpoints `GET /api/veterinarians` and `GET /api/veterinarians/{id}`. Backend errors (`apierror.message`) are shown in an alert.
+- Only the **shelter administrator** can see the **Register Pet** option in the navigation bar and access `/pets/new`. Any other role receives a message explaining that they do not have permission.
+- Once authentication is implemented, only the `getSession()` function needs to be replaced.
 
-### Running the tests
+## Implemented User Stories
+
+| User Story | Description | Route | Status |
+|---|---|---|---|
+| **HU70** | Veterinarian list with filters | `/veterinarians` | Implemented |
+| **HU06** | Register a pet | `/pets/new` | Implemented |
+| HU07 | Advanced pet search | `/pets` | Pending |
+| HU08 | Pet profile | `/pets/:petId` | Pending |
+
+### HU70 ÔÇô Veterinarian List with Filters
+
+**Route:** `/veterinarians` ┬À **Profile:** `/veterinarians/:veterinarianId`
+
+Shelter users can view veterinarians along with their **name, specialization, and availability**. They can filter the list by specialization and/or availability using the **Search** button (case-insensitive). If no veterinarians match the selected filters, a message informs the user that no results were found.
+
+Opening a veterinarian's profile also displays their **follow-ups** and **medical events**.
+
+- **Back-end:** `GET /api/veterinarians?specialization=&availability=` and `GET /api/veterinarians/{id}`.
+- **States:** loading, error with its cause, and empty list.
+
+**Manual Testing:**
+
+1. Open `/veterinarians` and verify that all registered veterinarians are displayed.
+2. Select a specialization and/or availability, click **Search**, and verify that the list is filtered.
+3. Select a combination with no matching results and verify that the appropriate message is displayed.
+4. Open a veterinarian's profile and verify that their follow-ups and medical events are displayed.
+5. Stop the back-end and verify that an error message is displayed.
+
+### HU06 ÔÇô Register a Pet
+
+**Route:** `/pets/new` ┬À **Role:** Shelter administrator.
+
+The administrator registers a pet under their shelter, including at least one **arrival event** (date, type, and description).
+
+All pet fields are required except for description, temperament, and specific needs. The admission date cannot be in the future. Fixed option lists (species, sex, size, etc.) are defined in `src/constants/petOptions.js` and are also used by the HU07 filters.
+
+- **Back-end:** `POST /api/pets`, with the shelter sent as `shelter.id` and arrival events included in `medicalEvents`.
+- **Validation:** First performed on the client side (errors displayed next to each field and focus moved to the first invalid field), then validated by the back-end. Back-end error messages are displayed next to the corresponding field or in an alert, and the form preserves the entered data.
+- **Result:** A confirmation message is displayed, and the user is redirected to `/pets/{id}` (pet profile pending implementation, HU08).
+- **Permissions:** Only the shelter administrator can see **Register Pet** in the navigation bar.
+
+> Optional: If your version includes the photo feature, the photo is optional and is submitted as a link using `POST /api/pets/{id}/photos`, since the back-end stores the link rather than the actual file. If the photo upload fails, the pet registration is not rolled back. Remove this note if it does not apply.
+
+**Manual Testing:**
+
+1. Create a shelter in the back-end (a responsible user is required; see [Troubleshooting](#troubleshooting)). If its ID is not `1`, configure `VITE_SHELTER_ID`.
+2. Open `/pets/new` and submit the empty form. Validation errors should appear, and focus should move to the first invalid field.
+3. Enter a future admission date. The form should reject it.
+4. Register a pet with all required information. A confirmation message should appear, and the application should navigate to `/pets/{id}`.
+5. Check `GET /api/pets` to verify that the pet was saved with its shelter and arrival event.
+6. Try registering the same pet again. A duplicate error should be displayed.
+
+## Testing
+
+The project includes both **automated** and **manual tests**.
 
 ```bash
-npx vitest src/pages/VeterinariansPage src/pages/VeterinarianProfilePage
+npm test                       # Run all tests
+npm run test:coverage           # Run tests with coverage
+npx vitest src/pages/PetRegisterPage   # Run tests for a specific folder, e.g. HU06
 ```
 
-### Manual integration tests
+**Automated Tests** (Vitest + React Testing Library) are located alongside their corresponding modules:
 
-1. `/veterinarians` lists all registered veterinarians.
-2. Choosing a specialization and/or an availability and pressing SEARCH shows only the matching ones.
-3. A filter with no matches shows "No se encontraron veterinarios con los filtros indicados.".
-4. Choosing "Todas" again and pressing SEARCH shows all veterinarians again.
-5. **Ver perfil** opens the detail with follow-ups and medical events.
-6. With a non-existent id (`/veterinarians/999999`), "Veterinarian not found" is shown.
+- **HU70:** `VeterinariansPage.test.jsx`, `VeterinarianProfilePage.test.jsx`, and `veterinarianService.test.js`.
+- **HU06:** `PetRegisterPage.test.jsx` (full screen), `petForm.test.js` (validation and request body), and `petService.test.js`.
+- **Shared:** `FormField.test.jsx`, `Navbar.test.jsx`, `ScreenState.test.jsx`, and `dates.test.js`.
+
+**Manual Tests:** The steps are described in each user story section.
+
+## Quality: Jenkins and SonarQube
+
+Screenshots from **[30/10/2026]**, commit **[76fdc11]**.
+
+**Jenkins**
+
+![Jenkins pipeline results](/img/jenkis3010.png)
+
+**SonarQube**
+
+![SonarQube analysis results](/img/sonar3010.png)
 
 ## HU71 – Register a veterinarian at the shelter
 
-Route: `/veterinarians/new` (reached with the **Registrar veterinario** button on the veterinarians list).
+**Route:** `/veterinarians/new` (reached with the **Registrar veterinario** button on the veterinarians list).
 
 The "Registre un veterinario" form asks for first name, last name, email, phone, specialization and availability (all required). When REGISTRAR is pressed, the form is validated on the client, the veterinarian is created and the user is taken back to the list with a confirmation message.
 
