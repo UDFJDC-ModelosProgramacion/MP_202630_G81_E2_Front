@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout/Layout'
+import RegisterVeterinarianPage from './pages/RegisterVeterinarianPage/RegisterVeterinarianPage'
 import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
 import VeterinariansPage from './pages/VeterinariansPage/VeterinariansPage'
@@ -8,7 +9,6 @@ function Pending({ title }) {
   return <h1>{title} (pendiente)</h1>
 }
 
-// Each user story replaces the <Pending> of its own route (one line per story).
 export default function App() {
   return (
     <Routes>
@@ -19,6 +19,7 @@ export default function App() {
         <Route path="/pets/:petId" element={<Pending title="Perfil de mascota" />} />
         <Route path="/notifications" element={<Pending title="Notificaciones" />} />
         <Route path="/veterinarians" element={<VeterinariansPage />} />
+        <Route path="/veterinarians/new" element={<RegisterVeterinarianPage />} />
         <Route path="/veterinarians/:veterinarianId" element={<VeterinarianProfilePage />} />
       </Route>
     </Routes>

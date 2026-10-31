@@ -7,6 +7,7 @@ import { getVeterinarians } from './services/veterinarianService'
 vi.mock('./services/veterinarianService', () => ({
   getVeterinarians: vi.fn(),
   getVeterinarian: vi.fn(),
+  createVeterinarian: vi.fn(),
 }))
 
 function renderAt(path) {
@@ -48,4 +49,12 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: 'Mascotas (pendiente)' })).toBeInTheDocument()
   })
+
+  it('shows the registration form on /veterinarians/new', () => {
+    renderAt('/veterinarians/new')
+
+    expect(screen.getByRole('heading', { name: 'Registre un veterinario' })).toBeInTheDocument()
+  })
 })
+
+

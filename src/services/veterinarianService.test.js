@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { api, ApiError } from './apiClient'
-import { getVeterinarian, getVeterinarians } from './veterinarianService'
+import { createVeterinarian, getVeterinarian, getVeterinarians } from './veterinarianService'
 
 function mockFetch(response) {
   const fetchMock = vi.fn().mockResolvedValue(response)
@@ -78,6 +78,49 @@ describe('getVeterinarian', () => {
     expect(error).toBeInstanceOf(ApiError)
     expect(error.message).toBe('Veterinarian not found')
     expect(error.status).toBe(404)
+  })
+})
+
+describe('createVeterinarian', () => {
+  const NEW_VETERINARIAN = {
+    firstName: 'Camila',
+    lastName: 'Rojas',
+    email: 'camila@refugio.com',
+    phone: '3001234567',
+    specialization: 'Cirugía',
+    availability: 'Lunes a viernes',
+  }
+
+  it('posts the veterinarian as JSON and returns the created one', async () => {
+    const fetchMock = mockFetch(okResponse({ id: 9, ...NEW_VETERINARIAN }, 201))
+
+    const result = await createVeterinarian(NEW_VETERINARIAN)
+
+    expect(result).toEqual({ id: 9, ...NEW_VETERINARIAN })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/veterinarians')
+    expect(options.method).toBe('POST')
+    expect(options.headers).toEqual({ 'Content-Type': 'application/json' })
+    expect(JSON.parse(options.body)).toEqual(NEW_VETERINARIAN)
+  })
+
+  it('fails with the message sent by the backend when the e-mail is already registered', async () => {
+    mockFetch(
+      errorResponse(412, {
+        apierror: {
+          status: 'PRECONDITION_FAILED',
+          message: 'Two veterinarians cannot be associated with the same user; this user already exists',
+        },
+      }),
+    )
+
+    const error = await createVeterinarian(NEW_VETERINARIAN).catch((e) => e)
+
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.status).toBe(412)
+    expect(error.message).toBe(
+      'Two veterinarians cannot be associated with the same user; this user already exists',
+    )
   })
 })
 
