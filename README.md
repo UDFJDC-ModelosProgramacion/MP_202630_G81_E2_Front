@@ -131,9 +131,8 @@ The back-end does not yet implement authentication. For now, the user and their 
 | User Story | Description | Route | Status |
 |---|---|---|---|
 | **HU70** | Veterinarian list with filters | `/veterinarians` | Implemented |
+| **HU01** | Register a shelter | `/shelters/new` | Implemented |
 | **HU06** | Register a pet | `/pets/new` | Implemented |
-| HU07 | Advanced pet search | `/pets` | Pending |
-| HU08 | Pet profile | `/pets/:petId` | Pending |
 
 ### HU70 ÔÇô Veterinarian List with Filters
 
@@ -167,7 +166,6 @@ All pet fields are required except for description, temperament, and specific ne
 - **Result:** A confirmation message is displayed, and the user is redirected to `/pets/{id}` (pet profile pending implementation, HU08).
 - **Permissions:** Only the shelter administrator can see **Register Pet** in the navigation bar.
 
-> Optional: If your version includes the photo feature, the photo is optional and is submitted as a link using `POST /api/pets/{id}/photos`, since the back-end stores the link rather than the actual file. If the photo upload fails, the pet registration is not rolled back. Remove this note if it does not apply.
 
 **Manual Testing:**
 
@@ -178,6 +176,33 @@ All pet fields are required except for description, temperament, and specific ne
 5. Check `GET /api/pets` to verify that the pet was saved with its shelter and arrival event.
 6. Try registering the same pet again. A duplicate error should be displayed.
 
+### HU01 – Register a Shelter
+
+**Route:** `/shelters/new` · **Role:** Shelter administrator.
+
+The administrator registers a shelter by providing its **name, city, NIT, and address**. All fields are required. They are validated on the client side first and then by the back-end (for example, an NIT already registered for another shelter is reported next to the NIT field). On success, the user is redirected to `/shelters/{id}` (detail page pending). The creator is sent as `users: [{ id }]` and becomes the shelter's administrator.
+
+- **Back-end:** `POST /api/shelters`.
+- **Errors:** Back-end errors tied to a field (for example, a missing city or an NIT already registered) are shown next to that field and the focus moves to it. Any other error, such as a shelter with the same name, city, and location or a connection failure, is shown in an error dialog; in both cases the form keeps the entered data.
+- **Automated tests:** `ShelterRegisterPage.test.jsx`, `shelterForm.test.js`, and `shelterService.test.js` (see [Testing](#testing)).
+
+**Manual Testing:**
+
+1. Open `/shelters/new` and submit the empty form. Validation errors should appear, and focus should move to the first invalid field.
+2. Fill in name, city, NIT, and address, and submit. A confirmation message should appear, and the application should navigate to `/shelters/{id}`.
+3. Check `GET /api/shelters` to verify that the shelter was saved with its responsible user.
+4. Register the same shelter again. The back-end error should be displayed.
+5. Stop the back-end and submit. A connection error dialog should be displayed.
+
+**Known limitation – no photo upload:** The shelter registration form does not allow uploading photos. The project description mentions photos and videos of the premises, but this is not available in the current iteration because the back-end does not expose an endpoint to attach photos to a shelter:
+
+- The data model supports it: `PhotoEntity` has a `shelter` relation, `PhotoService` can attach a photo to a shelter, and `GET /api/shelters` and `GET /api/shelters/{id}` return a `photos` list. However, no controller publishes that capability.
+- The only photo endpoint available is `/api/pets/{petId}/photos` (`PetPhotoController`), which is why photos work for pets (HU06) but not for shelters. The `/api/photos` routes that appear in the `Photo` Postman collection have no controller in the back-end code.
+- `POST /api/shelters` receives a `ShelterDTO` (`name`, `city`, `nit`, `location`, and `users`), which has no photo field, so photos cannot be sent while creating the shelter either.
+- The back-end stores a photo as a link (`url`, `type`, `description`) and not as a file, so even when the endpoint exists, the front-end would send a photo link, the same as in HU06.
+
+Once the back-end publishes a shelter photo endpoint, the feature can be added by reusing `PhotoField` and `photoForm.js` and creating the corresponding function in `shelterService.js`.
+
 ## Testing
 
 The project includes both **automated** and **manual tests**.
@@ -186,48 +211,14 @@ The project includes both **automated** and **manual tests**.
 npm test                       # Run all tests
 npm run test:coverage           # Run tests with coverage
 npx vitest src/pages/PetRegisterPage   # Run tests for a specific folder, e.g. HU06
+npx vitest src/pages/ShelterRegisterPage   # HU01
 ```
 
 **Automated Tests** (Vitest + React Testing Library) are located alongside their corresponding modules:
 
 - **HU70:** `VeterinariansPage.test.jsx`, `VeterinarianProfilePage.test.jsx`, and `veterinarianService.test.js`.
+- **HU01:** `ShelterRegisterPage.test.jsx` (full screen), `shelterForm.test.js` (validation and request body), and `shelterService.test.js`.
 - **HU06:** `PetRegisterPage.test.jsx` (full screen), `petForm.test.js` (validation and request body), and `petService.test.js`.
 - **Shared:** `FormField.test.jsx`, `Navbar.test.jsx`, `ScreenState.test.jsx`, and `dates.test.js`.
 
 **Manual Tests:** The steps are described in each user story section.
-
-## Quality: Jenkins and SonarQube
-
-Screenshots from **[30/10/2026]**, commit **[76fdc11]**.
-
-**Jenkins**
-
-![Jenkins pipeline results](/img/jenkis3010.png)
-
-**SonarQube**
-
-![SonarQube analysis results](/img/sonar3010.png)
-
-## HU71 – Register a veterinarian at the shelter
-
-**Route:** `/veterinarians/new` (reached with the **Registrar veterinario** button on the veterinarians list).
-
-The "Registre un veterinario" form asks for first name, last name, email, phone, specialization and availability (all required). When REGISTRAR is pressed, the form is validated on the client, the veterinarian is created and the user is taken back to the list with a confirmation message.
-
-### Integration status
-
-The service (`veterinarianService.js`) consumes `POST /api/veterinarians`. If the backend rejects the registration (for example, "Two veterinarians cannot be associated with the same user; this user already exists" when the email is already registered, or "The shelter must be an existing shelter"), the message is shown in an alert and the form keeps what the user typed.
-
-### Running the tests
-
-```bash
-npx vitest src/pages/RegisterVeterinarianPage src/services
-```
-
-### Manual integration tests
-
-1. On `/veterinarians`, pressing **Registrar veterinario** opens the form.
-2. Pressing REGISTRAR with an empty form shows the message for each missing field and sends nothing.
-3. An email without a valid format (`camila`) or a phone with fewer than 7 digits shows its message.
-4. With every field filled in, REGISTRAR creates the veterinarian, goes back to `/veterinarians` and shows "Veterinario/a Camila Rojas registrado/a correctamente.", with the new veterinarian in the list.
-5. Registering another veterinarian with the same email shows the backend error and keeps the form data.

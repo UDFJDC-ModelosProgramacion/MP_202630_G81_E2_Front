@@ -3,10 +3,6 @@ import styles from './FormField.module.css'
 const asOption = (option) =>
   typeof option === 'string' ? { value: option, label: option } : option
 
-// Label + control + error message. The control is rendered by `children`, which receives
-// the accessibility props (id, aria-required, aria-invalid, aria-describedby).
-// Validation is done by our own code (CT4), so controls never use the native `required`.
-// A `wide` field takes the whole row of the grid it is in.
 export default function FormField({ id, label, required = false, error, wide = false, children }) {
   const errorId = `${id}-error`
   return (

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   buildPhotoPayload,
   detectPhotoFormat,
@@ -7,8 +7,9 @@ import {
   PHOTO_FORMAT_MESSAGE,
   PHOTO_URL_LENGTH_MESSAGE,
   PHOTO_URL_MESSAGE,
-  PROFILE_PHOTO_DESCRIPTION,
+  trySavePhoto,
   validatePhoto,
+  withPhotoWarning,
 } from './photoForm'
 
 const URL_JPG = 'https://fotos.example.com/luna.jpg'
@@ -80,14 +81,50 @@ describe('validatePhoto', () => {
 describe('buildPhotoPayload', () => {
   it('has no photo when the link is blank', () => {
     expect(hasPhoto({ photoUrl: ' ' })).toBe(false)
-    expect(buildPhotoPayload({ photoUrl: ' ', photoType: 'JPG' })).toBeNull()
+    expect(buildPhotoPayload({ photoUrl: ' ', photoType: 'JPG' }, 'Foto')).toBeNull()
   })
 
-  it('builds the body of POST /pets/{id}/photos', () => {
-    expect(buildPhotoPayload({ photoUrl: ` ${URL_JPG} `, photoType: 'JPG' })).toEqual({
-      url: URL_JPG,
-      type: 'JPG',
-      description: PROFILE_PHOTO_DESCRIPTION,
-    })
+  it('builds the body of the photo request with the description of the caller', () => {
+    expect(
+      buildPhotoPayload({ photoUrl: ` ${URL_JPG} `, photoType: 'JPG' }, 'Foto de perfil'),
+    ).toEqual({ url: URL_JPG, type: 'JPG', description: 'Foto de perfil' })
+  })
+})
+
+describe('trySavePhoto', () => {
+  const photo = { url: URL_JPG, type: 'JPG', description: 'Foto' }
+
+  it('does nothing when there is no photo', async () => {
+    const save = vi.fn()
+
+    expect(await trySavePhoto(save, null)).toBeNull()
+    expect(save).not.toHaveBeenCalled()
+  })
+
+  it('saves the photo and returns no error', async () => {
+    const save = vi.fn().mockResolvedValue({ id: 1 })
+
+    expect(await trySavePhoto(save, photo)).toBeNull()
+    expect(save).toHaveBeenCalledWith(photo)
+  })
+
+  it('returns the message instead of throwing when the photo fails', async () => {
+    const save = vi.fn().mockRejectedValue(new Error('Photo format is not valid'))
+
+    expect(await trySavePhoto(save, photo)).toBe('Photo format is not valid')
+  })
+})
+
+describe('withPhotoWarning', () => {
+  it('keeps the notice when the photo was saved or there was none', () => {
+    expect(withPhotoWarning('Mascota registrada con éxito.', null)).toBe(
+      'Mascota registrada con éxito.',
+    )
+  })
+
+  it('adds the photo failure to the notice', () => {
+    expect(withPhotoWarning('Refugio "Patitas" creado con éxito.', 'Photo not found')).toBe(
+      'Refugio "Patitas" creado con éxito, pero la foto no se pudo guardar: Photo not found',
+    )
   })
 })

@@ -1,6 +1,4 @@
-// Pure logic of the "register a pet" form (HU06): initial values, client validation,
-// request payload and the mapping of backend messages to form fields.
-import { detectPhotoFormat, validatePhoto } from './photoForm'
+import { detectPhotoFormat, validatePhoto } from '../../utils/photoForm'
 
 export const EMPTY_PET = {
   name: '',
@@ -49,8 +47,6 @@ export const eventKey = (index, field) => `events.${index}.${field}`
 
 const isBlank = (value) => String(value).trim() === ''
 
-// Returns the form values after `name` changed. Writing a photo link also picks its format
-// when the extension reveals it (the user can still change it).
 export function updateValues(values, name, value) {
   const updated = { ...values, [name]: value }
   if (name === 'photoUrl') updated.photoType = detectPhotoFormat(value) ?? values.photoType
@@ -70,8 +66,6 @@ function validatePetField(field, values, today) {
   return null
 }
 
-// Returns { fieldName: message } with one entry per invalid field, in the order they appear
-// on screen. It is empty when the form can be sent. The backend validates again (CT4).
 export function validatePet(values, events, today) {
   const errors = validatePhoto(values)
   REQUIRED_PET_FIELDS.forEach((field) => {
@@ -88,8 +82,6 @@ export function validatePet(values, events, today) {
 
 const optionalText = (value) => (isBlank(value) ? null : value.trim())
 
-// Builds the body of POST /pets. The pet is linked to the administrator's shelter by id
-// and travels with its arrival event(s).
 export function buildPetPayload(values, events, shelterId) {
   return {
     name: values.name.trim(),
@@ -116,8 +108,6 @@ export function buildPetPayload(values, events, shelterId) {
   }
 }
 
-// The backend reports one 412 message at a time. Those that belong to a field are shown
-// next to it; any other message (shelter, duplicate pet, 404...) goes to the alert.
 const FIELD_BY_BACKEND_MESSAGE = {
   'Pet name cannot be null or empty': 'name',
   'Species cannot be null or empty': 'species',

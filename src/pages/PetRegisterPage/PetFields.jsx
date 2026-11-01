@@ -14,7 +14,6 @@ const YES_NO = [
   { value: 'false', label: 'No' },
 ]
 
-// Builds one renderer per kind of control, already wired to the form state.
 function createFieldRenderers({ values, errors, onChange }) {
   const common = (name, label, extra) => ({
     id: name,
@@ -88,8 +87,6 @@ function Behavior({ text, textArea }) {
   )
 }
 
-// Fields of the pet itself, grouped in cards. The first twelve are required; description,
-// temperament and specific needs may be unknown in a rescue (HU06).
 export default function PetFields({ values, errors, today, onChange }) {
   const renderers = createFieldRenderers({ values, errors, onChange })
   return (

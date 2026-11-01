@@ -1,12 +1,10 @@
 import { useState } from 'react'
-import { SelectField, TextField } from '../../components/FormField/FormField'
-import FormSection from '../../components/FormSection/FormSection'
-import { PHOTO_FORMATS } from '../../constants/petOptions'
-import { hasPhoto, isHttpUrl } from './photoForm'
+import { PHOTO_FORMATS } from '../../constants/photoOptions'
+import { hasPhoto, isHttpUrl } from '../../utils/photoForm'
+import { SelectField, TextField } from '../FormField/FormField'
+import FormSection from '../FormSection/FormSection'
 import styles from './PhotoField.module.css'
 
-// Optional profile photo: the image link, its format and a live preview. The backend keeps
-// photos as links, so the file itself is not uploaded from here.
 export default function PhotoField({ values, errors, onChange }) {
   const [failedUrl, setFailedUrl] = useState('')
   const url = values.photoUrl.trim()
@@ -15,7 +13,7 @@ export default function PhotoField({ values, errors, onChange }) {
   return (
     <FormSection
       title="Fotografía de perfil"
-      description="Opcional. Se mostrará en la ficha de la mascota y en el catálogo de adopción."
+      description="Opcional. Se mostrará en la ficha y en el catálogo de adopción."
     >
       <div className={styles.layout}>
         <div className={previewUrl ? `${styles.preview} ${styles.filled}` : styles.preview}>

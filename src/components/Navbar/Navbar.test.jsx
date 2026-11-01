@@ -43,6 +43,23 @@ describe('Navbar', () => {
     )
   })
 
+  it('shows the option to register a shelter to the shelter administrator', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
+
+    renderNavbar()
+
+    expect(screen.getByRole('link', { name: 'Registrar refugio' })).toHaveAttribute(
+      'href',
+      '/shelters/new',
+    )
+  })
+
+  it('hides the option to register a shelter from other roles', () => {
+    renderNavbar()
+
+    expect(screen.queryByRole('link', { name: 'Registrar refugio' })).not.toBeInTheDocument()
+  })
+
   it('hides the option to register a pet from other roles', () => {
     renderNavbar()
 
