@@ -7,6 +7,7 @@ import { getVeterinarian } from '../../services/veterinarianService'
 vi.mock('../../services/veterinarianService', () => ({
   getVeterinarians: vi.fn(),
   getVeterinarian: vi.fn(),
+  createVeterinarian: vi.fn(),
 }))
 
 const VETERINARIAN = {

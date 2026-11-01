@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { getVeterinarians } from '../../services/veterinarianService'
 import styles from './VeterinariansPage.module.css'
@@ -16,6 +16,8 @@ const initials = ({ firstName = '', lastName = '' }) =>
   `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
 
 export default function VeterinariansPage() {
+  const { state } = useLocation()
+  const registered = state?.registered
   const [filters, setFilters] = useState(NO_FILTERS)
   const [options, setOptions] = useState({ specializations: [], availabilities: [] })
   const [result, setResult] = useState({
@@ -26,7 +28,7 @@ export default function VeterinariansPage() {
   })
   const lastRequest = useRef(0)
 
-  
+
   const search = useCallback((appliedFilters) => {
     const requestId = ++lastRequest.current
     return getVeterinarians(appliedFilters)
@@ -81,6 +83,18 @@ export default function VeterinariansPage() {
   return (
     <section className={styles.panel}>
       <h1 className={styles.title}>Veterinarios</h1>
+
+      {registered && (
+        <p role="status" className={styles.success}>
+          Veterinario/a {registered} registrado/a correctamente.
+        </p>
+      )}
+
+      <div className={styles.toolbar}>
+        <Link to="/veterinarians/new" className={styles.register}>
+          Registrar veterinario
+        </Link>
+      </div>
 
       <form className={styles.filters} onSubmit={handleSubmit} aria-label="Filtros de veterinarios">
         <div className={styles.field}>

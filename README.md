@@ -1,6 +1,6 @@
-# Pets – Front-end
+﻿# Pets ÔÇô Front-end
 
-Web application for managing pet adoptions. This project was developed for the **Programming Models** course at Universidad Distrital Francisco José de Caldas, group **G81**, team **E2**.
+Web application for managing pet adoptions. This project was developed for the **Programming Models** course at Universidad Distrital Francisco Jos├® de Caldas, group **G81**, team **E2**.
 
 The front-end consumes the REST API provided by the back-end (Spring Boot), developed during Cycle 1.
 
@@ -25,11 +25,11 @@ The front-end consumes the REST API provided by the back-end (Spring Boot), deve
 
 | Team Member |
 |---|
-| Ardila Duran, Camilo Andrés |
+| Ardila Duran, Camilo Andr├®s |
 | Escobar Barrios, Alejandro |
 | Leal Rivera, Anggel Felipe |
 | Nossa Orjuela, Isabella |
-| Sandoval Rodríguez, Luna Alejandra |
+| Sandoval Rodr├¡guez, Luna Alejandra |
 
 ## Technologies
 
@@ -96,12 +96,12 @@ Automated tests ignore these variables (see `vite.config.js`), so they run succe
 
 ```text
 src/
-├── components/        Reusable components
-├── config/
-├── constants/
-├── pages/             One folder per screen (component, styles, and tests)
-├── services/
-└── utils/
+Ôö£ÔöÇÔöÇ components/        Reusable components
+Ôö£ÔöÇÔöÇ config/
+Ôö£ÔöÇÔöÇ constants/
+Ôö£ÔöÇÔöÇ pages/             One folder per screen (component, styles, and tests)
+Ôö£ÔöÇÔöÇ services/
+ÔööÔöÇÔöÇ utils/
 ```
 
 Each screen lives in its own folder alongside its CSS Module and tests. Logic that does not depend on React (such as validation and request body construction) is kept in separate modules, such as `PetRegisterPage/petForm.js`, so it can be tested independently.
@@ -134,9 +134,9 @@ The back-end does not yet implement authentication. For now, the user and their 
 | **HU01** | Register a shelter | `/shelters/new` | Implemented |
 | **HU06** | Register a pet | `/pets/new` | Implemented |
 
-### HU70 – Veterinarian List with Filters
+### HU70 ÔÇô Veterinarian List with Filters
 
-**Route:** `/veterinarians` · **Profile:** `/veterinarians/:veterinarianId`
+**Route:** `/veterinarians` ┬À **Profile:** `/veterinarians/:veterinarianId`
 
 Shelter users can view veterinarians along with their **name, specialization, and availability**. They can filter the list by specialization and/or availability using the **Search** button (case-insensitive). If no veterinarians match the selected filters, a message informs the user that no results were found.
 
@@ -153,9 +153,9 @@ Opening a veterinarian's profile also displays their **follow-ups** and **medica
 4. Open a veterinarian's profile and verify that their follow-ups and medical events are displayed.
 5. Stop the back-end and verify that an error message is displayed.
 
-### HU06 – Register a Pet
+### HU06 ÔÇô Register a Pet
 
-**Route:** `/pets/new` · **Role:** Shelter administrator.
+**Route:** `/pets/new` ┬À **Role:** Shelter administrator.
 
 The administrator registers a pet under their shelter, including at least one **arrival event** (date, type, and description).
 
