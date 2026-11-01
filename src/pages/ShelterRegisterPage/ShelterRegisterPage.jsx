@@ -1,10 +1,11 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ErrorDialog from '../../components/ErrorDialog/ErrorDialog'
 import { SelectField, TextField } from '../../components/FormField/FormField'
 import FormActions from '../../components/FormActions/FormActions'
 import FormSection from '../../components/FormSection/FormSection'
 import ScreenState from '../../components/ScreenState/ScreenState'
+import SuccessDialog from '../../components/SuccessDialog/SuccessDialog'
 import { getSession, ROLES } from '../../config/session'
 import { CITIES } from '../../constants/shelterOptions'
 import { createShelter } from '../../services/shelterService'
@@ -12,9 +13,13 @@ import {
   buildShelterPayload,
   EMPTY_SHELTER,
   fieldOfBackendMessage,
+  normalizeNit,
   validateShelter,
 } from './shelterForm'
 import styles from './ShelterRegisterPage.module.css'
+
+const ERROR_HINT =
+  'Verifique los datos institucionales antes de continuar o comuníquese con la administración si considera que se trata de un error.'
 
 const withoutKey = (object, key) => Object.fromEntries(Object.entries(object).filter(([k]) => k !== key))
 
@@ -22,21 +27,32 @@ function ShelterRegisterForm({ session }) {
   const navigate = useNavigate()
   const [values, setValues] = useState(EMPTY_SHELTER)
   const [errors, setErrors] = useState({})
-  const [dialog, setDialog] = useState(null)
+  const [errorDialog, setErrorDialog] = useState(null)
+  const [created, setCreated] = useState(null)
   const [submitting, setSubmitting] = useState(false)
-  const closeDialog = useCallback(() => setDialog(null), [])
 
   function handleChange(event) {
     const { name, value } = event.target
     setValues((current) => ({ ...current, [name]: value }))
     setErrors((current) => withoutKey(current, name))
   }
-
+  
   function showBackendError(error) {
     const field = fieldOfBackendMessage(error.message)
     setErrors(field ? { [field]: error.message } : {})
-    setDialog(field ? null : { message: error.message, status: error.status })
+    setErrorDialog({ message: error.message, status: error.status, field })
+  }
+
+  function closeErrorDialog() {
+    const { field } = errorDialog
+    setErrorDialog(null)
     if (field) document.getElementById(field)?.focus()
+  }
+
+  function registerAnother() {
+    setValues(EMPTY_SHELTER)
+    setErrors({})
+    setCreated(null)
   }
 
   async function handleSubmit(event) {
@@ -52,13 +68,16 @@ function ShelterRegisterForm({ session }) {
     setSubmitting(true)
     try {
       const shelter = await createShelter(buildShelterPayload(values, session.userId))
-      void navigate(`/shelters/${shelter.id}`, {
-        state: { notice: `Refugio "${values.name.trim()}" creado con éxito.` },
+      setCreated({
+        id: shelter.id,
+        name: values.name.trim(),
+        city: values.city,
+        nit: normalizeNit(values.nit),
       })
     } catch (error) {
       showBackendError(error)
-      setSubmitting(false)
     }
+    setSubmitting(false)
   }
 
   const field = (name, label) => ({
@@ -107,13 +126,31 @@ function ShelterRegisterForm({ session }) {
         />
       </form>
 
-      {dialog && (
+      {errorDialog && (
         <ErrorDialog
           title="Error al registrar el refugio"
-          message={dialog.message}
-          status={dialog.status}
+          message={errorDialog.message}
+          status={errorDialog.status}
+          hint={ERROR_HINT}
           actionLabel="Modificar datos"
-          onClose={closeDialog}
+          onClose={closeErrorDialog}
+          onCancel={() => navigate('/')}
+        />
+      )}
+
+      {created && (
+        <SuccessDialog
+          title="¡Refugio registrado con éxito!"
+          message={`El refugio "${created.name}" ha sido creado satisfactoriamente.`}
+          details={[
+            { label: 'NIT', value: created.nit },
+            { label: 'Ciudad', value: created.city },
+            { label: 'Administrador asignado', value: session.name },
+          ]}
+          actionLabel="Ir al detalle del refugio"
+          closeLabel="Registrar otro refugio"
+          onAction={() => navigate(`/shelters/${created.id}`)}
+          onClose={registerAnother}
         />
       )}
     </section>

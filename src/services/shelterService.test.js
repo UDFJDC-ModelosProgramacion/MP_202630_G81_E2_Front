@@ -35,7 +35,7 @@ describe('createShelter', () => {
           Promise.resolve({
             apierror: {
               status: 'PRECONDITION_FAILED',
-              message: 'The nit is already registered for another shelter',
+              message: 'El NIT ya está registrado para otro refugio',
             },
           }),
       }),
@@ -44,7 +44,7 @@ describe('createShelter', () => {
     const error = await createShelter({}).catch((e) => e)
 
     expect(error).toBeInstanceOf(ApiError)
-    expect(error.message).toBe('The nit is already registered for another shelter')
+    expect(error.message).toBe('El NIT ya está registrado para otro refugio')
     expect(error.status).toBe(412)
   })
 })

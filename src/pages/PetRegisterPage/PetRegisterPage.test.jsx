@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import PetRegisterPage from './PetRegisterPage'
 import { getSession } from '../../config/session'
+import { ApiError } from '../../services/apiClient'
 import { addPetPhoto, createPet } from '../../services/petService'
 import { todayISO } from '../../utils/dates'
 
@@ -14,8 +15,7 @@ vi.mock('../../config/session', () => ({
 }))
 
 function PetProfileStub() {
-  const { state } = useLocation()
-  return <p>Perfil de la mascota. {state?.notice}</p>
+  return <p>Perfil de la mascota</p>
 }
 
 function renderPage() {
@@ -150,7 +150,7 @@ describe('PetRegisterPage', () => {
     expect(textbox('Nombre')).not.toHaveAccessibleDescription()
   })
 
-  it('registers the pet in the administrator shelter and opens its profile', async () => {
+  it('registers the pet in the administrator shelter', async () => {
     const user = userEvent.setup()
     createPet.mockResolvedValue({ id: 12 })
     renderPage()
@@ -159,9 +159,7 @@ describe('PetRegisterPage', () => {
 
     await submit(user)
 
-    expect(await screen.findByText(/Perfil de la mascota/)).toHaveTextContent(
-      'Mascota registrada con éxito.',
-    )
+    await screen.findByRole('dialog', { name: '¡Mascota registrada con éxito!' })
     expect(createPet).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Luna',
@@ -240,43 +238,126 @@ describe('PetRegisterPage', () => {
     expect(createPet.mock.calls[0][0].medicalEvents).toHaveLength(2)
   })
 
-  it('shows the backend message next to its field and keeps what the user typed', async () => {
+  it('confirms the registration with a summary of the pet', async () => {
     const user = userEvent.setup()
-    createPet.mockRejectedValue(new Error('Admission date cannot be a future date'))
+    createPet.mockResolvedValue({ id: 12 })
     renderPage()
     await fillRequiredFields(user)
     await fillArrivalEvent(user)
 
     await submit(user)
 
-    expect(await screen.findByLabelText(/^Fecha de ingreso/)).toHaveAccessibleDescription(
-      'Admission date cannot be a future date',
+    const dialog = await screen.findByRole('dialog', { name: '¡Mascota registrada con éxito!' })
+    expect(dialog).toHaveTextContent('"Luna" ha sido registrada satisfactoriamente')
+    expect(dialog).toHaveTextContent('Código HTTP 201')
+    expect(dialog).toHaveTextContent('Perro')
+    expect(dialog).toHaveTextContent('Criollo')
+    expect(dialog).not.toHaveTextContent('la foto no se pudo guardar')
+  })
+
+  it('opens the profile of the new pet from the confirmation', async () => {
+    const user = userEvent.setup()
+    createPet.mockResolvedValue({ id: 12 })
+    renderPage()
+    await fillRequiredFields(user)
+    await fillArrivalEvent(user)
+    await submit(user)
+
+    await user.click(await screen.findByRole('button', { name: 'Ir al perfil de la mascota' }))
+
+    expect(await screen.findByText('Perfil de la mascota')).toBeInTheDocument()
+  })
+
+  it('lets the user register another pet with an empty form', async () => {
+    const user = userEvent.setup()
+    createPet.mockResolvedValue({ id: 12 })
+    renderPage()
+    await fillRequiredFields(user)
+    await fillArrivalEvent(user)
+    await submit(user)
+
+    await user.click(await screen.findByRole('button', { name: 'Registrar otra mascota' }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(textbox('Nombre')).toHaveValue('')
+    expect(textbox('Raza')).toHaveValue('')
+    expect(screen.getAllByRole('group', { name: /Evento de llegada/ })).toHaveLength(1)
+    expect(createPet).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows the backend message next to its field and keeps what the user typed', async () => {
+    const user = userEvent.setup()
+    createPet.mockRejectedValue(new Error('La fecha de ingreso no puede ser una fecha futura'))
+    renderPage()
+    await fillRequiredFields(user)
+    await fillArrivalEvent(user)
+
+    await submit(user)
+
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(
+      'La fecha de ingreso no puede ser una fecha futura',
+    )
+    expect(screen.getByLabelText(/^Fecha de ingreso/)).toHaveAccessibleDescription(
+      'La fecha de ingreso no puede ser una fecha futura',
     )
     expect(textbox('Nombre')).toHaveValue('Luna')
+
+    await user.click(screen.getByRole('button', { name: 'Modificar datos' }))
+
+    expect(screen.getByLabelText(/^Fecha de ingreso/)).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Registrar' })).toBeEnabled()
   })
 
   it.each([
-    'Pet must be associated with an existing shelter',
-    'The shelter with the given id was not found',
-    'A pet with the same shelter, name, species and admission date already exists',
-  ])('shows "%s" in an alert and keeps the form', async (message) => {
+    'La mascota debe estar asociada a un refugio existente',
+    'No se encontró el refugio con el id indicado',
+    'Ya existe una mascota con el mismo refugio, nombre, especie y fecha de ingreso',
+  ])('shows "%s" in the error dialog and keeps the form', async (message) => {
     const user = userEvent.setup()
-    createPet.mockRejectedValue(new Error(message))
+    createPet.mockRejectedValue(new ApiError(message, 412))
     renderPage()
     await fillRequiredFields(user)
     await fillArrivalEvent(user)
 
     await submit(user)
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(message)
+    const dialog = await screen.findByRole('alertdialog', { name: 'Error al registrar la mascota' })
+    expect(dialog).toHaveTextContent(message)
+    expect(dialog).toHaveTextContent('Error 412')
     expect(textbox('Nombre')).toHaveValue('Luna')
+  })
+
+  it('lets the user close the error dialog and fix the data', async () => {
+    const user = userEvent.setup()
+    createPet.mockRejectedValue(new ApiError('La mascota debe estar asociada a un refugio existente', 412))
+    renderPage()
+    await fillRequiredFields(user)
+    await fillArrivalEvent(user)
+    await submit(user)
+
+    await user.click(await screen.findByRole('button', { name: 'Modificar datos' }))
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Registrar' })).toBeEnabled()
+  })
+
+  it('lets the user leave from the error dialog', async () => {
+    const user = userEvent.setup()
+    createPet.mockRejectedValue(new Error('La mascota debe estar asociada a un refugio existente'))
+    renderPage()
+    await fillRequiredFields(user)
+    await fillArrivalEvent(user)
+    await submit(user)
+
+    await user.click(await screen.findByRole('button', { name: 'Cancelar / Volver' }))
+
+    expect(await screen.findByText('Listado de mascotas')).toBeInTheDocument()
   })
 
   it('shows the message of the arrival events in their own section', async () => {
     const user = userEvent.setup()
     const message =
-      'A pet must be registered with at least one medical event describing its arrival at the shelter'
+      'La mascota debe registrarse con al menos un evento de llegada que describa su ingreso al refugio'
     createPet.mockRejectedValue(new Error(message))
     renderPage()
     await fillRequiredFields(user)
@@ -284,7 +365,8 @@ describe('PetRegisterPage', () => {
 
     await submit(user)
 
-    expect(await screen.findByText(message)).toBeInTheDocument()
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(message)
+    expect(screen.getAllByText(message)).toHaveLength(2)
   })
 
   describe('profile photo', () => {
@@ -309,7 +391,7 @@ describe('PetRegisterPage', () => {
 
       await submit(user)
 
-      await screen.findByText(/Perfil de la mascota/)
+      await screen.findByRole('dialog', { name: '¡Mascota registrada con éxito!' })
       expect(addPetPhoto).not.toHaveBeenCalled()
     })
 
@@ -337,16 +419,15 @@ describe('PetRegisterPage', () => {
       expect(screen.getByText('No se pudo cargar la imagen.')).toBeInTheDocument()
     })
 
-    it('saves the photo of the created pet and then opens its profile', async () => {
+    it('saves the photo of the created pet', async () => {
       const user = userEvent.setup()
       createPet.mockResolvedValue({ id: 12 })
       addPetPhoto.mockResolvedValue({ id: 1 })
 
       await registerWithPhoto(user)
 
-      expect(await screen.findByText(/Perfil de la mascota/)).toHaveTextContent(
-        'Mascota registrada con éxito.',
-      )
+      const dialog = await screen.findByRole('dialog', { name: '¡Mascota registrada con éxito!' })
+      expect(dialog).not.toHaveTextContent('la foto no se pudo guardar')
       expect(addPetPhoto).toHaveBeenCalledWith(12, {
         url: PHOTO_URL,
         type: 'PNG',
@@ -382,9 +463,11 @@ describe('PetRegisterPage', () => {
 
       await registerWithPhoto(user)
 
-      expect(await screen.findByText(/Perfil de la mascota/)).toHaveTextContent(
-        'Mascota registrada con éxito, pero la foto no se pudo guardar: Photo format is not valid',
+      const dialog = await screen.findByRole('dialog', { name: '¡Mascota registrada con éxito!' })
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'La mascota se registró, pero la foto no se pudo guardar: Photo format is not valid.',
       )
+      expect(dialog).toContainElement(screen.getByRole('status'))
     })
   })
 

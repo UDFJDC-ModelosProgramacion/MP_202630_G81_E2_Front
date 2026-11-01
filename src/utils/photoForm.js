@@ -62,7 +62,9 @@ export async function trySavePhoto(save, photo) {
   }
 }
 
-export function withPhotoWarning(notice, photoError) {
-  if (!photoError) return notice
-  return `${notice.replace(/\.$/, '')}, pero la foto no se pudo guardar: ${photoError}`
+// Text for the success dialog when the pet was registered but its photo could not be saved.
+// Returns null when there is nothing to warn about.
+export function photoWarning(photoError) {
+  if (!photoError) return null
+  return `La mascota se registró, pero la foto no se pudo guardar: ${photoError}. Podrá agregarla después.`
 }
