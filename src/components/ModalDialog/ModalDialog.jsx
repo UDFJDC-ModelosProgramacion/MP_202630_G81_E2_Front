@@ -1,31 +1,56 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import styles from './ModalDialog.module.css'
 
 const BADGE_SYMBOL = { error: '!', success: '✓' }
 
-// Escape or a click outside calls `onClose`. The first action should use `autoFocus`.
-export default function ModalDialog({ tone, role, labelledBy, describedBy, onClose, children }) {
+export default function ModalDialog({
+  tone,
+  role = 'dialog',
+  labelledBy,
+  describedBy,
+  onClose,
+  children,
+}) {
+  const dialogRef = useRef(null)
+
   useEffect(() => {
     const closeOnEscape = (event) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') {
+        onClose()
+      }
     }
+
     document.addEventListener('keydown', closeOnEscape)
-    return () => document.removeEventListener('keydown', closeOnEscape)
+
+    return () => {
+      document.removeEventListener('keydown', closeOnEscape)
+    }
   }, [onClose])
 
+  const handleBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      onClose()
+    }
+  }
+
   return (
-    <div className={styles.backdrop} onClick={onClose}>
+    <div
+      className={styles.backdrop}
+      onMouseDown={handleBackdropClick}
+    >
       <div
+        ref={dialogRef}
         className={`${styles.dialog} ${styles[tone]}`}
         role={role}
         aria-modal="true"
         aria-labelledby={labelledBy}
         aria-describedby={describedBy}
-        onClick={(event) => event.stopPropagation()}
+        tabIndex={-1}
       >
         <div className={styles.badge} aria-hidden="true">
           {BADGE_SYMBOL[tone]}
         </div>
+
         {children}
       </div>
     </div>
@@ -49,5 +74,11 @@ export function DialogActions({ children }) {
 }
 
 export function DialogButton({ variant = 'primary', ...buttonProps }) {
-  return <button type="button" className={styles[variant]} {...buttonProps} />
+  return (
+    <button
+      type="button"
+      className={styles[variant]}
+      {...buttonProps}
+    />
+  )
 }
