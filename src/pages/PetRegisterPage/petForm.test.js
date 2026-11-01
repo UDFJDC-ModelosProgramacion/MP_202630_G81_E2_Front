@@ -10,7 +10,7 @@ import {
   updateValues,
   validatePet,
 } from './petForm'
-import { PHOTO_URL_MESSAGE } from './photoForm'
+import { PHOTO_URL_MESSAGE } from '../../utils/photoForm'
 
 const TODAY = '2026-10-28'
 

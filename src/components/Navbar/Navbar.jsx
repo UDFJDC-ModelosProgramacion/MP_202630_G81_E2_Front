@@ -8,8 +8,10 @@ const LINKS = [
   { path: '/veterinarians', label: 'Veterinarios' },
 ]
 
-// Only the shelter administrator sees the option to register a pet (HU06, CT3).
-const ADMIN_LINKS = [{ path: '/pets/new', label: 'Registrar mascota', end: true }]
+const ADMIN_LINKS = [
+  { path: '/shelters/new', label: 'Registrar refugio', end: true },
+  { path: '/pets/new', label: 'Registrar mascota', end: true },
+]
 
 export default function Navbar() {
   const links =

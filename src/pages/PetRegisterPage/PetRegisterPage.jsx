@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import PhotoField from '../../components/PhotoField/PhotoField'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { getSession, ROLES } from '../../config/session'
 import { addPetPhoto, createPet } from '../../services/petService'
 import { todayISO } from '../../utils/dates'
+import { buildPhotoPayload, trySavePhoto, withPhotoWarning } from '../../utils/photoForm'
 import ArrivalEvents from './ArrivalEvents'
 import PetFields from './PetFields'
-import PhotoField from './PhotoField'
 import {
   buildPetPayload,
   EMPTY_EVENT,
@@ -15,35 +16,17 @@ import {
   updateValues,
   validatePet,
 } from './petForm'
-import { buildPhotoPayload } from './photoForm'
 import styles from './PetRegisterPage.module.css'
 
 const SUCCESS_NOTICE = 'Mascota registrada con éxito.'
+const PHOTO_DESCRIPTION = 'Foto de perfil'
 
-// Fields whose error must disappear together with the one that was edited.
 const RELATED_FIELDS = { photoUrl: ['photoType'] }
 
 const withoutKeys = (object, keys) =>
   Object.fromEntries(Object.entries(object).filter(([key]) => !keys.includes(key)))
 
 const controlId = (key) => (key.startsWith('events.') ? key.replace('events.', 'event-').replaceAll('.', '-') : key)
-
-// The pet already exists when the photo is saved, so a failure here must not undo it:
-// the message is returned (null when everything went well) and shown after the redirect.
-async function savePhoto(petId, photo) {
-  if (!photo) return null
-  try {
-    await addPetPhoto(petId, photo)
-    return null
-  } catch (error) {
-    return error.message
-  }
-}
-
-const noticeFor = (photoError) =>
-  photoError
-    ? `${SUCCESS_NOTICE.slice(0, -1)}, pero la foto no se pudo guardar: ${photoError}`
-    : SUCCESS_NOTICE
 
 function PetRegisterForm({ shelterId }) {
   const navigate = useNavigate()
@@ -97,8 +80,13 @@ function PetRegisterForm({ shelterId }) {
     setSubmitting(true)
     try {
       const pet = await createPet(buildPetPayload(values, events, shelterId))
-      const photoError = await savePhoto(pet.id, buildPhotoPayload(values))
-      void navigate(`/pets/${pet.id}`, { state: { notice: noticeFor(photoError) } })
+      const photoError = await trySavePhoto(
+        (photo) => addPetPhoto(pet.id, photo),
+        buildPhotoPayload(values, PHOTO_DESCRIPTION),
+      )
+      void navigate(`/pets/${pet.id}`, {
+        state: { notice: withPhotoWarning(SUCCESS_NOTICE, photoError) },
+      })
     } catch (error) {
       showBackendError(error.message)
       setSubmitting(false)
@@ -145,7 +133,6 @@ function PetRegisterForm({ shelterId }) {
   )
 }
 
-// Only the shelter administrator can register pets (CT3).
 export default function PetRegisterPage() {
   const session = getSession()
   if (session.role !== ROLES.SHELTER_ADMIN) {

@@ -12,6 +12,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/setupTests.js',
+    testTimeout: 15000,
     env: { VITE_API_BASE_URL: '', VITE_SHELTER_ID: '' },
     coverage: {
       reporter: ['text', 'lcov'],

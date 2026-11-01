@@ -24,6 +24,7 @@ function renderPage() {
       <Routes>
         <Route path="/pets/new" element={<PetRegisterPage />} />
         <Route path="/pets/:petId" element={<PetProfileStub />} />
+        <Route path="/pets" element={<p>Listado de mascotas</p>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -351,7 +352,7 @@ describe('PetRegisterPage', () => {
         type: 'PNG',
         description: 'Foto de perfil',
       })
-    }, 10000)
+    })
 
     it('does not create the pet when the link is not valid and focuses it', async () => {
       const user = userEvent.setup()
@@ -385,7 +386,7 @@ describe('PetRegisterPage', () => {
         'Mascota registrada con éxito, pero la foto no se pudo guardar: Photo format is not valid',
       )
     })
-  }, 10000)
+  })
 
   it('lets the user cancel and go back to the pets', async () => {
     const user = userEvent.setup()
@@ -393,6 +394,7 @@ describe('PetRegisterPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Cancelar' }))
 
+    expect(await screen.findByText('Listado de mascotas')).toBeInTheDocument()
     expect(screen.queryByRole('form', { name: 'Registro de mascota' })).not.toBeInTheDocument()
   })
 })

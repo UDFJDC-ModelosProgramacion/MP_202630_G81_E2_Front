@@ -1,8 +1,3 @@
-// Pure logic of the optional profile photo of the "register a pet" form (HU06).
-// The backend stores a photo as { url, type, description } (POST /pets/{id}/photos),
-// so the form asks for the image link and its format, and mirrors the backend rules.
-
-export const PROFILE_PHOTO_DESCRIPTION = 'Foto de perfil'
 export const MAX_PHOTO_URL_LENGTH = 255
 
 export const PHOTO_URL_MESSAGE = 'Ingrese un enlace válido que empiece por http:// o https://.'
@@ -27,7 +22,6 @@ export function isHttpUrl(value) {
   }
 }
 
-// 'https://x.com/luna.PNG?w=800' -> 'PNG'. Returns null when the link has no known extension.
 export function detectPhotoFormat(url) {
   try {
     const extension = new URL(url).pathname.split('.').pop().toLowerCase()
@@ -37,7 +31,6 @@ export function detectPhotoFormat(url) {
   }
 }
 
-// The photo is optional: it only exists when a link was written.
 export const hasPhoto = ({ photoUrl }) => photoUrl.trim() !== ''
 
 function validatePhotoUrl(url) {
@@ -45,7 +38,6 @@ function validatePhotoUrl(url) {
   return url.length > MAX_PHOTO_URL_LENGTH ? PHOTO_URL_LENGTH_MESSAGE : null
 }
 
-// Returns { fieldName: message } for the photo fields. It is empty when there is no photo.
 export function validatePhoto(values) {
   if (!hasPhoto(values)) return {}
   const errors = {}
@@ -55,12 +47,22 @@ export function validatePhoto(values) {
   return errors
 }
 
-// Body of POST /pets/{id}/photos, or null when the pet is registered without a photo.
-export function buildPhotoPayload(values) {
+export function buildPhotoPayload(values, description) {
   if (!hasPhoto(values)) return null
-  return {
-    url: values.photoUrl.trim(),
-    type: values.photoType,
-    description: PROFILE_PHOTO_DESCRIPTION,
+  return { url: values.photoUrl.trim(), type: values.photoType, description }
+}
+
+export async function trySavePhoto(save, photo) {
+  if (!photo) return null
+  try {
+    await save(photo)
+    return null
+  } catch (error) {
+    return error.message
   }
+}
+
+export function withPhotoWarning(notice, photoError) {
+  if (!photoError) return notice
+  return `${notice.replace(/\.$/, '')}, pero la foto no se pudo guardar: ${photoError}`
 }

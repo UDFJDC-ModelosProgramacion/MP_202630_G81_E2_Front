@@ -43,6 +43,12 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Registre su Mascota' })).toBeInTheDocument()
   })
 
+  it('shows the shelter registration form', () => {
+    renderAt('/shelters/new')
+
+    expect(screen.getByRole('heading', { name: 'Registre su Refugio' })).toBeInTheDocument()
+  })
+
   it('keeps the pages of other stories as pending', () => {
     renderAt('/pets')
 

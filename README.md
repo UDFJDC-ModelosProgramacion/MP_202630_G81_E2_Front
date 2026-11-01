@@ -207,3 +207,4 @@ Screenshots from **[30/10/2026]**, commit **[76fdc11]**.
 **SonarQube**
 
 ![SonarQube analysis results](/img/sonar3010.png)
+

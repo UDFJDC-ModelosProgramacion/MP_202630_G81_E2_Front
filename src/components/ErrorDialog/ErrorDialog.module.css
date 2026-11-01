@@ -1,0 +1,85 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(15 23 42 / 45%);
+  backdrop-filter: blur(4px);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 28rem;
+  padding: 2.5rem 2rem 2rem;
+  border-radius: 1.5rem;
+  background: var(--color-surface);
+  box-shadow: 0 25px 50px -12px rgb(15 23 42 / 35%);
+  text-align: center;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin: -4.5rem auto 1rem;
+  border: 0.4rem solid var(--color-surface);
+  border-radius: 50%;
+  background: var(--color-error);
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.status {
+  display: inline-block;
+  margin: 0 0 0.5rem;
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  background: #fee4e2;
+  color: var(--color-error);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0 0 0.75rem;
+  font-size: 1.4rem;
+}
+
+.message {
+  margin: 0 0 1.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #fecdca;
+  border-radius: var(--radius-md);
+  background: #fef3f2;
+  color: #7a271a;
+  font-weight: 600;
+}
+
+.action {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: #1f2933;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.action:hover {
+  background: #0f1419;
+}
+
+.action:focus-visible {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}

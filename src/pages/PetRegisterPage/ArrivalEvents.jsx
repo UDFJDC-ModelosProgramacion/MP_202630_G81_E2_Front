@@ -4,8 +4,6 @@ import { ARRIVAL_EVENT_TYPES } from '../../constants/petOptions'
 import { eventKey } from './petForm'
 import styles from './PetRegisterPage.module.css'
 
-// One group per arrival event (date, type, description). At least one is required, so the
-// first one cannot be removed.
 export default function ArrivalEvents({ events, errors, onChange, onAdd, onRemove }) {
   return (
     <FormSection
