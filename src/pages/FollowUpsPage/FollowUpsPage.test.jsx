@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import FollowUpsPage from './FollowUpsPage'
 import { ApiError } from '../../services/apiClient'
 import { getSession } from '../../config/roleSession'
-import { getFollowUps } from '../../services/followUpService'
+import { deleteFollowUp, getFollowUps } from '../../services/followUpService'
 
-vi.mock('../../services/followUpService', () => ({ getFollowUps: vi.fn() }))
+vi.mock('../../services/followUpService', () => ({
+  getFollowUps: vi.fn(),
+  deleteFollowUp: vi.fn(),
+}))
 vi.mock('../../config/roleSession', () => ({
   ROLES: {
     SHELTER_ADMIN: 'SHELTER_ADMIN',
@@ -34,6 +38,8 @@ const PAST = '2020-01-01T00:00:00.000+00:00'
 beforeEach(() => {
   vi.mocked(getSession).mockReturnValue({ role: 'VETERINARIAN', userId: 1 })
   vi.mocked(getFollowUps).mockReset()
+  vi.mocked(deleteFollowUp).mockReset()
+  vi.mocked(deleteFollowUp).mockResolvedValue(null)
 })
 
 describe('FollowUpsPage', () => {
@@ -73,6 +79,83 @@ describe('FollowUpsPage', () => {
     )
   })
 
+  it('enables delete only for future dates', async () => {
+    vi.mocked(getFollowUps).mockResolvedValue([
+      { id: 1, date: PAST, observation: 'Seguimiento cerrado', veterinarian: null, adoption: { id: 1 } },
+      { id: 2, date: FUTURE, observation: 'Seguimiento de control', veterinarian: null, adoption: { id: 1 } },
+    ])
+    renderPage()
+
+    const buttons = await screen.findAllByRole('button', { name: 'Eliminar' })
+    expect(buttons[0]).toBeEnabled()
+    expect(buttons[1]).toBeDisabled()
+    expect(buttons[1]).toHaveAttribute(
+      'title',
+      'Los seguimientos con fecha vencida preservan el historial del refugio y no se pueden eliminar.',
+    )
+  })
+
+  it('deletes a follow-up after confirmation and removes it from the list', async () => {
+    const user = userEvent.setup()
+    vi.mocked(getFollowUps).mockResolvedValue([
+      { id: 2, date: FUTURE, observation: 'Seguimiento de control', veterinarian: null, adoption: { id: 1 } },
+    ])
+    renderPage()
+
+    await screen.findByText('Seguimiento de control')
+    await user.click(screen.getByRole('button', { name: 'Eliminar' }))
+
+    const dialog = screen.getByRole('alertdialog')
+    expect(dialog).toHaveTextContent('¿Seguro que desea eliminar el seguimiento del 15 ene 2030?')
+    expect(dialog).toHaveTextContent('Esta acción no se puede deshacer.')
+
+    await user.click(screen.getByRole('button', { name: 'Sí, eliminar' }))
+
+    expect(deleteFollowUp).toHaveBeenCalledWith('1', 2)
+    expect(await screen.findByText('El seguimiento del 15 ene 2030 fue eliminado.')).toBeInTheDocument()
+    expect(screen.queryByText('Seguimiento de control')).toBeNull()
+  })
+
+  it('keeps the follow-up when the deletion is cancelled', async () => {
+    const user = userEvent.setup()
+    vi.mocked(getFollowUps).mockResolvedValue([
+      { id: 2, date: FUTURE, observation: 'Seguimiento de control', veterinarian: null, adoption: { id: 1 } },
+    ])
+    renderPage()
+
+    await screen.findByText('Seguimiento de control')
+    await user.click(screen.getByRole('button', { name: 'Eliminar' }))
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+    expect(screen.getByText('Seguimiento de control')).toBeInTheDocument()
+    expect(deleteFollowUp).not.toHaveBeenCalled()
+  })
+
+  it('shows the backend message when the deletion is rejected', async () => {
+    const user = userEvent.setup()
+    vi.mocked(getFollowUps).mockResolvedValue([
+      { id: 2, date: FUTURE, observation: 'Seguimiento de control', veterinarian: null, adoption: { id: 1 } },
+    ])
+    vi.mocked(deleteFollowUp).mockRejectedValue(
+      new ApiError(
+        'A follow-up that has already been closed or validated cannot be deleted; it preserves the shelter history',
+        412,
+      ),
+    )
+    renderPage()
+
+    await screen.findByText('Seguimiento de control')
+    await user.click(screen.getByRole('button', { name: 'Eliminar' }))
+    await user.click(screen.getByRole('button', { name: 'Sí, eliminar' }))
+
+    const dialog = await screen.findByRole('alertdialog')
+    expect(dialog).toHaveTextContent(
+      'A follow-up that has already been closed or validated cannot be deleted; it preserves the shelter history',
+    )
+    expect(screen.getByText('Seguimiento de control')).toBeInTheDocument()
+  })
+
   it('shows the empty state when the adoption has no follow-ups', async () => {
     vi.mocked(getFollowUps).mockResolvedValue([])
     renderPage()
@@ -99,6 +182,7 @@ describe('FollowUpsPage', () => {
     expect(await screen.findByText('Seguimiento de control')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Registrar seguimiento' })).toBeNull()
     expect(screen.queryByRole('link', { name: 'Editar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Eliminar' })).toBeNull()
   })
 
   it('shows the adopter the nearest pending check-up highlighted, read-only', async () => {
