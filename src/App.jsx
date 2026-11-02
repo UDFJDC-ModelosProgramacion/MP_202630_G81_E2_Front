@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout/Layout'
+import AdopterRegisterPage from './pages/AdopterRegisterPage/AdopterRegisterPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
 import VeterinariansPage from './pages/VeterinariansPage/VeterinariansPage'
 
@@ -14,6 +15,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/veterinarians" replace />} />
         <Route path="/pets" element={<Pending title="Mascotas" />} />
+        <Route path="/adopters/new" element={<AdopterRegisterPage />} />
         <Route path="/notifications" element={<Pending title="Notificaciones" />} />
         <Route path="/veterinarians" element={<VeterinariansPage />} />
         <Route path="/veterinarians/:veterinarianId" element={<VeterinarianProfilePage />} />
