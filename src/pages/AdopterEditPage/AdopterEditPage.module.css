@@ -87,3 +87,41 @@
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
 }
+
+.danger {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.danger h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--color-error);
+}
+
+.danger p {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.deleteButton {
+  align-self: flex-start;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-error);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.deleteButton:hover {
+  background: var(--color-error);
+  color: #fff;
+}

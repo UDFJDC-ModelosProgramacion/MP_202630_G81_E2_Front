@@ -26,3 +26,8 @@ export function getAdopter(id) {
 export function updateAdopter(id, adopter) {
   return api.put(`/adopters/${id}`, adopter)
 }
+
+// Deletes an adopter. The backend answers 412 when it has active adoption requests.
+export function deleteAdopter(id) {
+  return api.delete(`/adopters/${id}`)
+}
