@@ -76,7 +76,7 @@ function Behavior({ text, textArea }) {
   return (
     <FormSection
       title="Comportamiento y observaciones"
-      description="Pueden ser desconocidos en un rescate; se completan cuando se conozcan (HU06)."
+      description="Pueden ser desconocidos en un rescate; se completan cuando se conozcan."
     >
       <div className={styles.grid}>
         {text('temperament', 'Temperamento')}

@@ -1,74 +1,58 @@
-import { useEffect, useId, useRef } from 'react'
+import { useId } from 'react'
+import ModalDialog, {
+  DialogActions,
+  DialogButton,
+  DialogPill,
+  DialogTitle,
+} from '../ModalDialog/ModalDialog'
 import styles from './ErrorDialog.module.css'
+
+const STATUS_NAMES = { 404: 'No encontrado', 412: 'Conflicto de registro' }
+
+function statusLabel(status) {
+  const name = STATUS_NAMES[status]
+  return name ? `Error ${status} • ${name}` : `Error ${status}`
+}
 
 export default function ErrorDialog({
   title,
   message,
   status,
+  hint,
   actionLabel,
+  cancelLabel = 'Cancelar / Volver',
   onClose,
+  onCancel,
 }) {
   const titleId = useId()
   const messageId = useId()
-  const actionRef = useRef(null)
-
-  useEffect(() => {
-    actionRef.current?.focus()
-
-    const closeOnEscape = (event) => {
-      if (event.key === 'Escape') {
-        onClose()
-      }
-    }
-
-    document.addEventListener('keydown', closeOnEscape)
-
-    return () => {
-      document.removeEventListener('keydown', closeOnEscape)
-    }
-  }, [onClose])
 
   return (
-    <div className={styles.backdrop}>
-      <button
-        type="button"
-        className={styles.backdropAction}
-        aria-label="Cerrar diálogo"
-        onClick={onClose}
-      />
-
-      <div
-        className={styles.dialog}
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={messageId}
-      >
-        <div className={styles.badge} aria-hidden="true">
-          !
-        </div>
-
-        {status > 0 && (
-          <p className={styles.status}>Error {status}</p>
-        )}
-
-        <h2 id={titleId} className={styles.title}>
-          {title}
-        </h2>
-
+    <ModalDialog
+      tone="error"
+      role="alertdialog"
+      labelledBy={titleId}
+      describedBy={messageId}
+      onClose={onClose}
+    >
+      {status > 0 && <DialogPill>{statusLabel(status)}</DialogPill>}
+      <DialogTitle id={titleId}>{title}</DialogTitle>
+      <div className={styles.detail}>
         <p id={messageId} className={styles.message}>
           {message}
         </p>
-
-        <button
-          ref={actionRef}
-          type="button"
-          className={styles.action}
-          onClick={onClose}
-        >
-          {actionLabel}
-        </button>
+        {hint && <p className={styles.hint}>{hint}</p>}
       </div>
-    </div>
+      <DialogActions>
+        <DialogButton autoFocus onClick={onClose}>
+          {actionLabel}
+        </DialogButton>
+        {onCancel && (
+          <DialogButton variant="secondary" onClick={onCancel}>
+            {cancelLabel}
+          </DialogButton>
+        )}
+      </DialogActions>
+    </ModalDialog>
   )
 }

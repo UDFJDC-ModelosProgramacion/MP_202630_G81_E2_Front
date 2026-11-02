@@ -138,18 +138,18 @@ describe('buildPetPayload', () => {
 
 describe('fieldOfBackendMessage', () => {
   it('maps the messages that belong to a field', () => {
-    expect(fieldOfBackendMessage('Pet name cannot be null or empty')).toBe('name')
-    expect(fieldOfBackendMessage('Admission date cannot be a future date')).toBe('admissionDate')
+    expect(fieldOfBackendMessage('El nombre de la mascota no puede ser nulo ni estar vacío')).toBe('name')
+    expect(fieldOfBackendMessage('La fecha de ingreso no puede ser una fecha futura')).toBe('admissionDate')
     expect(
       fieldOfBackendMessage(
-        'A pet must be registered with at least one medical event describing its arrival at the shelter',
+        'La mascota debe registrarse con al menos un evento de llegada que describa su ingreso al refugio',
       ),
     ).toBe('events')
   })
 
   it('returns null for the messages that do not belong to a field', () => {
-    expect(fieldOfBackendMessage('Pet must be associated with an existing shelter')).toBeNull()
-    expect(fieldOfBackendMessage('The shelter with the given id was not found')).toBeNull()
+    expect(fieldOfBackendMessage('La mascota debe estar asociada a un refugio existente')).toBeNull()
+    expect(fieldOfBackendMessage('No se encontró el refugio con el id indicado')).toBeNull()
   })
 })
 

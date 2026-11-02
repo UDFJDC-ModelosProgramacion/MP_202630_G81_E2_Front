@@ -109,20 +109,20 @@ export function buildPetPayload(values, events, shelterId) {
 }
 
 const FIELD_BY_BACKEND_MESSAGE = {
-  'Pet name cannot be null or empty': 'name',
-  'Species cannot be null or empty': 'species',
-  'Breed cannot be null or empty': 'breed',
-  'Age cannot be null': 'age',
-  'Sex cannot be null or empty': 'sex',
-  'Size cannot be null or empty': 'size',
-  'Health status cannot be null or empty': 'healthStatus',
-  'Admission date cannot be null': 'admissionDate',
-  'Admission date cannot be a future date': 'admissionDate',
-  'Compatibility with children cannot be null': 'compatibilityChildren',
-  'Compatibility with other pets cannot be null': 'compatibilityOtherPets',
-  'Activity level cannot be null or empty': 'activityLevel',
-  'Required space cannot be null or empty': 'requiredSpace',
-  'A pet must be registered with at least one medical event describing its arrival at the shelter':
+  'El nombre de la mascota no puede ser nulo ni estar vacío': 'name',
+  'La especie no puede ser nula ni estar vacía': 'species',
+  'La raza no puede ser nula ni estar vacía': 'breed',
+  'La edad no puede ser nula': 'age',
+  'El sexo no puede ser nulo ni estar vacío': 'sex',
+  'El tamaño no puede ser nulo ni estar vacío': 'size',
+  'El estado de salud no puede ser nulo ni estar vacío': 'healthStatus',
+  'La fecha de ingreso no puede ser nula': 'admissionDate',
+  'La fecha de ingreso no puede ser una fecha futura': 'admissionDate',
+  'La compatibilidad con niños no puede ser nula': 'compatibilityChildren',
+  'La compatibilidad con otras mascotas no puede ser nula': 'compatibilityOtherPets',
+  'El nivel de actividad no puede ser nulo ni estar vacío': 'activityLevel',
+  'El espacio requerido no puede ser nulo ni estar vacío': 'requiredSpace',
+  'La mascota debe registrarse con al menos un evento de llegada que describa su ingreso al refugio':
     'events',
 }
 
