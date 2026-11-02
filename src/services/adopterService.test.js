@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createAdopter } from './adopterService'
+import { createAdopter, getAdopters } from './adopterService'
 
 const createdResponse = (body) => ({
   ok: true,
@@ -44,5 +44,29 @@ describe('createAdopter', () => {
     await expect(createAdopter({ nationalId: '1020304050' })).rejects.toThrow(
       'An adopter with the same national id already exists',
     )
+  })
+})
+
+describe('getAdopters', () => {
+  it('requests /api/adopters without query params when filters are blank', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(createdResponse([]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const adopters = await getAdopters({ nationalId: '  ', housingType: '', occupation: '' })
+
+    expect(adopters).toEqual([])
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adopters')
+    expect(options.method).toBeUndefined()
+  })
+
+  it('sends only the filters the backend accepts', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(createdResponse([]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await getAdopters({ nationalId: '1001', housingType: 'Casa', occupation: '' })
+
+    const [url] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adopters?nationalId=1001&housingType=Casa')
   })
 })
