@@ -43,3 +43,29 @@
   padding: 0;
   list-style: none;
 }
+
+.nextCheck {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--color-primary);
+  border-left: 6px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-soft);
+}
+
+.nextCheckOverdue {
+  border-color: var(--color-error);
+  background: var(--color-surface-muted);
+}
+
+.nextCheckTitle {
+  margin: 0;
+  font-weight: 600;
+}
+
+.nextCheckOverdue .nextCheckTitle {
+  color: var(--color-error);
+}
+
+.nextCheckObservation {
+  margin: 0.35rem 0 0;
+}
