@@ -4,6 +4,7 @@ import {
   isFutureDay,
   isPastDay,
   sortByDateDesc,
+  statusOfDay,
   toEndOfDay,
   todayISO,
 } from './followUpDates'
@@ -47,6 +48,16 @@ describe('toEndOfDay', () => {
     expect(toEndOfDay('2026-11-01')).toBe('2026-11-01T23:59:59')
     expect(toEndOfDay('2026-11-01T08:00:00')).toBe('2026-11-01T23:59:59')
     expect(toEndOfDay('')).toBe('')
+  })
+})
+
+describe('statusOfDay', () => {
+  it('classifies a day as past, today or future', () => {
+    const today = '2026-11-01'
+    expect(statusOfDay('2026-10-31', today)).toBe('past')
+    expect(statusOfDay('2026-11-01T05:00:00', today)).toBe('today')
+    expect(statusOfDay('2026-11-02', today)).toBe('future')
+    expect(statusOfDay('', today)).toBe('')
   })
 })
 

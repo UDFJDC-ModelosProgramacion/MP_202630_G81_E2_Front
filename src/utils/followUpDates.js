@@ -24,6 +24,14 @@ export function isFutureDay(value, today = todayISO()) {
   return day !== '' && day > today
 }
 
+// Compares a follow-up day with today: 'past' (vencido), 'future' (próximo) or 'today'.
+export function statusOfDay(value, today = todayISO()) {
+  if (dayOf(value) === '') return ''
+  if (isPastDay(value, today)) return 'past'
+  if (isFutureDay(value, today)) return 'future'
+  return 'today'
+}
+
 // The backend rejects dates earlier than "now", including today's midnight, so the
 // chosen calendar day is sent at the end of the day (stored as DATE, so only the day
 // is kept).
