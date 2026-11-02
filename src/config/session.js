@@ -10,7 +10,7 @@ export function getSession() {
   return {
     userId: Number(import.meta.env.VITE_USER_ID) || 1,
     name: 'AdminUser',
-    role: import.meta.env.VITE_ROLE || ROLES.SHELTER_ADMIN,
+    role: ROLES.SHELTER_ADMIN,
     shelterId: Number(import.meta.env.VITE_SHELTER_ID) || 1,
   }
 }
