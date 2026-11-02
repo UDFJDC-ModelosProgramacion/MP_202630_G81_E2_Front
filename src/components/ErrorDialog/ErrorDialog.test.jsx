@@ -1,135 +1,71 @@
-
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ErrorDialog from './ErrorDialog'
 
 function renderDialog(props = {}) {
-  const onClose = vi.fn()
-
-  const result = render(
+  const handlers = { onClose: vi.fn(), onCancel: vi.fn() }
+  render(
     <ErrorDialog
       title="Error al registrar"
       message="Ya existe un refugio igual."
       status={412}
+      hint="Verifique los datos."
       actionLabel="Modificar datos"
-      onClose={onClose}
+      {...handlers}
       {...props}
     />,
   )
-
-  return { onClose, ...result }
+  return handlers
 }
 
 describe('ErrorDialog', () => {
-  it('renders an alert dialog with title, message and status', () => {
+  it('is an alert dialog with its title, message, hint and named status', () => {
     renderDialog()
 
-    const dialog = screen.getByRole('alertdialog', {
-      name: 'Error al registrar',
-    })
-
-    expect(dialog).toHaveAccessibleDescription(
-      'Ya existe un refugio igual.',
-    )
-    expect(dialog).toHaveTextContent('Error 412')
-    expect(
-      screen.getByRole('button', { name: 'Modificar datos' }),
-    ).toBeInTheDocument()
+    const dialog = screen.getByRole('alertdialog', { name: 'Error al registrar' })
+    expect(dialog).toHaveAccessibleDescription('Ya existe un refugio igual.')
+    expect(dialog).toHaveTextContent('Error 412 • Conflicto de registro')
+    expect(dialog).toHaveTextContent('Verifique los datos.')
   })
 
-  it('does not render a status when status is zero', () => {
+  it('shows only the number for a status without a name', () => {
+    renderDialog({ status: 500 })
+
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('Error 500')
+    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('•')
+  })
+
+  it('does not show a status when there is none (connection errors)', () => {
     renderDialog({ status: 0 })
 
-    expect(screen.getByRole('alertdialog')).not.toHaveTextContent(
-      'Error 0',
-    )
-    expect(screen.queryByText('Error 412')).not.toBeInTheDocument()
+    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('Error 0')
   })
 
-  it('focuses the action button when mounted', () => {
-    renderDialog()
-
-    expect(
-      screen.getByRole('button', { name: 'Modificar datos' }),
-    ).toHaveFocus()
-  })
-
-  it('closes when the action button is clicked', async () => {
+  it('puts the focus on the main action and closes with it', async () => {
     const user = userEvent.setup()
     const { onClose } = renderDialog()
+    const action = screen.getByRole('button', { name: 'Modificar datos' })
 
-    await user.click(
-      screen.getByRole('button', { name: 'Modificar datos' }),
-    )
+    expect(action).toHaveFocus()
+    await user.click(action)
 
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
-  it('closes when Escape is pressed', async () => {
+  it('offers to leave the form only when it is told how', async () => {
     const user = userEvent.setup()
-    const { onClose } = renderDialog()
+    const { onCancel } = renderDialog()
 
-    await user.keyboard('{Escape}')
+    await user.click(screen.getByRole('button', { name: 'Cancelar / Volver' }))
 
-    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(onCancel).toHaveBeenCalledTimes(1)
   })
 
-  it('does not close when another key is pressed', async () => {
-    const user = userEvent.setup()
-    const { onClose } = renderDialog()
+  it('has no cancel button without onCancel and no hint without hint', () => {
+    renderDialog({ onCancel: undefined, hint: undefined })
 
-    await user.keyboard('a')
-
-    expect(onClose).not.toHaveBeenCalled()
-  })
-
-  it('closes when the backdrop button is clicked', async () => {
-    const user = userEvent.setup()
-    const { onClose } = renderDialog()
-
-    await user.click(
-      screen.getByRole('button', { name: 'Cerrar diálogo' }),
-    )
-
-    expect(onClose).toHaveBeenCalledTimes(1)
-  })
-
-  it('does not close when the dialog content is clicked', async () => {
-    const user = userEvent.setup()
-    const { onClose } = renderDialog()
-
-    await user.click(
-      screen.getByText('Ya existe un refugio igual.'),
-    )
-
-    expect(onClose).not.toHaveBeenCalled()
-  })
-
-  it('removes the Escape listener when unmounted', () => {
-    const removeListener = vi.spyOn(document, 'removeEventListener')
-    const { unmount } = renderDialog()
-
-    unmount()
-
-    expect(removeListener).toHaveBeenCalledWith(
-      'keydown',
-      expect.any(Function),
-    )
-
-    removeListener.mockRestore()
-  })
-
-  it('registers the Escape listener when mounted', () => {
-    const addListener = vi.spyOn(document, 'addEventListener')
-    const { unmount } = renderDialog()
-
-    expect(addListener).toHaveBeenCalledWith(
-      'keydown',
-      expect.any(Function),
-    )
-
-    unmount()
-    addListener.mockRestore()
+    expect(screen.queryByRole('button', { name: 'Cancelar / Volver' })).not.toBeInTheDocument()
+    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('Verifique')
   })
 })

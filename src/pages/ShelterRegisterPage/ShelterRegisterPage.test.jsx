@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import ShelterRegisterPage from './ShelterRegisterPage'
 import { ApiError } from '../../services/apiClient'
 import { getSession } from '../../config/session'
@@ -14,8 +14,7 @@ vi.mock('../../config/session', () => ({
 }))
 
 function ShelterDetailStub() {
-  const { state } = useLocation()
-  return <p>Detalle del refugio. {state?.notice}</p>
+  return <p>Detalle del refugio</p>
 }
 
 function renderPage() {
@@ -88,6 +87,22 @@ describe('ShelterRegisterPage', () => {
     expect(textbox('Dirección')).toHaveAccessibleDescription('Este campo es obligatorio.')
   })
 
+  it.each(['p', '123', '900-069-803'])('does not accept "%s" as a NIT', async (nit) => {
+    const user = userEvent.setup()
+    renderPage()
+    await fillForm(user)
+    await user.clear(textbox('NIT'))
+    await user.type(textbox('NIT'), nit)
+
+    await submit(user)
+
+    expect(createShelter).not.toHaveBeenCalled()
+    expect(textbox('NIT')).toHaveAccessibleDescription(
+      'Ingrese un NIT válido, por ejemplo 900.069.803-1.',
+    )
+    expect(textbox('NIT')).toHaveFocus()
+  })
+
   it('clears the error of a field as soon as it is corrected', async () => {
     const user = userEvent.setup()
     renderPage()
@@ -98,7 +113,7 @@ describe('ShelterRegisterPage', () => {
     expect(textbox('Nombre del refugio')).not.toHaveAccessibleDescription()
   })
 
-  it('creates the shelter with the logged user as responsible and opens its detail', async () => {
+  it('creates the shelter with the logged user as responsible', async () => {
     const user = userEvent.setup()
     createShelter.mockResolvedValue({ id: 5 })
     renderPage()
@@ -106,16 +121,57 @@ describe('ShelterRegisterPage', () => {
 
     await submit(user)
 
-    expect(await screen.findByText(/Detalle del refugio/)).toHaveTextContent(
-      'Refugio "Patitas Felices" creado con éxito.',
-    )
+    await screen.findByRole('dialog')
     expect(createShelter).toHaveBeenCalledWith({
       name: 'Patitas Felices',
       city: 'Bogotá',
-      nit: '900.069.803-1',
+      nit: '900069803-1',
       location: 'Carrera 15 # 85 - 32',
       users: [{ id: 7 }],
     })
+  })
+
+  it('confirms the registration with a summary of the shelter', async () => {
+    const user = userEvent.setup()
+    createShelter.mockResolvedValue({ id: 5 })
+    renderPage()
+    await fillForm(user)
+
+    await submit(user)
+
+    const dialog = await screen.findByRole('dialog', { name: '¡Refugio registrado con éxito!' })
+    expect(dialog).toHaveTextContent('El refugio "Patitas Felices" ha sido creado satisfactoriamente.')
+    expect(dialog).toHaveTextContent('Código HTTP 201')
+    expect(dialog).toHaveTextContent('900069803-1')
+    expect(dialog).toHaveTextContent('Bogotá')
+    expect(dialog).toHaveTextContent('AdminUser')
+  })
+
+  it('opens the detail of the new shelter from the confirmation (HU03)', async () => {
+    const user = userEvent.setup()
+    createShelter.mockResolvedValue({ id: 5 })
+    renderPage()
+    await fillForm(user)
+    await submit(user)
+
+    await user.click(await screen.findByRole('button', { name: 'Ir al detalle del refugio' }))
+
+    expect(await screen.findByText('Detalle del refugio')).toBeInTheDocument()
+  })
+
+  it('lets the user register another shelter with an empty form', async () => {
+    const user = userEvent.setup()
+    createShelter.mockResolvedValue({ id: 5 })
+    renderPage()
+    await fillForm(user)
+    await submit(user)
+
+    await user.click(await screen.findByRole('button', { name: 'Registrar otro refugio' }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(textbox('Nombre del refugio')).toHaveValue('')
+    expect(textbox('NIT')).toHaveValue('')
+    expect(createShelter).toHaveBeenCalledTimes(1)
   })
 
   it('shows a loading state and blocks the button while the shelter is being created', async () => {
@@ -131,11 +187,11 @@ describe('ShelterRegisterPage', () => {
   })
 
   it.each([
-    ['Name cannot be null or empty', 'Nombre del refugio'],
-    ['Location cannot be null or empty', 'Dirección'],
-    ['Nit cannot be null or empty', 'NIT'],
-    ['The nit is already registered for another shelter', 'NIT'],
-  ])('shows "%s" next to the field "%s"', async (message, label) => {
+    ['El nombre no puede ser nulo ni estar vacío', 'Nombre del refugio'],
+    ['La dirección no puede ser nula ni estar vacía', 'Dirección'],
+    ['El NIT no puede ser nulo ni estar vacío', 'NIT'],
+    ['El NIT ya está registrado para otro refugio', 'NIT'],
+  ])('shows "%s" in the dialog and next to the field "%s"', async (message, label) => {
     const user = userEvent.setup()
     createShelter.mockRejectedValue(backendError(message))
     renderPage()
@@ -143,31 +199,32 @@ describe('ShelterRegisterPage', () => {
 
     await submit(user)
 
-    expect(await screen.findByRole('textbox', { name: label })).toHaveAccessibleDescription(
-      message,
-    )
-    expect(screen.getByRole('textbox', { name: label })).toHaveFocus()
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(message)
+    expect(textbox(label)).toHaveAccessibleDescription(message)
     expect(textbox('Nombre del refugio')).toHaveValue('Patitas Felices')
+
+    await user.click(screen.getByRole('button', { name: 'Modificar datos' }))
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    expect(textbox(label)).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Registrar' })).toBeEnabled()
   })
 
   it('shows the missing city next to the city field', async () => {
     const user = userEvent.setup()
-    createShelter.mockRejectedValue(backendError('City cannot be null or empty'))
+    createShelter.mockRejectedValue(backendError('La ciudad no puede ser nula ni estar vacía'))
     renderPage()
     await fillForm(user)
 
     await submit(user)
 
-    expect(await screen.findByRole('combobox', { name: 'Ciudad' })).toHaveAccessibleDescription(
-      'City cannot be null or empty',
-    )
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent('La ciudad no puede ser nula ni estar vacía')
+    expect(city()).toHaveAccessibleDescription('La ciudad no puede ser nula ni estar vacía')
   })
 
   it('shows a shelter with the same name, city and location in the error dialog', async () => {
     const user = userEvent.setup()
-    const message = 'A shelter already exists with the same name, city and location'
+    const message = 'Ya existe un refugio con el mismo nombre, ciudad y dirección'
     createShelter.mockRejectedValue(backendError(message))
     renderPage()
     await fillForm(user)
@@ -176,13 +233,28 @@ describe('ShelterRegisterPage', () => {
 
     const dialog = await screen.findByRole('alertdialog', { name: 'Error al registrar el refugio' })
     expect(dialog).toHaveTextContent(message)
-    expect(dialog).toHaveTextContent('Error 412')
+    expect(dialog).toHaveTextContent('Error 412 • Conflicto de registro')
     expect(textbox('Nombre del refugio')).toHaveValue('Patitas Felices')
+    expect(textbox('Nombre del refugio')).not.toHaveAccessibleDescription()
+  })
+
+  it('lets the user leave from the error dialog', async () => {
+    const user = userEvent.setup()
+    createShelter.mockRejectedValue(
+      backendError('Ya existe un refugio con el mismo nombre, ciudad y dirección'),
+    )
+    renderPage()
+    await fillForm(user)
+    await submit(user)
+
+    await user.click(await screen.findByRole('button', { name: 'Cancelar / Volver' }))
+
+    expect(await screen.findByText('Inicio')).toBeInTheDocument()
   })
 
   it('lets the user close the dialog and fix the data', async () => {
     const user = userEvent.setup()
-    createShelter.mockRejectedValue(backendError('A shelter already exists with the same name, city and location'))
+    createShelter.mockRejectedValue(backendError('Ya existe un refugio con el mismo nombre, ciudad y dirección'))
     renderPage()
     await fillForm(user)
     await submit(user)

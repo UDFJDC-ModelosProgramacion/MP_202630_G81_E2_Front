@@ -33,7 +33,7 @@ describe('createPet', () => {
         status: 412,
         json: () =>
           Promise.resolve({
-            apierror: { status: 'PRECONDITION_FAILED', message: 'Pet name cannot be null or empty' },
+            apierror: { status: 'PRECONDITION_FAILED', message: 'El nombre de la mascota no puede ser nulo ni estar vacío' },
           }),
       }),
     )
@@ -41,7 +41,7 @@ describe('createPet', () => {
     const error = await createPet({}).catch((e) => e)
 
     expect(error).toBeInstanceOf(ApiError)
-    expect(error.message).toBe('Pet name cannot be null or empty')
+    expect(error.message).toBe('El nombre de la mascota no puede ser nulo ni estar vacío')
     expect(error.status).toBe(412)
   })
 })

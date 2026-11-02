@@ -1,11 +1,14 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import ErrorDialog from '../../components/ErrorDialog/ErrorDialog'
+import FormActions from '../../components/FormActions/FormActions'
 import PhotoField from '../../components/PhotoField/PhotoField'
 import ScreenState from '../../components/ScreenState/ScreenState'
+import SuccessDialog from '../../components/SuccessDialog/SuccessDialog'
 import { getSession, ROLES } from '../../config/session'
 import { addPetPhoto, createPet } from '../../services/petService'
 import { todayISO } from '../../utils/dates'
-import { buildPhotoPayload, trySavePhoto, withPhotoWarning } from '../../utils/photoForm'
+import { buildPhotoPayload, photoWarning, trySavePhoto } from '../../utils/photoForm'
 import ArrivalEvents from './ArrivalEvents'
 import PetFields from './PetFields'
 import {
@@ -18,9 +21,11 @@ import {
 } from './petForm'
 import styles from './PetRegisterPage.module.css'
 
-const SUCCESS_NOTICE = 'Mascota registrada con éxito.'
 const PHOTO_DESCRIPTION = 'Foto de perfil'
+const ERROR_HINT =
+  'Verifique los datos de la mascota antes de continuar o comuníquese con la administración si considera que se trata de un error.'
 
+// Fields whose error must disappear together with the one that was edited.
 const RELATED_FIELDS = { photoUrl: ['photoType'] }
 
 const withoutKeys = (object, keys) =>
@@ -34,7 +39,8 @@ function PetRegisterForm({ shelterId }) {
   const [values, setValues] = useState(EMPTY_PET)
   const [events, setEvents] = useState([{ ...EMPTY_EVENT, uid: 0 }])
   const [errors, setErrors] = useState({})
-  const [alertMessage, setAlertMessage] = useState('')
+  const [errorDialog, setErrorDialog] = useState(null)
+  const [created, setCreated] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const today = todayISO()
 
@@ -60,16 +66,30 @@ function PetRegisterForm({ shelterId }) {
     setErrors({})
   }
 
-  function showBackendError(message) {
-    const field = fieldOfBackendMessage(message)
-    setErrors(field ? { [field]: message } : {})
-    setAlertMessage(field ? '' : message)
+  // A backend message is always shown in the dialog; when it belongs to a field it is also
+  // marked next to it, and the focus goes there once the dialog is closed.
+  function showBackendError(error) {
+    const field = fieldOfBackendMessage(error.message)
+    setErrors(field ? { [field]: error.message } : {})
+    setErrorDialog({ message: error.message, status: error.status, field })
+  }
+
+  function closeErrorDialog() {
+    const { field } = errorDialog
+    setErrorDialog(null)
+    if (field) document.getElementById(controlId(field))?.focus()
+  }
+
+  function registerAnother() {
+    setValues(EMPTY_PET)
+    setEvents([{ ...EMPTY_EVENT, uid: nextEventUid.current++ }])
+    setErrors({})
+    setCreated(null)
   }
 
   async function handleSubmit(event) {
     event.preventDefault()
     const found = validatePet(values, events, today)
-    setAlertMessage('')
     setErrors(found)
     const [firstInvalid] = Object.keys(found)
     if (firstInvalid) {
@@ -84,13 +104,18 @@ function PetRegisterForm({ shelterId }) {
         (photo) => addPetPhoto(pet.id, photo),
         buildPhotoPayload(values, PHOTO_DESCRIPTION),
       )
-      void navigate(`/pets/${pet.id}`, {
-        state: { notice: withPhotoWarning(SUCCESS_NOTICE, photoError) },
+      setCreated({
+        id: pet.id,
+        name: values.name.trim(),
+        species: values.species,
+        breed: values.breed.trim(),
+        admissionDate: values.admissionDate,
+        warning: photoWarning(photoError),
       })
     } catch (error) {
-      showBackendError(error.message)
-      setSubmitting(false)
+      showBackendError(error)
     }
+    setSubmitting(false)
   }
 
   return (
@@ -106,7 +131,6 @@ function PetRegisterForm({ shelterId }) {
         onSubmit={handleSubmit}
         aria-label="Registro de mascota"
       >
-        {alertMessage && <ScreenState state="error" message={alertMessage} />}
         <PhotoField values={values} errors={errors} onChange={handleChange} />
         <PetFields values={values} errors={errors} today={today} onChange={handleChange} />
         <ArrivalEvents
@@ -117,18 +141,41 @@ function PetRegisterForm({ shelterId }) {
           onRemove={removeEvent}
         />
         {submitting && <ScreenState state="loading" message="Registrando mascota..." />}
-        <div className={styles.footer}>
-          <p className={styles.hint}>*Campos obligatorios</p>
-          <div className={styles.actions}>
-            <button type="button" className={styles.cancel} onClick={() => navigate('/pets')}>
-              Cancelar
-            </button>
-            <button type="submit" className={styles.submit} disabled={submitting}>
-              Registrar
-            </button>
-          </div>
-        </div>
+        <FormActions
+          submitLabel="Registrar"
+          submitting={submitting}
+          onCancel={() => navigate('/pets')}
+        />
       </form>
+
+      {errorDialog && (
+        <ErrorDialog
+          title="Error al registrar la mascota"
+          message={errorDialog.message}
+          status={errorDialog.status}
+          hint={ERROR_HINT}
+          actionLabel="Modificar datos"
+          onClose={closeErrorDialog}
+          onCancel={() => navigate('/pets')}
+        />
+      )}
+
+      {created && (
+        <SuccessDialog
+          title="¡Mascota registrada con éxito!"
+          message={`"${created.name}" ha sido registrada satisfactoriamente en su refugio.`}
+          details={[
+            { label: 'Especie', value: created.species },
+            { label: 'Raza', value: created.breed },
+            { label: 'Fecha de ingreso', value: created.admissionDate },
+          ]}
+          warning={created.warning}
+          actionLabel="Ir al perfil de la mascota"
+          closeLabel="Registrar otra mascota"
+          onAction={() => navigate(`/pets/${created.id}`)}
+          onClose={registerAnother}
+        />
+      )}
     </section>
   )
 }

@@ -7,9 +7,9 @@ import {
   PHOTO_FORMAT_MESSAGE,
   PHOTO_URL_LENGTH_MESSAGE,
   PHOTO_URL_MESSAGE,
+  photoWarning,
   trySavePhoto,
   validatePhoto,
-  withPhotoWarning,
 } from './photoForm'
 
 const URL_JPG = 'https://fotos.example.com/luna.jpg'
@@ -115,16 +115,14 @@ describe('trySavePhoto', () => {
   })
 })
 
-describe('withPhotoWarning', () => {
-  it('keeps the notice when the photo was saved or there was none', () => {
-    expect(withPhotoWarning('Mascota registrada con éxito.', null)).toBe(
-      'Mascota registrada con éxito.',
-    )
+describe('photoWarning', () => {
+  it('has nothing to warn about when the photo was saved or there was none', () => {
+    expect(photoWarning(null)).toBeNull()
   })
 
-  it('adds the photo failure to the notice', () => {
-    expect(withPhotoWarning('Refugio "Patitas" creado con éxito.', 'Photo not found')).toBe(
-      'Refugio "Patitas" creado con éxito, pero la foto no se pudo guardar: Photo not found',
+  it('explains that the pet exists but the photo failed', () => {
+    expect(photoWarning('Foto no encontrada')).toBe(
+      'La mascota se registró, pero la foto no se pudo guardar: Foto no encontrada. Podrá agregarla después.',
     )
   })
 })
