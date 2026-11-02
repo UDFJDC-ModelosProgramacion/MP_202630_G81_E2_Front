@@ -7,6 +7,7 @@ import {
   buildUpdatePayload,
   fieldOfFollowUpMessage,
   validateFollowUp,
+  validateObservation,
 } from './followUpForm'
 
 describe('validateFollowUp', () => {
@@ -34,6 +35,15 @@ describe('validateFollowUp', () => {
 
   it('treats a blank observation as missing', () => {
     expect(validateFollowUp({ date: '2026-11-02', observation: '   ' }, '2026-11-01')).toEqual({
+      observation: REQUIRED_MESSAGE,
+    })
+  })
+})
+
+describe('validateObservation', () => {
+  it('only requires the observation on edit', () => {
+    expect(validateObservation({ date: '2020-01-01', observation: 'Actualizada' })).toEqual({})
+    expect(validateObservation({ date: '2020-01-01', observation: '' })).toEqual({
       observation: REQUIRED_MESSAGE,
     })
   })

@@ -100,7 +100,20 @@ export default function FollowUpsPage() {
           {status === 'ready' && followUps.length > 0 && (
             <ul className={styles.list} aria-label="Lista de seguimientos">
               {followUps.map((followUp) => (
-                <FollowUpCard key={followUp.id} followUp={followUp} />
+                <FollowUpCard
+                  key={followUp.id}
+                  followUp={followUp}
+                  actions={
+                    canRegister ? (
+                      <Link
+                        className={styles.edit}
+                        to={`/adoptions/${adoptionId}/followUps/${followUp.id}/edit`}
+                      >
+                        Editar
+                      </Link>
+                    ) : null
+                  }
+                />
               ))}
             </ul>
           )}
