@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createAdopter, getAdopter, getAdopters } from './adopterService'
+import { createAdopter, getAdopter, getAdopters, updateAdopter } from './adopterService'
 
 const createdResponse = (body) => ({
   ok: true,
@@ -82,5 +82,33 @@ describe('getAdopter', () => {
     const [url, options] = fetchMock.mock.calls[0]
     expect(url).toBe('/api/adopters/7')
     expect(options.method).toBeUndefined()
+  })
+})
+
+describe('updateAdopter', () => {
+  it('sends a PUT with only the updatable fields', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(createdResponse({ id: 7, occupation: 'Arquitecta' }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const updated = await updateAdopter(7, { occupation: 'Arquitecta' })
+
+    expect(updated).toEqual({ id: 7, occupation: 'Arquitecta' })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adopters/7')
+    expect(options.method).toBe('PUT')
+    expect(JSON.parse(options.body)).toEqual({ occupation: 'Arquitecta' })
+  })
+
+  it('fails with the backend message when the update is rejected', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 412,
+        json: () => Promise.resolve({ apierror: { message: 'Adopter not found' } }),
+      }),
+    )
+
+    await expect(updateAdopter(404, {})).rejects.toThrow('Adopter not found')
   })
 })

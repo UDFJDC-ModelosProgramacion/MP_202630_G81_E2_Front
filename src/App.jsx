@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout/Layout'
 import AdopterDetailPage from './pages/AdopterDetailPage/AdopterDetailPage'
+import AdopterEditPage from './pages/AdopterEditPage/AdopterEditPage'
 import AdopterRegisterPage from './pages/AdopterRegisterPage/AdopterRegisterPage'
 import AdoptersPage from './pages/AdoptersPage/AdoptersPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/adopters/new" element={<AdopterRegisterPage />} />
         <Route path="/adopters" element={<AdoptersPage />} />
         <Route path="/adopters/:adopterId" element={<AdopterDetailPage />} />
+        <Route path="/adopters/:adopterId/edit" element={<AdopterEditPage />} />
         <Route path="/notifications" element={<Pending title="Notificaciones" />} />
         <Route path="/veterinarians" element={<VeterinariansPage />} />
         <Route path="/veterinarians/:veterinarianId" element={<VeterinarianProfilePage />} />

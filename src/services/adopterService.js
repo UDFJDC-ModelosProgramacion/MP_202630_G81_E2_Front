@@ -20,3 +20,9 @@ export function getAdopters({ nationalId = '', housingType = '', occupation = ''
 export function getAdopter(id) {
   return api.get(`/adopters/${id}`)
 }
+
+// Updates the editable fields of an adopter (address, occupation, earnings,
+// housing type, allergies and household data). Identity data is kept intact.
+export function updateAdopter(id, adopter) {
+  return api.put(`/adopters/${id}`, adopter)
+}
