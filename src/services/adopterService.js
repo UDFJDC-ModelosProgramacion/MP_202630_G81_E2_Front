@@ -4,3 +4,14 @@ import { api } from './apiClient'
 export function createAdopter(adopter) {
   return api.post('/adopters', adopter)
 }
+
+// Lists adopters. The backend only accepts the filters nationalId, housingType and
+// occupation; sending all of them blank returns 412, so blank filters are omitted.
+export function getAdopters({ nationalId = '', housingType = '', occupation = '' } = {}) {
+  const params = new URLSearchParams()
+  if (nationalId.trim()) params.set('nationalId', nationalId.trim())
+  if (housingType.trim()) params.set('housingType', housingType.trim())
+  if (occupation.trim()) params.set('occupation', occupation.trim())
+  const query = params.toString()
+  return api.get(query ? `/adopters?${query}` : '/adopters')
+}
