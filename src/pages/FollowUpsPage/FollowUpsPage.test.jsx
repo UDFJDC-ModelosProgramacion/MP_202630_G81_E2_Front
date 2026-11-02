@@ -61,6 +61,18 @@ describe('FollowUpsPage', () => {
     )
   })
 
+  it('offers the edit action on each card to the veterinarian', async () => {
+    vi.mocked(getFollowUps).mockResolvedValue([
+      { id: 2, date: FUTURE, observation: 'Seguimiento de control', veterinarian: null, adoption: { id: 1 } },
+    ])
+    renderPage()
+
+    expect(await screen.findByRole('link', { name: 'Editar' })).toHaveAttribute(
+      'href',
+      '/adoptions/1/followUps/2/edit',
+    )
+  })
+
   it('shows the empty state when the adoption has no follow-ups', async () => {
     vi.mocked(getFollowUps).mockResolvedValue([])
     renderPage()
@@ -86,6 +98,7 @@ describe('FollowUpsPage', () => {
 
     expect(await screen.findByText('Seguimiento de control')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Registrar seguimiento' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Editar' })).toBeNull()
   })
 
   it('shows the adopter the nearest pending check-up highlighted, read-only', async () => {

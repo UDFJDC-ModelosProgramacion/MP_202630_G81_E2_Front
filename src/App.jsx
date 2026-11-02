@@ -5,6 +5,7 @@ import AdopterEditPage from './pages/AdopterEditPage/AdopterEditPage'
 import AdopterRegisterPage from './pages/AdopterRegisterPage/AdopterRegisterPage'
 import AdoptersPage from './pages/AdoptersPage/AdoptersPage'
 import FollowUpRegisterPage from './pages/FollowUpRegisterPage/FollowUpRegisterPage'
+import FollowUpEditPage from './pages/FollowUpEditPage/FollowUpEditPage'
 import FollowUpsIndexPage from './pages/FollowUpsIndexPage/FollowUpsIndexPage'
 import FollowUpsPage from './pages/FollowUpsPage/FollowUpsPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
@@ -26,6 +27,10 @@ export default function App() {
         <Route path="/adopters/:adopterId" element={<AdopterDetailPage />} />
         <Route path="/adopters/:adopterId/edit" element={<AdopterEditPage />} />
         <Route path="/adoptions/:adoptionId/followUps/new" element={<FollowUpRegisterPage />} />
+        <Route
+          path="/adoptions/:adoptionId/followUps/:followUpId/edit"
+          element={<FollowUpEditPage />}
+        />
         <Route path="/adoptions/:adoptionId/followUps" element={<FollowUpsPage />} />
         <Route path="/followUps" element={<FollowUpsIndexPage />} />
         <Route path="/notifications" element={<Pending title="Notificaciones" />} />

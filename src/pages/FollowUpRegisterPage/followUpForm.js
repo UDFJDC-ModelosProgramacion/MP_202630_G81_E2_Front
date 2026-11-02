@@ -18,6 +18,12 @@ export function validateFollowUp(values, today = undefined) {
   return errors
 }
 
+// On edit only the observation can change: the date is disabled and the stored
+// date may already be in the past, so it must not be revalidated.
+export function validateObservation(values) {
+  return isBlank(values.observation) ? { observation: REQUIRED_MESSAGE } : {}
+}
+
 export function buildCreatePayload(values, { adoptionId, veterinarianId }) {
   return {
     date: toEndOfDay(values.date),
