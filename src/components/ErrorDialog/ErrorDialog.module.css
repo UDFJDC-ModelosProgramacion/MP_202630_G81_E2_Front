@@ -1,0 +1,22 @@
+.detail {
+  padding: 1rem;
+  border: 1px solid #fecdca;
+  border-radius: var(--radius-md);
+  background: #fef3f2;
+  text-align: left;
+}
+
+.message {
+  margin: 0;
+  color: #7a271a;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.hint {
+  margin: 0.5rem 0 0;
+  color: var(--color-error);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}

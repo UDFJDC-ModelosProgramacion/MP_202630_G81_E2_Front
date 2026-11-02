@@ -1,0 +1,127 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  padding: 4rem 1rem 1rem;
+  overflow-y: auto;
+  background: rgb(15 23 42 / 45%);
+  backdrop-filter: blur(4px);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 28rem;
+  margin: auto;
+  padding: 2.75rem 2rem 1.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1.5rem;
+  background: var(--color-surface);
+  box-shadow: 0 25px 50px -12px rgb(15 23 42 / 35%);
+  text-align: center;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin: -4.75rem auto 1rem;
+  border: 0.45rem solid var(--color-surface);
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 2.2rem;
+  font-weight: 800;
+  box-shadow: 0 10px 20px -6px rgb(15 23 42 / 30%);
+}
+
+.error .badge {
+  background: var(--color-error);
+}
+
+.success .badge {
+  background: var(--color-primary);
+}
+
+.pill {
+  display: inline-block;
+  margin: 0 0 0.6rem;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.error .pill {
+  background: #fee4e2;
+  color: var(--color-error);
+}
+
+.success .pill {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}
+
+.title {
+  margin: 0 0 0.9rem;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+}
+
+.primary,
+.secondary {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary {
+  color: #ffffff;
+}
+
+.error .primary {
+  background: #1f2933;
+}
+
+.error .primary:hover {
+  background: #0f1419;
+}
+
+.success .primary {
+  background: var(--color-primary);
+}
+
+.success .primary:hover {
+  background: var(--color-primary-dark);
+}
+
+.secondary {
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.secondary:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+
+.primary:focus-visible,
+.secondary:focus-visible {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
