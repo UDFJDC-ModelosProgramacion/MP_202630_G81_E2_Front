@@ -88,6 +88,52 @@ describe('FollowUpsPage', () => {
     expect(screen.queryByRole('link', { name: 'Registrar seguimiento' })).toBeNull()
   })
 
+  it('shows the adopter the nearest pending check-up highlighted, read-only', async () => {
+    vi.mocked(getSession).mockReturnValue({ role: 'ADOPTER', userId: 2 })
+    vi.mocked(getFollowUps).mockResolvedValue([
+      { id: 1, date: PAST, observation: 'Seguimiento cerrado', veterinarian: null, adoption: { id: 1 } },
+      { id: 2, date: '2030-03-01T00:00:00.000+00:00', observation: 'Control lejano', veterinarian: null, adoption: { id: 1 } },
+      { id: 3, date: FUTURE, observation: 'Control próximo', veterinarian: null, adoption: { id: 1 } },
+    ])
+    renderPage()
+
+    expect(await screen.findByText('Próximo control: 15 ene 2030')).toBeInTheDocument()
+    expect(screen.getAllByText('Control próximo')).toHaveLength(2)
+    expect(screen.queryByRole('link', { name: 'Registrar seguimiento' })).toBeNull()
+  })
+
+  it('marks the most recent follow-up as overdue when everything already passed', async () => {
+    vi.mocked(getSession).mockReturnValue({ role: 'ADOPTER', userId: 2 })
+    vi.mocked(getFollowUps).mockResolvedValue([
+      { id: 1, date: '2019-06-15T00:00:00.000+00:00', observation: 'El más antiguo', veterinarian: null, adoption: { id: 1 } },
+      { id: 2, date: PAST, observation: 'El más reciente', veterinarian: null, adoption: { id: 1 } },
+    ])
+    renderPage()
+
+    expect(await screen.findByText('Control vencido: 1 ene 2020')).toBeInTheDocument()
+    expect(screen.getAllByText('El más reciente')).toHaveLength(2)
+  })
+
+  it('uses the adopter wording for the empty state', async () => {
+    vi.mocked(getSession).mockReturnValue({ role: 'ADOPTER', userId: 2 })
+    vi.mocked(getFollowUps).mockResolvedValue([])
+    renderPage()
+
+    expect(
+      await screen.findByText('Tu mascota aún no tiene seguimientos registrados.'),
+    ).toBeInTheDocument()
+  })
+
+  it('does not highlight the next check-up for the veterinarian', async () => {
+    vi.mocked(getFollowUps).mockResolvedValue([
+      { id: 2, date: FUTURE, observation: 'Seguimiento de control', veterinarian: null, adoption: { id: 1 } },
+    ])
+    renderPage()
+
+    await screen.findByText('Seguimiento de control')
+    expect(screen.queryByRole('status')).toBeNull()
+  })
+
   it('blocks visitors', () => {
     vi.mocked(getSession).mockReturnValue({ role: 'VISITOR', userId: 1 })
     renderPage()
