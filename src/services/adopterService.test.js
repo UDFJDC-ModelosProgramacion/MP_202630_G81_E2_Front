@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createAdopter, getAdopters } from './adopterService'
+import { createAdopter, getAdopter, getAdopters } from './adopterService'
 
 const createdResponse = (body) => ({
   ok: true,
@@ -68,5 +68,19 @@ describe('getAdopters', () => {
 
     const [url] = fetchMock.mock.calls[0]
     expect(url).toBe('/api/adopters?nationalId=1001&housingType=Casa')
+  })
+})
+
+describe('getAdopter', () => {
+  it('requests the detail of one adopter', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(createdResponse({ id: 7 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const adopter = await getAdopter(7)
+
+    expect(adopter).toEqual({ id: 7 })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adopters/7')
+    expect(options.method).toBeUndefined()
   })
 })
