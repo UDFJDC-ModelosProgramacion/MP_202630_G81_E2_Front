@@ -5,9 +5,13 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import AdopterEditPage from './AdopterEditPage'
 import { ApiError } from '../../services/apiClient'
 import { getSession } from '../../config/adopterSession'
-import { getAdopter, updateAdopter } from '../../services/adopterService'
+import { deleteAdopter, getAdopter, updateAdopter } from '../../services/adopterService'
 
-vi.mock('../../services/adopterService', () => ({ getAdopter: vi.fn(), updateAdopter: vi.fn() }))
+vi.mock('../../services/adopterService', () => ({
+  deleteAdopter: vi.fn(),
+  getAdopter: vi.fn(),
+  updateAdopter: vi.fn(),
+}))
 vi.mock('../../config/adopterSession', () => ({
   ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
@@ -45,6 +49,7 @@ const submit = (user) => user.click(screen.getByRole('button', { name: 'Guardar 
 
 beforeEach(() => {
   vi.mocked(getSession).mockReturnValue({ role: 'ADOPTER', userId: 7 })
+  vi.mocked(deleteAdopter).mockReset()
   vi.mocked(getAdopter).mockReset()
   vi.mocked(updateAdopter).mockReset()
   vi.mocked(getAdopter).mockResolvedValue(adopter)
@@ -136,6 +141,47 @@ describe('AdopterEditPage', () => {
 
     expect(screen.getByText('Solo el adoptante puede editar su perfil.')).toBeInTheDocument()
     expect(getAdopter).not.toHaveBeenCalled()
+  })
+
+  it('asks for confirmation and deletes the account, then returns home', async () => {
+    const user = userEvent.setup()
+    vi.mocked(deleteAdopter).mockResolvedValue(null)
+    renderPage()
+    await screen.findByDisplayValue('Calle 10 #5-20')
+
+    await user.click(screen.getByRole('button', { name: 'Eliminar mi cuenta' }))
+    const confirm = screen.getByRole('alertdialog')
+    expect(confirm).toHaveTextContent('Ana Gómez')
+    expect(confirm).toHaveTextContent('Esta acción no se puede deshacer')
+
+    await user.click(within(confirm).getByRole('button', { name: 'Sí, eliminar mi cuenta' }))
+
+    expect(deleteAdopter).toHaveBeenCalledWith(7)
+    expect(await screen.findByText('Cuenta eliminada')).toBeInTheDocument()
+    expect(screen.getByText('Sesión cerrada')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Volver al inicio' }))
+    expect(screen.getByText('Inicio')).toBeInTheDocument()
+  })
+
+  it('explains why the account cannot be deleted', async () => {
+    const user = userEvent.setup()
+    vi.mocked(deleteAdopter).mockRejectedValue(
+      new ApiError(
+        'An adopter with approved or in-progress adoption requests cannot be deleted; deactivate it instead',
+        412,
+      ),
+    )
+    renderPage()
+    await screen.findByDisplayValue('Calle 10 #5-20')
+
+    await user.click(screen.getByRole('button', { name: 'Eliminar mi cuenta' }))
+    await user.click(screen.getByRole('button', { name: 'Sí, eliminar mi cuenta' }))
+
+    const dialog = await screen.findByRole('alertdialog')
+    expect(dialog).toHaveTextContent('cannot be deleted; deactivate it instead')
+    expect(dialog).toHaveTextContent('desactive su cuenta en lugar de eliminarla')
+    expect(control('Dirección')).toBeInTheDocument()
   })
 
   it('blocks editing another adopter profile', () => {

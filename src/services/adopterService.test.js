@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createAdopter, getAdopter, getAdopters, updateAdopter } from './adopterService'
+import { createAdopter, deleteAdopter, getAdopter, getAdopters, updateAdopter } from './adopterService'
 
 const createdResponse = (body) => ({
   ok: true,
@@ -110,5 +110,40 @@ describe('updateAdopter', () => {
     )
 
     await expect(updateAdopter(404, {})).rejects.toThrow('Adopter not found')
+  })
+})
+
+describe('deleteAdopter', () => {
+  it('sends a DELETE and returns null on 204', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await deleteAdopter(7)
+
+    expect(result).toBeNull()
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adopters/7')
+    expect(options.method).toBe('DELETE')
+  })
+
+  it('fails with the backend message when the adopter has active requests', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 412,
+        json: () =>
+          Promise.resolve({
+            apierror: {
+              message:
+                'An adopter with approved or in-progress adoption requests cannot be deleted; deactivate it instead',
+            },
+          }),
+      }),
+    )
+
+    await expect(deleteAdopter(7)).rejects.toThrow(
+      'An adopter with approved or in-progress adoption requests cannot be deleted; deactivate it instead',
+    )
   })
 })

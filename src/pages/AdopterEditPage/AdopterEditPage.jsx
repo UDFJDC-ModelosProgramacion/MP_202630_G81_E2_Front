@@ -2,9 +2,15 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import ErrorDialog from '../../components/ErrorDialog/ErrorDialog'
 import FormActions from '../../components/FormActions/FormActions'
+import ModalDialog, {
+  DialogActions,
+  DialogButton,
+  DialogPill,
+  DialogTitle,
+} from '../../components/ModalDialog/ModalDialog'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { getSession, ROLES } from '../../config/adopterSession'
-import { getAdopter, updateAdopter } from '../../services/adopterService'
+import { deleteAdopter, getAdopter, updateAdopter } from '../../services/adopterService'
 import { fieldOfBackendMessage } from '../AdopterRegisterPage/adopterForm'
 import AdopterEditFields from './AdopterEditFields'
 import { buildUpdatePayload, toFormValues, validateEditable } from './adopterEditForm'
@@ -25,6 +31,9 @@ function AdopterEditForm({ adopter }) {
   const [errorDialog, setErrorDialog] = useState(null)
   const [saved, setSaved] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleted, setDeleted] = useState(false)
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -32,16 +41,32 @@ function AdopterEditForm({ adopter }) {
     setErrors((current) => withoutKey(current, name))
   }
 
-  function showBackendError(error) {
+  function showBackendError(error, hint) {
     const field = fieldOfBackendMessage(error.message)
     setErrors(field ? { [field]: error.message } : {})
-    setErrorDialog({ message: error.message, status: error.status, field })
+    setErrorDialog({ message: error.message, status: error.status, field, hint })
   }
 
   function closeErrorDialog() {
     const { field } = errorDialog
     setErrorDialog(null)
     if (field) document.getElementById(field)?.focus()
+  }
+
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await deleteAdopter(adopter.id)
+      setConfirmingDelete(false)
+      setDeleted(true)
+    } catch (error) {
+      setConfirmingDelete(false)
+      showBackendError(
+        error,
+        'Si tiene solicitudes de adopción activas, desactive su cuenta en lugar de eliminarla.',
+      )
+    }
+    setDeleting(false)
   }
 
   async function handleSubmit(event) {
@@ -128,16 +153,72 @@ function AdopterEditForm({ adopter }) {
         />
       </form>
 
+      <section className={styles.danger} aria-label="Eliminar cuenta">
+        <h2>Eliminar mi cuenta</h2>
+        <p>Si elimina su cuenta, su información personal dejará de aparecer en la plataforma.</p>
+        <button
+          type="button"
+          className={styles.deleteButton}
+          onClick={() => setConfirmingDelete(true)}
+        >
+          Eliminar mi cuenta
+        </button>
+      </section>
+
       {errorDialog && (
         <ErrorDialog
           title="Error al actualizar el perfil"
           message={errorDialog.message}
           status={errorDialog.status}
-          hint={ERROR_HINT}
+          hint={errorDialog.hint ?? ERROR_HINT}
           actionLabel="Modificar datos"
           onClose={closeErrorDialog}
           onCancel={() => navigate('/')}
         />
+      )}
+
+      {confirmingDelete && (
+        <ModalDialog
+          tone="error"
+          role="alertdialog"
+          labelledBy="delete-confirm-title"
+          describedBy="delete-confirm-message"
+          onClose={() => setConfirmingDelete(false)}
+        >
+          <DialogPill>Acción irreversible</DialogPill>
+          <DialogTitle id="delete-confirm-title">Eliminar mi cuenta</DialogTitle>
+          <p id="delete-confirm-message">
+            ¿Seguro que desea eliminar la cuenta de {fullName(adopter)}? Esta acción no se puede
+            deshacer.
+          </p>
+          <DialogActions>
+            <DialogButton onClick={handleDelete} disabled={deleting}>
+              {deleting ? 'Eliminando...' : 'Sí, eliminar mi cuenta'}
+            </DialogButton>
+            <DialogButton variant="secondary" onClick={() => setConfirmingDelete(false)}>
+              Cancelar
+            </DialogButton>
+          </DialogActions>
+        </ModalDialog>
+      )}
+
+      {deleted && (
+        <ModalDialog
+          tone="success"
+          role="dialog"
+          labelledBy="delete-success-title"
+          describedBy="delete-success-message"
+          onClose={() => navigate('/')}
+        >
+          <DialogPill>Sesión cerrada</DialogPill>
+          <DialogTitle id="delete-success-title">Cuenta eliminada</DialogTitle>
+          <p id="delete-success-message">
+            Su cuenta y sus datos personales han sido eliminados.
+          </p>
+          <DialogActions>
+            <DialogButton onClick={() => navigate('/')}>Volver al inicio</DialogButton>
+          </DialogActions>
+        </ModalDialog>
       )}
     </>
   )
