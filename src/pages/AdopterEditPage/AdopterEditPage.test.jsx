@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import AdopterEditPage from './AdopterEditPage'
 import { ApiError } from '../../services/apiClient'
-import { getSession } from '../../config/adopterSession'
+import { getSession } from '../../config/roleSession'
 import { deleteAdopter, getAdopter, updateAdopter } from '../../services/adopterService'
 
 vi.mock('../../services/adopterService', () => ({
@@ -12,7 +12,7 @@ vi.mock('../../services/adopterService', () => ({
   getAdopter: vi.fn(),
   updateAdopter: vi.fn(),
 }))
-vi.mock('../../config/adopterSession', () => ({
+vi.mock('../../config/roleSession', () => ({
   ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
 }))

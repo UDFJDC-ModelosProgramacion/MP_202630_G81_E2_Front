@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
-import { getSession, ROLES } from '../../config/adopterSession'
+import { getSession, ROLES } from '../../config/roleSession'
 import { getAdopter } from '../../services/adopterService'
 import { formatDay } from '../../utils/dates'
 import styles from './AdopterDetailPage.module.css'

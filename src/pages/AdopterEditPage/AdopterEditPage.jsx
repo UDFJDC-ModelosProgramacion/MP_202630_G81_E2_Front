@@ -9,7 +9,7 @@ import ModalDialog, {
   DialogTitle,
 } from '../../components/ModalDialog/ModalDialog'
 import ScreenState from '../../components/ScreenState/ScreenState'
-import { getSession, ROLES } from '../../config/adopterSession'
+import { getSession, ROLES } from '../../config/roleSession'
 import { deleteAdopter, getAdopter, updateAdopter } from '../../services/adopterService'
 import { fieldOfBackendMessage } from '../AdopterRegisterPage/adopterForm'
 import AdopterEditFields from './AdopterEditFields'

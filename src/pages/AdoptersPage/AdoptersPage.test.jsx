@@ -3,11 +3,11 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import AdoptersPage from './AdoptersPage'
-import { getSession } from '../../config/adopterSession'
+import { getSession } from '../../config/roleSession'
 import { getAdopters } from '../../services/adopterService'
 
 vi.mock('../../services/adopterService', () => ({ getAdopters: vi.fn() }))
-vi.mock('../../config/adopterSession', () => ({
+vi.mock('../../config/roleSession', () => ({
   ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
 }))

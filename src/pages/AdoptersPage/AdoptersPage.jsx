@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
-import { getSession, ROLES } from '../../config/adopterSession'
+import { getSession, ROLES } from '../../config/roleSession'
 import { HOUSING_TYPES } from '../../constants/adopterOptions'
 import { getAdopters } from '../../services/adopterService'
 import styles from './AdoptersPage.module.css'
