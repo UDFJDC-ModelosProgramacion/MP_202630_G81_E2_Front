@@ -4,7 +4,7 @@ import ErrorDialog from '../../components/ErrorDialog/ErrorDialog'
 import FormActions from '../../components/FormActions/FormActions'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import SuccessDialog from '../../components/SuccessDialog/SuccessDialog'
-import { getSession, ROLES } from '../../config/session'
+import { getSession, ROLES } from '../../config/adopterSession'
 import { createAdopter } from '../../services/adopterService'
 import AdopterFields from './AdopterFields'
 import {
