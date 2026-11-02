@@ -40,6 +40,15 @@ describe('ModalDialog', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent(symbol)
   })
 
+  it('keeps the click-outside button out of the tab order, so Tab stays on the actions', async () => {
+    const user = userEvent.setup()
+    renderDialog()
+
+    expect(screen.getByRole('button', { name: 'Cerrar' })).toHaveAttribute('tabindex', '-1')
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Volver' })).toHaveFocus()
+  })
+
   it('closes with Escape and with a click outside, but not with a click inside', async () => {
     const user = userEvent.setup()
     const onClose = renderDialog()
@@ -53,7 +62,7 @@ describe('ModalDialog', () => {
     await user.keyboard('{Escape}')
     expect(onClose).toHaveBeenCalledTimes(1)
 
-    await user.click(screen.getByRole('dialog').parentElement)
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
     expect(onClose).toHaveBeenCalledTimes(2)
   })
 })

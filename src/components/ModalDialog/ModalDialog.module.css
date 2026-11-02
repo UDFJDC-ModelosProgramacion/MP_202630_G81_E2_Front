@@ -3,13 +3,26 @@
   inset: 0;
   z-index: 50;
   display: flex;
+  /* Room above the box: the round badge sticks out of it, so it must not touch the screen edge. */
   padding: 4rem 1rem 1rem;
   overflow-y: auto;
   background: rgb(15 23 42 / 45%);
   backdrop-filter: blur(4px);
 }
 
+/* No overflow here: it would cut the badge. Long content scrolls in the backdrop instead. */
+/* Click-outside target: a native button covering the screen, behind the box. */
+.backdropClose {
+  position: fixed;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
 .dialog {
+  position: relative;
   width: 100%;
   max-width: 28rem;
   margin: auto;
