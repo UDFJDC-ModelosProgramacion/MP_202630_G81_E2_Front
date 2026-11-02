@@ -7,6 +7,7 @@ import { getVeterinarians } from './services/veterinarianService'
 vi.mock('./services/veterinarianService', () => ({
   getVeterinarians: vi.fn(),
   getVeterinarian: vi.fn(),
+  createVeterinarian: vi.fn(),
 }))
 
 function renderAt(path) {
@@ -37,9 +38,29 @@ describe('App', () => {
     expect(await screen.findByText('Aún no hay veterinarios registrados.')).toBeInTheDocument()
   })
 
+  it('shows the pet registration form', () => {
+    renderAt('/pets/new')
+
+    expect(screen.getByRole('heading', { name: 'Registre su Mascota' })).toBeInTheDocument()
+  })
+
+  it('shows the shelter registration form', () => {
+    renderAt('/shelters/new')
+
+    expect(screen.getByRole('heading', { name: 'Registre su Refugio' })).toBeInTheDocument()
+  })
+
   it('keeps the pages of other stories as pending', () => {
     renderAt('/pets')
 
     expect(screen.getByRole('heading', { name: 'Mascotas (pendiente)' })).toBeInTheDocument()
   })
+
+  it('shows the registration form on /veterinarians/new', () => {
+    renderAt('/veterinarians/new')
+
+    expect(screen.getByRole('heading', { name: 'Registre un veterinario' })).toBeInTheDocument()
+  })
 })
+
+

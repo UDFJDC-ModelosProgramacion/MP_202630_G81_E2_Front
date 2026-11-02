@@ -10,3 +10,11 @@ export function formatDay(value) {
   const [, year, month, day] = match
   return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}`
 }
+
+// Today as 'YYYY-MM-DD' in the user's local time. Used as the upper limit of date
+// pickers ("up to today"); toISOString() would give the UTC day instead.
+export function todayISO(now = new Date()) {
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
+}

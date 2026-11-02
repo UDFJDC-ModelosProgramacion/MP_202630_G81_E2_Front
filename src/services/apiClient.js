@@ -1,5 +1,4 @@
-// Shared HTTP client. Requests go to "/api", which Vite forwards to the Spring Boot
-// backend (see vite.config.js). Set VITE_API_BASE_URL to point somewhere else.
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 const CONNECTION_ERROR = 'No se pudo conectar con el servidor. Inténtalo de nuevo.'
@@ -12,7 +11,7 @@ export class ApiError extends Error {
   }
 }
 
-// The backend answers errors as { apierror: { status, timestamp, message } } (CT1).
+
 async function readErrorMessage(response) {
   try {
     const body = await response.json()
@@ -41,4 +40,5 @@ async function request(path, options = {}) {
 
 export const api = {
   get: (path) => request(path),
+  post: (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) }),
 }

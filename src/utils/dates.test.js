@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDay } from './dates'
+import { formatDay, todayISO } from './dates'
 
 describe('formatDay', () => {
   it('formats a plain ISO date as a day', () => {
@@ -18,5 +18,15 @@ describe('formatDay', () => {
 
   it('returns the value untouched when it is not an ISO date', () => {
     expect(formatDay('mañana')).toBe('mañana')
+  })
+})
+
+describe('todayISO', () => {
+  it('formats the local day with zero padding', () => {
+    expect(todayISO(new Date(2026, 2, 5, 23, 59))).toBe('2026-03-05')
+  })
+
+  it('uses the current day by default', () => {
+    expect(todayISO()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 })
