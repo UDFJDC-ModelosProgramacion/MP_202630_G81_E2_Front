@@ -15,3 +15,8 @@ export function getAdopters({ nationalId = '', housingType = '', occupation = ''
   const query = params.toString()
   return api.get(query ? `/adopters?${query}` : '/adopters')
 }
+
+// Returns one adopter with its personal data and trial cohabitation history.
+export function getAdopter(id) {
+  return api.get(`/adopters/${id}`)
+}
