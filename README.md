@@ -1,4 +1,4 @@
-﻿# Pets ÔÇô Front-end
+﻿# Pet Adoption Front-end
 
 Web application for managing pet adoptions. This project was developed for the **Programming Models** course at Universidad Distrital Francisco Jos├® de Caldas, group **G81**, team **E2**.
 
@@ -221,4 +221,7 @@ npx vitest src/pages/ShelterRegisterPage   # HU01
 - **HU06:** `PetRegisterPage.test.jsx` (full screen), `petForm.test.js` (validation and request body), and `petService.test.js`.
 - **Shared:** `FormField.test.jsx`, `Navbar.test.jsx`, `ScreenState.test.jsx`, and `dates.test.js`.
 
-**Manual Tests:** The steps are described in each user story section.
+# Jenkis State
+Ultime actualization: 01/11/2026
+<img width="1842" height="878" alt="image" src="https://github.com/user-attachments/assets/37b3e231-1d82-43cc-8642-ec852abf66ed" />
+
