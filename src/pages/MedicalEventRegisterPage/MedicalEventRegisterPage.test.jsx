@@ -9,7 +9,7 @@ import { createMedicalEvent } from '../../services/medicalEventService'
 import { getPets } from '../../services/petService'
 import { getVeterinarians } from '../../services/veterinarianService'
 import { FUTURE_DATE_MESSAGE, PET_REQUIRED_MESSAGE } from './medicalEventForm'
-import { todayISO } from '../../utils/dates'
+import { dayStartISO, todayISO } from '../../utils/dates'
 
 vi.mock('../../services/medicalEventService', () => ({ createMedicalEvent: vi.fn() }))
 vi.mock('../../services/petService', () => ({ getPets: vi.fn() }))
@@ -129,7 +129,7 @@ describe('MedicalEventRegisterPage', () => {
 
     await waitFor(() =>
       expect(createMedicalEvent).toHaveBeenCalledWith({
-        date: '2020-01-01',
+        date: dayStartISO('2020-01-01'),
         type: 'Cirugia',
         description: 'Esterilización sin complicaciones',
         pet: { id: 1 },

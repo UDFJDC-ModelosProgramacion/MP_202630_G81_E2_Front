@@ -1,3 +1,5 @@
+import { dayStartISO } from '../../utils/dates'
+
 export const EMPTY_MEDICAL_EVENT = {
   date: '',
   type: '',
@@ -5,7 +7,6 @@ export const EMPTY_MEDICAL_EVENT = {
   petId: '',
   veterinarianId: '',
 }
-
 export const REQUIRED_MESSAGE = 'Este campo es obligatorio.'
 export const FUTURE_DATE_MESSAGE = 'La fecha del evento no puede ser futura.'
 export const PET_REQUIRED_MESSAGE = 'Selecciona la mascota del evento.'
@@ -35,7 +36,7 @@ export function validateMedicalEvent(values, today) {
 
 export function buildMedicalEventPayload(values) {
   return {
-    date: values.date,
+    date: dayStartISO(values.date),
     type: values.type,
     description: values.description.trim(),
     pet: { id: Number(values.petId) },
