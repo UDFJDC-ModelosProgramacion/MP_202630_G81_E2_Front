@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { dayStartISO } from '../../utils/dates'
 import {
   buildMedicalEventPayload,
   EMPTY_MEDICAL_EVENT,
@@ -54,7 +55,7 @@ describe('validateMedicalEvent', () => {
 describe('buildMedicalEventPayload', () => {
   it('sends the pet and the veterinarian as id references and trims the description', () => {
     expect(buildMedicalEventPayload(VALID_EVENT)).toEqual({
-      date: '2026-10-01',
+      date: dayStartISO('2026-10-01'),
       type: 'Cirugia',
       description: 'Esterilización sin complicaciones',
       pet: { id: 1 },
