@@ -58,6 +58,10 @@ describe('MedicalEventDetailPage', () => {
       'href',
       '/pets/7/medical-events',
     )
+    expect(screen.getByRole('link', { name: 'Editar evento' })).toHaveAttribute(
+      'href',
+      '/medical-events/4/edit',
+    )
   })
 
   it('shows a message when no veterinarian was assigned', async () => {
