@@ -114,6 +114,7 @@ Each screen lives in its own folder alongside its CSS Module and tests. Logic th
 | `/veterinarians/:veterinarianId` | Veterinarian profile (HU70) | Implemented |
 | `/pets/new` | Register a pet (HU06) | Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Implemented |
+| `/pets/:petId/medical-events` | Pet medical history (HU24) | Implemented |
 | `/pets` | Pet search (HU07) | Placeholder, pending |
 | `/pets/:petId` | Pet profile (HU08) | Placeholder, pending |
 | `/notifications` | Notifications | Placeholder, pending |
@@ -135,6 +136,7 @@ The back-end does not yet implement authentication. For now, the user and their 
 | **HU01** | Register a shelter | `/shelters/new` | Implemented |
 | **HU06** | Register a pet | `/pets/new` | Implemented |
 | **HU23** | Register a medical event | `/medical-events/new` | Implemented |
+| **HU24** | View the medical history of a pet | `/pets/:petId/medical-events` | Implemented |
 
 ### HU70 ÔÇô Veterinarian List with Filters
 
@@ -172,6 +174,23 @@ The form records a medical event (consultation, surgery, treatment, ...) in the 
 3. Enter a future date: the form should reject it.
 4. Register an event: a confirmation should appear, and **Ver la mascota** should navigate to `/pets/{id}`.
 5. Register the same event again: the duplicate message from the back-end should be displayed.
+
+### HU24 ÔÇô View the Medical History of a Pet
+
+**Route:** `/pets/:petId/medical-events` ┬À **Role:** Any user.
+
+The screen shows the pet's data (name, species, and breed) and the medical events registered for it, newest first. Each event displays its date, type, description, and veterinarian (or a message when no veterinarian was assigned).
+
+- **Back-end:** `GET /api/pets/{id}` and `GET /api/medicalEvents?petId=`.
+- **States:** loading, error with its cause (and a **Reintentar** button), and an empty history message.
+- **Shortcut:** the **Registrar evento médico** button opens `/medical-events/new` (HU23).
+
+**Manual Testing:**
+
+1. Start the back-end and register a pet with at least one medical event.
+2. Open `/pets/{id}/medical-events` and verify that the events are shown newest first.
+3. Open the history of a pet without events and verify the empty message.
+4. Stop the back-end and verify that the error and the retry button are displayed.
 
 ### HU06 ÔÇô Register a Pet
 
@@ -233,6 +252,7 @@ npm run test:coverage           # Run tests with coverage
 npx vitest src/pages/PetRegisterPage   # Run tests for a specific folder, e.g. HU06
 npx vitest src/pages/ShelterRegisterPage   # HU01
 npx vitest src/pages/MedicalEventRegisterPage   # HU23
+npx vitest src/pages/MedicalEventHistoryPage   # HU24
 ```
 
 **Automated Tests** (Vitest + React Testing Library) are located alongside their corresponding modules:
@@ -241,6 +261,7 @@ npx vitest src/pages/MedicalEventRegisterPage   # HU23
 - **HU01:** `ShelterRegisterPage.test.jsx` (full screen), `shelterForm.test.js` (validation and request body), and `shelterService.test.js`.
 - **HU06:** `PetRegisterPage.test.jsx` (full screen), `petForm.test.js` (validation and request body), and `petService.test.js`.
 - **HU23:** `MedicalEventRegisterPage.test.jsx` (full screen) and `medicalEventForm.test.js` (validation and request body).
+- **HU24:** `MedicalEventHistoryPage.test.jsx` (full screen).
 - **Shared:** `FormField.test.jsx`, `Navbar.test.jsx`, `ScreenState.test.jsx`, and `dates.test.js`.
 
 **Manual Tests:** The steps are described in each user story section.
