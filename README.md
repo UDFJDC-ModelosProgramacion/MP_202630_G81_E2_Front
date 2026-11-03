@@ -113,6 +113,7 @@ Each screen lives in its own folder alongside its CSS Module and tests. Logic th
 | `/veterinarians` | Veterinarian list with filters (HU70) | Implemented |
 | `/veterinarians/:veterinarianId` | Veterinarian profile (HU70) | Implemented |
 | `/pets/new` | Register a pet (HU06) | Implemented |
+| `/medical-events/new` | Register a medical event (HU23) | Implemented |
 | `/pets` | Pet search (HU07) | Placeholder, pending |
 | `/pets/:petId` | Pet profile (HU08) | Placeholder, pending |
 | `/notifications` | Notifications | Placeholder, pending |
@@ -133,6 +134,7 @@ The back-end does not yet implement authentication. For now, the user and their 
 | **HU70** | Veterinarian list with filters | `/veterinarians` | Implemented |
 | **HU01** | Register a shelter | `/shelters/new` | Implemented |
 | **HU06** | Register a pet | `/pets/new` | Implemented |
+| **HU23** | Register a medical event | `/medical-events/new` | Implemented |
 
 ### HU70 ÔÇô Veterinarian List with Filters
 
@@ -152,6 +154,24 @@ Opening a veterinarian's profile also displays their **follow-ups** and **medica
 3. Select a combination with no matching results and verify that the appropriate message is displayed.
 4. Open a veterinarian's profile and verify that their follow-ups and medical events are displayed.
 5. Stop the back-end and verify that an error message is displayed.
+
+### HU23 ÔÇô Register a Medical Event
+
+**Route:** `/medical-events/new` ┬À **Role:** Shelter staff.
+
+The form records a medical event (consultation, surgery, treatment, ...) in the medical history of an **active** pet. The pet and the veterinarian are selected from the lists returned by the back-end, the date cannot be in the future, and every field is required. Inactive pets are not offered.
+
+- **Back-end:** `POST /api/medicalEvents`, with the pet and the veterinarian sent as `{ id }` references.
+- **Validation:** First performed on the client side (errors displayed next to each field and focus moved to the first invalid field), then validated by the back-end. Back-end messages are shown in a dialog and, when they belong to a field, next to it as well.
+- **Result:** A confirmation dialog shows the pet, veterinarian, date, and type.
+
+**Manual Testing:**
+
+1. Start the back-end and create a shelter, an active pet, and a veterinarian.
+2. Open `/medical-events/new` and submit the empty form: errors should appear, and focus should move to the pet list.
+3. Enter a future date: the form should reject it.
+4. Register an event: a confirmation should appear, and **Ver la mascota** should navigate to `/pets/{id}`.
+5. Register the same event again: the duplicate message from the back-end should be displayed.
 
 ### HU06 ÔÇô Register a Pet
 
@@ -212,6 +232,7 @@ npm test                       # Run all tests
 npm run test:coverage           # Run tests with coverage
 npx vitest src/pages/PetRegisterPage   # Run tests for a specific folder, e.g. HU06
 npx vitest src/pages/ShelterRegisterPage   # HU01
+npx vitest src/pages/MedicalEventRegisterPage   # HU23
 ```
 
 **Automated Tests** (Vitest + React Testing Library) are located alongside their corresponding modules:
@@ -219,6 +240,7 @@ npx vitest src/pages/ShelterRegisterPage   # HU01
 - **HU70:** `VeterinariansPage.test.jsx`, `VeterinarianProfilePage.test.jsx`, and `veterinarianService.test.js`.
 - **HU01:** `ShelterRegisterPage.test.jsx` (full screen), `shelterForm.test.js` (validation and request body), and `shelterService.test.js`.
 - **HU06:** `PetRegisterPage.test.jsx` (full screen), `petForm.test.js` (validation and request body), and `petService.test.js`.
+- **HU23:** `MedicalEventRegisterPage.test.jsx` (full screen) and `medicalEventForm.test.js` (validation and request body).
 - **Shared:** `FormField.test.jsx`, `Navbar.test.jsx`, `ScreenState.test.jsx`, and `dates.test.js`.
 
 **Manual Tests:** The steps are described in each user story section.
