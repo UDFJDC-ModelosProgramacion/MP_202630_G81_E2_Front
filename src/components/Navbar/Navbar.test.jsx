@@ -54,6 +54,17 @@ describe('Navbar', () => {
     )
   })
 
+  it('shows the option to register a medical event to the shelter administrator', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
+
+    renderNavbar()
+
+    expect(screen.getByRole('link', { name: 'Registrar evento médico' })).toHaveAttribute(
+      'href',
+      '/medical-events/new',
+    )
+  })
+
   it('hides the option to register a shelter from other roles', () => {
     renderNavbar()
 

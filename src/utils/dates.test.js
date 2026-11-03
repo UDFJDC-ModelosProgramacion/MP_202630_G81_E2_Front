@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDay, todayISO } from './dates'
+import { dayStartISO, formatDay, todayISO } from './dates'
 
 describe('formatDay', () => {
   it('formats a plain ISO date as a day', () => {
@@ -28,5 +28,17 @@ describe('todayISO', () => {
 
   it('uses the current day by default', () => {
     expect(todayISO()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+})
+
+describe('dayStartISO', () => {
+  it('keeps the chosen day when the backend parses the timestamp', () => {
+    expect(dayStartISO('2026-10-21')).toMatch(/^2026-10-21T00:00:00[+-]\d{2}:\d{2}$/)
+  })
+
+  it('returns the value untouched when it is not a date input value', () => {
+    expect(dayStartISO('')).toBe('')
+    expect(dayStartISO(null)).toBeNull()
+    expect(dayStartISO('2026-10-21T05:00:00Z')).toBe('2026-10-21T05:00:00Z')
   })
 })

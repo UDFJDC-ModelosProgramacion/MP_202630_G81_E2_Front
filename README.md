@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 20 test files / 204 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 24 test files / 258 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -147,6 +147,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/shelters/new` | Register a shelter (HU01) | Shelter admin | ✅ Implemented |
 | `/shelters/:shelterId` | Shelter detail | Any | 🚧 Placeholder |
 | `/pets/new` | Register a pet (HU06) | Shelter admin | ✅ Implemented |
+| `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
 | `/pets` | Pet search (HU07) | Any | 🚧 Placeholder |
 | `/pets/:petId` | Pet profile (HU08) | Any | 🚧 Placeholder |
 
@@ -162,6 +163,8 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `POST` | `/shelters` | HU01 | `createShelter` |
 | `POST` | `/pets` | HU06 | `createPet` |
 | `POST` | `/pets/{petId}/photos` | HU06 (pet photos) | `addPetPhoto` |
+| `GET` | `/pets` | HU23 (pet list) | `getPets` |
+| `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
 
@@ -179,6 +182,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU70** | Veterinarian list with filters and profile | `/veterinarians` | ✅ Implemented |
 | **HU01** | Register a shelter | `/shelters/new` | ✅ Implemented |
 | **HU06** | Register a pet | `/pets/new` | ✅ Implemented |
+| **HU23** | Register a medical event | `/medical-events/new` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -216,6 +220,25 @@ Form with first name, last name, email, phone, specialization, and availability.
 1. Open `/veterinarians/new` and submit the empty form: errors should appear for every field.
 2. Enter an invalid email and a short phone number: both should be rejected.
 3. Fill in valid data and submit: you should return to the list with a confirmation message and see the new veterinarian.
+
+### HU23 – Register a Medical Event
+
+**Route:** `/medical-events/new` · **Role:** shelter staff (`SHELTER_ADMIN` or `VETERINARIAN`)
+
+The form records a medical event (consultation, surgery, treatment, ...) in the medical history of an **active** pet. The pet and the veterinarian are selected from the lists returned by the back-end, the date cannot be in the future, and every field is required. Inactive pets are not offered.
+
+- **Back-end:** `POST /api/medicalEvents`, with the pet and the veterinarian sent as `{ id }` references.
+- **Dates:** the form sends `YYYY-MM-DDT00:00:00±hh:mm` (`dayStartISO` in `utils/dates.js`). The back-end stores a `java.util.Date`; with a date-only string it shifts the day for negative offsets (2026-09-12 is stored as 2026-09-11).
+- **Validation:** first on the client (errors next to each field, focus moved to the first invalid field), then by the back-end. Back-end messages appear in a dialog and, when they belong to a field, next to it as well.
+- **Result:** a confirmation dialog shows the pet, veterinarian, date, and type, and offers a link to `/pets/{id}`.
+
+**Manual testing:**
+
+1. Start the back-end and create a shelter, an active pet, and a veterinarian.
+2. Open `/medical-events/new` and submit the empty form: errors should appear, and focus should move to the pet list.
+3. Enter a future date: the form should reject it.
+4. Register an event: a confirmation should appear, and **Ver la mascota** should navigate to `/pets/{id}`.
+5. Register the same event again: the duplicate message from the back-end should be displayed.
 
 ### HU06 – Register a Pet
 
@@ -286,9 +309,10 @@ npm run test:coverage                         # Run tests with coverage
 npx vitest src/pages/PetRegisterPage          # A specific folder, e.g. HU06
 npx vitest src/pages/ShelterRegisterPage      # HU01
 npx vitest src/pages/VeterinariansPage        # HU70
+npx vitest src/pages/MedicalEventRegisterPage # HU23
 ```
 
-Current state: **22 test files, 238 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **24 test files, 258 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -298,6 +322,7 @@ Tests live next to the module they cover:
 | **Veterinarian registration** | `RegisterVeterinarianPage.test.jsx`, `validateVeterinarian.test.js` |
 | **HU01** | `ShelterRegisterPage.test.jsx`, `shelterForm.test.js`, `shelterService.test.js` |
 | **HU06** | `PetRegisterPage.test.jsx`, `petForm.test.js`, `petService.test.js` |
+| **HU23** | `MedicalEventRegisterPage.test.jsx`, `medicalEventForm.test.js` |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube
