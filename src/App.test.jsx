@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
-import { getMedicalEvents } from './services/medicalEventService'
+import { getMedicalEvent, getMedicalEvents } from './services/medicalEventService'
 import { getPet, getPets } from './services/petService'
 import { getVeterinarians } from './services/veterinarianService'
 
@@ -21,6 +21,7 @@ vi.mock('./services/petService', () => ({
 
 vi.mock('./services/medicalEventService', () => ({
   getMedicalEvents: vi.fn(),
+  getMedicalEvent: vi.fn(),
   createMedicalEvent: vi.fn(),
 }))
 
@@ -38,6 +39,14 @@ describe('App', () => {
     getPets.mockResolvedValue([])
     getPet.mockResolvedValue({ id: 1, name: 'Luna', species: 'Perro' })
     getMedicalEvents.mockResolvedValue([])
+    getMedicalEvent.mockResolvedValue({
+      id: 1,
+      date: '2026-09-10',
+      type: 'Cirugia',
+      description: 'Esterilización sin complicaciones',
+      pet: { id: 1, name: 'Luna', species: 'Perro' },
+      veterinarian: null,
+    })
   })
 
   it('shows the navbar and the veterinarians page', async () => {
@@ -89,6 +98,12 @@ describe('App', () => {
     renderAt('/pets/1/medical-events')
 
     expect(screen.getByRole('heading', { name: 'Historia médica' })).toBeInTheDocument()
+  })
+
+  it('shows the detail of a medical event', async () => {
+    renderAt('/medical-events/1')
+
+    expect(await screen.findByRole('heading', { name: 'Cirugía' })).toBeInTheDocument()
   })
 })
 

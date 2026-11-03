@@ -7,6 +7,10 @@ export function getMedicalEvents({ petId } = {}) {
   return api.get(query ? `/medicalEvents?${query}` : '/medicalEvents')
 }
 
+export function getMedicalEvent(medicalEventId) {
+  return api.get(`/medicalEvents/${encodeURIComponent(medicalEventId)}`)
+}
+
 export function createMedicalEvent(medicalEvent) {
   return api.post('/medicalEvents', medicalEvent)
 }
