@@ -9,10 +9,9 @@ import SuccessDialog from '../../components/SuccessDialog/SuccessDialog'
 import { getSession, ROLES } from '../../config/roleSession'
 import { getPets } from '../../services/petService'
 import { createTrialCohabitationRequest } from '../../services/trialCohabitationService'
-import { formatDay, todayISO } from '../../utils/dates'
+import { durationInDays, formatDay, todayISO } from '../../utils/dates'
 import {
   buildTrialRequestPayload,
-  durationInDays,
   EMPTY_TRIAL_REQUEST,
   fieldOfBackendMessage,
   validateTrialRequest,

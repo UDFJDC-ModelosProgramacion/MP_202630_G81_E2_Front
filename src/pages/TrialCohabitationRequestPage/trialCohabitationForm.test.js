@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildTrialRequestPayload,
-  durationInDays,
   END_BEFORE_START_MESSAGE,
   fieldOfBackendMessage,
   PET_REQUIRED_MESSAGE,
@@ -49,23 +48,6 @@ describe('validateTrialRequest', () => {
     const errors = validateTrialRequest({ ...VALID, endDate: '2026-11-09' }, TODAY)
 
     expect(errors.endDate).toBe(END_BEFORE_START_MESSAGE)
-  })
-})
-
-describe('durationInDays', () => {
-  it('counts both ends of the period', () => {
-    expect(durationInDays('2026-11-10', '2026-11-20')).toBe(11)
-    expect(durationInDays('2026-11-10', '2026-11-10')).toBe(1)
-  })
-
-  it('counts across a month and a leap day', () => {
-    expect(durationInDays('2028-02-28', '2028-03-01')).toBe(3)
-  })
-
-  it('has no duration while the period is incomplete or inverted', () => {
-    expect(durationInDays('', '2026-11-20')).toBeNull()
-    expect(durationInDays('2026-11-10', '')).toBeNull()
-    expect(durationInDays('2026-11-20', '2026-11-10')).toBeNull()
   })
 })
 

@@ -37,16 +37,6 @@ export function validateTrialRequest(values, today) {
   return errors
 }
 
-// Number of days of the period, both ends included, or null while the period is incomplete.
-export function durationInDays(startDate, endDate) {
-  if (!startDate || !endDate || endDate < startDate) return null
-  const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
-  const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
-  const difference =
-    Date.UTC(endYear, endMonth - 1, endDay) - Date.UTC(startYear, startMonth - 1, startDay)
-  return Math.round(difference / 86400000) + 1
-}
-
 export function buildTrialRequestPayload(values, { today, adopterId, shelterId }) {
   return {
     date: dayStartISO(today),
