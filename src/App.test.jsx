@@ -126,6 +126,14 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Mis solicitudes de convivencia' })).toBeInTheDocument()
   })
 
+  it('shows the requests received by the shelter on /trial-cohabitation-requests/received', () => {
+    renderAt('/trial-cohabitation-requests/received')
+
+    expect(
+      screen.getByRole('heading', { name: 'Solicitudes de convivencia recibidas' }),
+    ).toBeInTheDocument()
+  })
+
   it('shows the trial cohabitation request form on /trial-cohabitation-requests/new', () => {
     renderAt('/trial-cohabitation-requests/new')
 

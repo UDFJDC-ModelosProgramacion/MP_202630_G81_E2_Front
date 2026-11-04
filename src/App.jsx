@@ -5,6 +5,7 @@ import MedicalEventEditPage from './pages/MedicalEventEditPage/MedicalEventEditP
 import MedicalEventHistoryPage from './pages/MedicalEventHistoryPage/MedicalEventHistoryPage'
 import MedicalEventsPage from './pages/MedicalEventsPage/MedicalEventsPage'
 import TrialCohabitationListPage from './pages/TrialCohabitationListPage/TrialCohabitationListPage'
+import TrialCohabitationReceivedPage from './pages/TrialCohabitationReceivedPage/TrialCohabitationReceivedPage'
 import TrialCohabitationRequestPage from './pages/TrialCohabitationRequestPage/TrialCohabitationRequestPage'
 import MedicalEventRegisterPage from './pages/MedicalEventRegisterPage/MedicalEventRegisterPage'
 import RegisterVeterinarianPage from './pages/RegisterVeterinarianPage/RegisterVeterinarianPage'
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/medical-events/:medicalEventId/edit" element={<MedicalEventEditPage />} />
         <Route path="/trial-cohabitation-requests" element={<TrialCohabitationListPage />} />
         <Route path="/trial-cohabitation-requests/new" element={<TrialCohabitationRequestPage />} />
+        <Route path="/trial-cohabitation-requests/received" element={<TrialCohabitationReceivedPage />} />
         <Route path="/shelters/new" element={<ShelterRegisterPage />} />
         <Route path="/shelters/:shelterId" element={<Pending title="Detalle del refugio" />} />
         <Route path="/notifications" element={<Pending title="Notificaciones" />} />

@@ -13,6 +13,7 @@ const ADMIN_LINKS = [
   { path: '/shelters/new', label: 'Registrar refugio', end: true },
   { path: '/pets/new', label: 'Registrar mascota', end: true },
   { path: '/medical-events/new', label: 'Registrar evento médico', end: true },
+  { path: '/trial-cohabitation-requests/received', label: 'Solicitudes de convivencia', end: true },
 ]
 
 const ADOPTER_LINKS = [
