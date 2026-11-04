@@ -32,6 +32,25 @@ describe('Navbar', () => {
     expect(screen.getByRole('link', { name: 'Pet Adoption Platform' })).toBeInTheDocument()
   })
 
+  it('links the adopter to the list of the trial cohabitation requests', () => {
+    getSession.mockReturnValue({ role: 'ADOPTER' })
+
+    renderNavbar()
+
+    expect(screen.getByRole('link', { name: 'Mis solicitudes' })).toHaveAttribute(
+      'href',
+      '/trial-cohabitation-requests',
+    )
+  })
+
+  it('does not show the adopter link to the shelter administrator', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
+
+    renderNavbar()
+
+    expect(screen.queryByRole('link', { name: 'Mis solicitudes' })).not.toBeInTheDocument()
+  })
+
   it('links to the medical events list for every role', () => {
     renderNavbar()
 

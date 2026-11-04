@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { getSession, ROLES } from '../../config/session'
+import { getSession, ROLES } from '../../config/roleSession'
 import styles from './Navbar.module.css'
 
 const LINKS = [
@@ -15,9 +15,18 @@ const ADMIN_LINKS = [
   { path: '/medical-events/new', label: 'Registrar evento médico', end: true },
 ]
 
+const ADOPTER_LINKS = [
+  { path: '/trial-cohabitation-requests', label: 'Mis solicitudes', end: true },
+]
+
+function linksFor(role) {
+  if (role === ROLES.SHELTER_ADMIN) return [...LINKS, ...ADMIN_LINKS]
+  if (role === ROLES.ADOPTER) return [...LINKS, ...ADOPTER_LINKS]
+  return LINKS
+}
+
 export default function Navbar() {
-  const links =
-    getSession().role === ROLES.SHELTER_ADMIN ? [...LINKS, ...ADMIN_LINKS] : LINKS
+  const links = linksFor(getSession().role)
   return (
     <header className={styles.bar}>
       <Link to="/" className={styles.logo}>
