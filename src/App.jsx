@@ -1,5 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout/Layout'
+import MedicalEventDetailPage from './pages/MedicalEventDetailPage/MedicalEventDetailPage'
+import MedicalEventEditPage from './pages/MedicalEventEditPage/MedicalEventEditPage'
+import MedicalEventHistoryPage from './pages/MedicalEventHistoryPage/MedicalEventHistoryPage'
+import MedicalEventRegisterPage from './pages/MedicalEventRegisterPage/MedicalEventRegisterPage'
 import RegisterVeterinarianPage from './pages/RegisterVeterinarianPage/RegisterVeterinarianPage'
 import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
 import ShelterRegisterPage from './pages/ShelterRegisterPage/ShelterRegisterPage'
@@ -17,7 +21,11 @@ export default function App() {
         <Route path="/" element={<Navigate to="/veterinarians" replace />} />
         <Route path="/pets" element={<Pending title="Mascotas" />} />
         <Route path="/pets/new" element={<PetRegisterPage />} />
+        <Route path="/pets/:petId/medical-events" element={<MedicalEventHistoryPage />} />
         <Route path="/pets/:petId" element={<Pending title="Perfil de mascota" />} />
+        <Route path="/medical-events/new" element={<MedicalEventRegisterPage />} />
+        <Route path="/medical-events/:medicalEventId" element={<MedicalEventDetailPage />} />
+        <Route path="/medical-events/:medicalEventId/edit" element={<MedicalEventEditPage />} />
         <Route path="/shelters/new" element={<ShelterRegisterPage />} />
         <Route path="/shelters/:shelterId" element={<Pending title="Detalle del refugio" />} />
         <Route path="/notifications" element={<Pending title="Notificaciones" />} />

@@ -18,3 +18,20 @@ export function todayISO(now = new Date()) {
   const day = String(now.getDate()).padStart(2, '0')
   return `${now.getFullYear()}-${month}-${day}`
 }
+
+const ISO_DAY_ONLY = /^\d{4}-\d{2}-\d{2}$/
+
+// Turns a date input value ('YYYY-MM-DD') into the start of that day in the user's time
+// zone ('2026-09-10T00:00:00-05:00'). The back-end stores java.util.Date and, when it
+// receives a date-only string, it shifts the day for negative offsets
+// (2026-09-10 is stored as 2026-09-09). Sending the offset keeps the chosen day.
+export function dayStartISO(day) {
+  if (!ISO_DAY_ONLY.test(String(day))) return day
+  const [year, month, date] = day.split('-').map(Number)
+  const local = new Date(year, month - 1, date, 0, 0, 0, 0)
+  const offset = -local.getTimezoneOffset()
+  const sign = offset >= 0 ? '+' : '-'
+  const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0')
+  const minutes = String(Math.abs(offset) % 60).padStart(2, '0')
+  return `${day}T00:00:00${sign}${hours}:${minutes}`
+}
