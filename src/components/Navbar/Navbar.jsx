@@ -6,6 +6,7 @@ const LINKS = [
   { path: '/pets', label: 'Mascotas' },
   { path: '/notifications', label: 'Notificaciones' },
   { path: '/veterinarians', label: 'Veterinarios' },
+  { path: '/medical-events', label: 'Eventos médicos', end: true },
 ]
 
 const ADMIN_LINKS = [

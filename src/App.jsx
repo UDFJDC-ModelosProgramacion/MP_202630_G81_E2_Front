@@ -3,6 +3,7 @@ import Layout from './components/Layout/Layout'
 import MedicalEventDetailPage from './pages/MedicalEventDetailPage/MedicalEventDetailPage'
 import MedicalEventEditPage from './pages/MedicalEventEditPage/MedicalEventEditPage'
 import MedicalEventHistoryPage from './pages/MedicalEventHistoryPage/MedicalEventHistoryPage'
+import MedicalEventsPage from './pages/MedicalEventsPage/MedicalEventsPage'
 import MedicalEventRegisterPage from './pages/MedicalEventRegisterPage/MedicalEventRegisterPage'
 import RegisterVeterinarianPage from './pages/RegisterVeterinarianPage/RegisterVeterinarianPage'
 import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/pets/new" element={<PetRegisterPage />} />
         <Route path="/pets/:petId/medical-events" element={<MedicalEventHistoryPage />} />
         <Route path="/pets/:petId" element={<Pending title="Perfil de mascota" />} />
+        <Route path="/medical-events" element={<MedicalEventsPage />} />
         <Route path="/medical-events/new" element={<MedicalEventRegisterPage />} />
         <Route path="/medical-events/:medicalEventId" element={<MedicalEventDetailPage />} />
         <Route path="/medical-events/:medicalEventId/edit" element={<MedicalEventEditPage />} />

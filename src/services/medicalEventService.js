@@ -1,8 +1,10 @@
 import { api } from './apiClient'
 
-export function getMedicalEvents({ petId } = {}) {
+export function getMedicalEvents({ petId, type, date } = {}) {
   const params = new URLSearchParams()
   if (petId !== undefined && petId !== '') params.set('petId', petId)
+  if (type?.trim()) params.set('type', type.trim())
+  if (date?.trim()) params.set('date', date.trim())
   const query = params.toString()
   return api.get(query ? `/medicalEvents?${query}` : '/medicalEvents')
 }

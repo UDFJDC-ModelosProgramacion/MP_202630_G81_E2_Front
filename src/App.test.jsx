@@ -108,6 +108,13 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'Cirugía' })).toBeInTheDocument()
   })
 
+  it('shows the medical events list with its filters', async () => {
+    renderAt('/medical-events')
+
+    expect(await screen.findByRole('heading', { name: 'Eventos médicos' })).toBeInTheDocument()
+    expect(screen.getByRole('form', { name: 'Filtros de eventos médicos' })).toBeInTheDocument()
+  })
+
   it('shows the edit form of a medical event', async () => {
     renderAt('/medical-events/1/edit')
 
