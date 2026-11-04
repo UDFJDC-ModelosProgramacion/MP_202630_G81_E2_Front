@@ -32,6 +32,15 @@ describe('Navbar', () => {
     expect(screen.getByRole('link', { name: 'Pet Adoption Platform' })).toBeInTheDocument()
   })
 
+  it('links to the medical events list for every role', () => {
+    renderNavbar()
+
+    expect(screen.getByRole('link', { name: 'Eventos médicos' })).toHaveAttribute(
+      'href',
+      '/medical-events',
+    )
+  })
+
   it('shows the option to register a pet to the shelter administrator', () => {
     getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
 
@@ -51,6 +60,17 @@ describe('Navbar', () => {
     expect(screen.getByRole('link', { name: 'Registrar refugio' })).toHaveAttribute(
       'href',
       '/shelters/new',
+    )
+  })
+
+  it('shows the option to register a medical event to the shelter administrator', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
+
+    renderNavbar()
+
+    expect(screen.getByRole('link', { name: 'Registrar evento médico' })).toHaveAttribute(
+      'href',
+      '/medical-events/new',
     )
   })
 

@@ -6,11 +6,13 @@ const LINKS = [
   { path: '/pets', label: 'Mascotas' },
   { path: '/notifications', label: 'Notificaciones' },
   { path: '/veterinarians', label: 'Veterinarios' },
+  { path: '/medical-events', label: 'Eventos médicos', end: true },
 ]
 
 const ADMIN_LINKS = [
   { path: '/shelters/new', label: 'Registrar refugio', end: true },
   { path: '/pets/new', label: 'Registrar mascota', end: true },
+  { path: '/medical-events/new', label: 'Registrar evento médico', end: true },
 ]
 
 export default function Navbar() {
