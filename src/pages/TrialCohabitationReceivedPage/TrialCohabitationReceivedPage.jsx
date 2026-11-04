@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { TRIAL_REQUEST_STATUSES } from '../../constants/trialCohabitationOptions'
 import { getSession, ROLES } from '../../config/roleSession'
@@ -190,6 +191,13 @@ function ReceivedRequests({ shelterId }) {
                 </p>
                 <p className={styles.description}>{request.description}</p>
                 <p className={styles.requestedOn}>Solicitada el {formatDay(request.date)}</p>
+                <Link
+                  to={`/trial-cohabitation-requests/${request.id}`}
+                  className={styles.detailLink}
+                  aria-label={`Ver detalle de la solicitud de ${request.pet?.name}`}
+                >
+                  Ver detalle
+                </Link>
               </li>
             )
           })}

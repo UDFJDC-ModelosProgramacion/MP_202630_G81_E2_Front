@@ -115,6 +115,10 @@ describe('TrialCohabitationReceivedPage', () => {
     const [luna, kiara] = screen.getAllByRole('listitem')
     expect(within(luna).getByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
     expect(within(kiara).getByRole('heading', { name: 'Kiara — Gato' })).toBeInTheDocument()
+    expect(within(luna).getByRole('link', { name: 'Ver detalle de la solicitud de Luna' })).toHaveAttribute(
+      'href',
+      '/trial-cohabitation-requests/1',
+    )
     expect(screen.queryByText('Adoptante: Luis Diaz')).not.toBeInTheDocument()
     expect(getTrialCohabitationRequests).not.toHaveBeenCalledWith(expect.objectContaining({ petId: 2 }))
   })

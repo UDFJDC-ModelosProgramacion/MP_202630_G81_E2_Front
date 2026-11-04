@@ -9,6 +9,10 @@ export function getTrialCohabitationRequests({ adopterId, petId, status } = {}) 
   return api.get(query ? `/trialCohabitationRequests?${query}` : '/trialCohabitationRequests')
 }
 
+export function getTrialCohabitationRequest(requestId) {
+  return api.get(`/trialCohabitationRequests/${encodeURIComponent(requestId)}`)
+}
+
 export function createTrialCohabitationRequest(request) {
   return api.post('/trialCohabitationRequests', request)
 }

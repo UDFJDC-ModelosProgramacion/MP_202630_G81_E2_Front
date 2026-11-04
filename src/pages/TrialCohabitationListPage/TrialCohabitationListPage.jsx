@@ -92,6 +92,13 @@ function RequestsList({ adopterId }) {
                 <p>Refugio: {request.shelter?.name}</p>
                 <p className={styles.description}>{request.description}</p>
                 <p className={styles.requestedOn}>Solicitada el {formatDay(request.date)}</p>
+                <Link
+                  to={`/trial-cohabitation-requests/${request.id}`}
+                  className={styles.detailLink}
+                  aria-label={`Ver detalle de la solicitud de ${request.pet?.name}`}
+                >
+                  Ver detalle
+                </Link>
               </li>
             )
           })}

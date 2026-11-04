@@ -65,6 +65,10 @@ describe('TrialCohabitationListPage', () => {
     const items = screen.getAllByRole('listitem')
     expect(within(items[0]).getByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
     expect(within(items[1]).getByRole('heading', { name: 'Kiara — Perro' })).toBeInTheDocument()
+    expect(within(items[0]).getByRole('link', { name: 'Ver detalle de la solicitud de Luna' })).toHaveAttribute(
+      'href',
+      '/trial-cohabitation-requests/2',
+    )
   })
 
   it('shows the status, the period and its duration of each request', async () => {

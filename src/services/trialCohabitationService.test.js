@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createTrialCohabitationRequest,
+  getTrialCohabitationRequest,
   getTrialCohabitationRequests,
 } from './trialCohabitationService'
 
@@ -18,6 +19,17 @@ const okResponse = (body, status = 200) => ({
 
 afterEach(() => {
   vi.unstubAllGlobals()
+})
+
+describe('getTrialCohabitationRequest', () => {
+  it('requests one request by id', async () => {
+    const fetchMock = mockFetch(okResponse({ id: 5, status: 'PENDING' }))
+
+    const result = await getTrialCohabitationRequest(5)
+
+    expect(result).toEqual({ id: 5, status: 'PENDING' })
+    expect(fetchMock).toHaveBeenCalledWith('/api/trialCohabitationRequests/5', expect.any(Object))
+  })
 })
 
 describe('getTrialCohabitationRequests', () => {

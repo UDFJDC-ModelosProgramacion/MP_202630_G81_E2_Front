@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import { getMedicalEvent, getMedicalEvents } from './services/medicalEventService'
 import { getPet, getPets } from './services/petService'
+import { getTrialCohabitationRequest } from './services/trialCohabitationService'
 import { getVeterinarians } from './services/veterinarianService'
 
 vi.mock('./services/veterinarianService', () => ({
@@ -21,6 +22,7 @@ vi.mock('./services/petService', () => ({
 
 vi.mock('./services/trialCohabitationService', () => ({
   createTrialCohabitationRequest: vi.fn(),
+  getTrialCohabitationRequest: vi.fn(),
   getTrialCohabitationRequests: vi.fn(),
 }))
 
@@ -124,6 +126,24 @@ describe('App', () => {
     renderAt('/trial-cohabitation-requests')
 
     expect(screen.getByRole('heading', { name: 'Mis solicitudes de convivencia' })).toBeInTheDocument()
+  })
+
+  it('shows the detail of a trial cohabitation request on /trial-cohabitation-requests/:requestId', async () => {
+    getTrialCohabitationRequest.mockResolvedValue({
+      id: 1,
+      status: 'PENDING',
+      date: '2026-11-03',
+      description: 'Quiero convivir con Luna',
+      startDate: '2026-11-10',
+      endDate: '2026-11-20',
+      shelter: { id: 1, name: 'Refugio Patitas' },
+      adopter: { id: 2, firstName: 'Carlos', lastName: 'Perez', email: 'carlos@mail.com', phone: '3000000000' },
+      pet: { id: 1, name: 'Luna', species: 'Perro', shelter: { id: 1 } },
+      trialCohabitation: null,
+    })
+    renderAt('/trial-cohabitation-requests/1')
+
+    expect(await screen.findByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
   })
 
   it('shows the requests received by the shelter on /trial-cohabitation-requests/received', () => {
