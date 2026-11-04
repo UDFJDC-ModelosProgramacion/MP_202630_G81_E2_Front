@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 38 test files / 371 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 39 test files / 384 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -150,6 +150,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/medical-events` | Medical events list with filters (HU28) | Any | ✅ Implemented |
 | `/trial-cohabitation-requests/new` | Request a trial cohabitation (HU29) | Adopter | ✅ Implemented |
 | `/trial-cohabitation-requests/received` | Trial cohabitation requests received by the shelter (HU31) | Shelter admin | ✅ Implemented |
+| `/trial-cohabitation-requests/:requestId` | Trial cohabitation request detail (HU32) | Adopter who sent it, or the shelter of its pet | ✅ Implemented |
 | `/trial-cohabitation-requests` | Trial cohabitation requests of the adopter (HU30) | Adopter | ✅ Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
 | `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
@@ -181,6 +182,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `POST` | `/trialCohabitationRequests` | HU29 (request a trial cohabitation) | `createTrialCohabitationRequest` |
 | `GET` | `/trialCohabitationRequests?adopterId=` | HU30 (adopter's requests) | `getTrialCohabitationRequests` |
 | `GET` | `/trialCohabitationRequests?petId=&status=` | HU31 (requests of the shelter's pets) | `getTrialCohabitationRequests` |
+| `GET` | `/trialCohabitationRequests/{id}` | HU32 (request detail) | `getTrialCohabitationRequest` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -209,6 +211,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU29** | Request a trial cohabitation | `/trial-cohabitation-requests/new` | ✅ Implemented |
 | **HU30** | View my trial cohabitation requests | `/trial-cohabitation-requests` | ✅ Implemented |
 | **HU31** | View the trial cohabitation requests received by the shelter | `/trial-cohabitation-requests/received` | ✅ Implemented |
+| **HU32** | View the detail of a trial cohabitation request | `/trial-cohabitation-requests/:requestId` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -419,6 +422,26 @@ The shelter sees the trial cohabitation requests for its pets, newest request fi
 
 **Note:** the Postman collection of trial cohabitation documents a `shelterId` filter, but the controller of the back-end does not implement it. That is why the screen queries by pet.
 
+### HU32 – View the Detail of a Trial Cohabitation Request
+
+**Route:** `/trial-cohabitation-requests/:requestId` · **Role:** the adopter who sent the request, or the shelter that owns its pet
+
+The detail shows the pet, the status, the adopter (name and contact), the shelter, the period and its duration, the date of the request, and the description. If the request already generated a trial cohabitation, a note says so. The back link goes to the adopter's list (HU30) or to the requests received by the shelter (HU31), depending on the role.
+
+Access is checked on the front-end: an adopter only sees the requests in which they are the adopter, and a shelter only sees the requests for its pets. Otherwise the screen says that the user has no access, without showing the details. The back-end has no authentication yet, so this check belongs to the simulated role model.
+
+- **Back-end:** `GET /api/trialCohabitationRequests/{id}`. A request that does not exist returns 404 with the back-end message.
+- **States:** loading, error with its cause (and a **Reintentar** button), and access denied.
+- **Links:** each card of the adopter's list (HU30) and of the shelter's list (HU31) has a **Ver detalle** link.
+- **Actions:** approving, rejecting, and cancelling come in HU33 and HU34.
+
+**Manual testing:**
+
+1. Start the front as the adopter who sent a request (see HU29), with `VITE_ROLE=ADOPTER` and `VITE_USER_ID` set to that adopter's id. Open the detail from the list of HU30: the details should be shown, and the back link should go to the list.
+2. Start the front as another adopter and open the same URL: the access message should be displayed.
+3. Start the front as the shelter administrator (the default role) and open the same URL: the details should be shown, with a back link to the requests received.
+4. Open `/trial-cohabitation-requests/999`: the back-end message should be displayed, with a **Reintentar** button.
+
 ### HU06 – Register a Pet
 
 **Route:** `/pets/new` · **Role:** shelter administrator
@@ -497,9 +520,10 @@ npx vitest src/pages/MedicalEventsPage        # HU28
 npx vitest src/pages/TrialCohabitationRequestPage # HU29
 npx vitest src/pages/TrialCohabitationListPage   # HU30
 npx vitest src/pages/TrialCohabitationReceivedPage # HU31
+npx vitest src/pages/TrialCohabitationDetailPage   # HU32
 ```
 
-Current state: **38 test files, 371 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **39 test files, 384 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -518,6 +542,7 @@ Tests live next to the module they cover:
 | **HU29** | `TrialCohabitationRequestPage.test.jsx`, `trialCohabitationForm.test.js`, `trialCohabitationService.test.js`, `roleSession.test.js` (role override) |
 | **HU30** | `TrialCohabitationListPage.test.jsx`, `trialCohabitation.test.js`, `trialCohabitationService.test.js` (query string), `Navbar.test.jsx` (adopter link) |
 | **HU31** | `TrialCohabitationReceivedPage.test.jsx` (scoping to the shelter's pets, filters, race handling), `Navbar.test.jsx` (shelter link) |
+| **HU32** | `TrialCohabitationDetailPage.test.jsx` (roles, access, errors), `trialCohabitation.test.js` (visibility rule), `trialCohabitationService.test.js` (by id), and the detail links of the HU30 and HU31 lists |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube
