@@ -31,6 +31,16 @@ describe('SuccessDialog', () => {
     expect(dialog).toHaveTextContent('Código HTTP 201 • Creado con éxito')
   })
 
+  it('can describe an update with its own HTTP label', () => {
+    renderDialog({
+      title: '¡Evento médico actualizado con éxito!',
+      statusLabel: 'Código HTTP 200 • Actualizado con éxito',
+    })
+
+    expect(screen.getByRole('dialog')).toHaveTextContent('Código HTTP 200 • Actualizado con éxito')
+    expect(screen.queryByText('Código HTTP 201 • Creado con éxito')).not.toBeInTheDocument()
+  })
+
   it('summarizes what was created', () => {
     renderDialog()
 
