@@ -19,6 +19,10 @@ vi.mock('./services/petService', () => ({
   addPetPhoto: vi.fn(),
 }))
 
+vi.mock('./services/trialCohabitationService', () => ({
+  createTrialCohabitationRequest: vi.fn(),
+}))
+
 vi.mock('./services/medicalEventService', () => ({
   getMedicalEvents: vi.fn(),
   getMedicalEvent: vi.fn(),
@@ -113,6 +117,12 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Eventos médicos' })).toBeInTheDocument()
     expect(screen.getByRole('form', { name: 'Filtros de eventos médicos' })).toBeInTheDocument()
+  })
+
+  it('shows the trial cohabitation request form on /trial-cohabitation-requests/new', () => {
+    renderAt('/trial-cohabitation-requests/new')
+
+    expect(screen.getByRole('heading', { name: 'Solicitar convivencia de prueba' })).toBeInTheDocument()
   })
 
   it('shows the edit form of a medical event', async () => {
