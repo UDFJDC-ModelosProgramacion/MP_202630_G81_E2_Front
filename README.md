@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 28 test files / 289 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 29 test files / 302 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -171,6 +171,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `GET` | `/medicalEvents?petId=` | HU24 (medical history) | `getMedicalEvents` |
 | `GET` | `/medicalEvents/{id}` | HU25 (event detail) | `getMedicalEvent` |
 | `PUT` | `/medicalEvents/{id}` | HU26 (edit event) | `updateMedicalEvent` |
+| `DELETE` | `/medicalEvents/{id}` | HU27 (delete event) | `deleteMedicalEvent` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -193,6 +194,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU24** | View the medical history of a pet | `/pets/:petId/medical-events` | ✅ Implemented |
 | **HU25** | View the detail of a medical event | `/medical-events/:medicalEventId` | ✅ Implemented |
 | **HU26** | Edit a medical event | `/medical-events/:medicalEventId/edit` | ✅ Implemented |
+| **HU27** | Delete a medical event | `/medical-events/:medicalEventId` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -304,6 +306,24 @@ The form is prefilled with the current event and changes its date, type, descrip
 5. Enter a future date and verify that the form rejects it.
 6. Open `/medical-events/999/edit` and verify that the error and the retry button are displayed.
 
+### HU27 – Delete a Medical Event
+
+**Route:** `/medical-events/:medicalEventId` (action on the detail page) · **Role:** shelter staff (`SHELTER_ADMIN` or `VETERINARIAN`)
+
+The **Eliminar evento** button appears on the detail page (HU25) next to **Editar evento**, only for the shelter staff. It opens a confirmation dialog that names the event and warns that the action cannot be undone; **Cancelar** has the focus by default, so an accidental Enter does not delete anything. While the deletion runs, the dialog cannot be dismissed. On success the user goes to the pet's medical history, which confirms the deletion.
+
+- **Back-end:** `DELETE /api/medicalEvents/{id}` (204 with no content; 404 when the event does not exist; 412 when the id is invalid).
+- **Errors:** the back-end message is shown in an error dialog, and the event stays on screen.
+- **Shared component:** `ConfirmDialog` (built on `ModalDialog`), reusable for future delete actions.
+
+**Manual testing:**
+
+1. Open `/medical-events/{id}` as the shelter staff and verify that **Editar evento** and **Eliminar evento** are shown.
+2. Click **Eliminar evento**: the dialog should name the event, and **Cancelar** should have the focus.
+3. Cancel and verify that the event is still displayed.
+4. Click **Eliminar evento** again and confirm. The user should go to the pet's history with the message "Se eliminó el evento médico de …", and the event should no longer be listed.
+5. Open the deleted event's URL: the error from the back-end should be displayed.
+
 ### HU06 – Register a Pet
 
 **Route:** `/pets/new` · **Role:** shelter administrator
@@ -377,9 +397,10 @@ npx vitest src/pages/MedicalEventRegisterPage # HU23
 npx vitest src/pages/MedicalEventHistoryPage  # HU24
 npx vitest src/pages/MedicalEventDetailPage   # HU25
 npx vitest src/pages/MedicalEventEditPage     # HU26
+npx vitest src/components/ConfirmDialog       # HU27 (shared dialog)
 ```
 
-Current state: **28 test files, 289 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **29 test files, 302 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -393,6 +414,7 @@ Tests live next to the module they cover:
 | **HU24** | `MedicalEventHistoryPage.test.jsx` |
 | **HU25** | `MedicalEventDetailPage.test.jsx`, `medicalEvents.test.js` |
 | **HU26** | `MedicalEventEditPage.test.jsx` (and the `statusLabel` case in `SuccessDialog.test.jsx`) |
+| **HU27** | `ConfirmDialog.test.jsx`, `MedicalEventDetailPage.test.jsx` (delete and roles), `MedicalEventHistoryPage.test.jsx` (notice), `medicalEvents.test.js` (role rule) |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube
