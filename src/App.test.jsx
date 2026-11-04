@@ -24,6 +24,7 @@ vi.mock('./services/medicalEventService', () => ({
   getMedicalEvent: vi.fn(),
   createMedicalEvent: vi.fn(),
   updateMedicalEvent: vi.fn(),
+  deleteMedicalEvent: vi.fn(),
 }))
 
 function renderAt(path) {

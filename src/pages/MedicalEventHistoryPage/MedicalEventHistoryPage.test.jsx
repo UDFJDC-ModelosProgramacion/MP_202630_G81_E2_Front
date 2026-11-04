@@ -28,9 +28,9 @@ const EVENTS = [
   },
 ]
 
-function renderPage(petId = '7') {
+function renderPage(petId = '7', state) {
   return render(
-    <MemoryRouter initialEntries={[`/pets/${petId}/medical-events`]}>
+    <MemoryRouter initialEntries={[{ pathname: `/pets/${petId}/medical-events`, state }]}>
       <Routes>
         <Route path="/pets/:petId/medical-events" element={<MedicalEventHistoryPage />} />
       </Routes>
@@ -103,6 +103,12 @@ describe('MedicalEventHistoryPage', () => {
 
     await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(2))
     expect(getMedicalEvents).toHaveBeenCalledTimes(2)
+  })
+
+  it('confirms a medical event that was just deleted', async () => {
+    renderPage('7', { deleted: 'Cirugía' })
+
+    expect(await screen.findByText('Se eliminó el evento médico de Cirugía.')).toBeInTheDocument()
   })
 
   it('shows the backend message when the pet does not exist', async () => {

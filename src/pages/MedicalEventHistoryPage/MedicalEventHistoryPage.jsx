@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { getMedicalEvents } from '../../services/medicalEventService'
 import { getPet } from '../../services/petService'
@@ -12,6 +12,8 @@ const byDateDescending = (events) =>
 
 export default function MedicalEventHistoryPage() {
   const { petId } = useParams()
+  const { state } = useLocation()
+  const deleted = state?.deleted
   const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState({
     status: 'loading',
@@ -52,6 +54,12 @@ export default function MedicalEventHistoryPage() {
         <h1 className={styles.title}>Historia médica</h1>
         <p className={styles.subtitle}>{subtitle}</p>
       </header>
+
+      {deleted && (
+        <p role="status" className={styles.notice}>
+          Se eliminó el evento médico de {deleted}.
+        </p>
+      )}
 
       <div className={styles.toolbar}>
         <Link to="/medical-events/new" className={styles.linkButton}>

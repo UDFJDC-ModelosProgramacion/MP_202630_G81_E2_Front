@@ -18,3 +18,7 @@ export function createMedicalEvent(medicalEvent) {
 export function updateMedicalEvent(medicalEventId, medicalEvent) {
   return api.put(`/medicalEvents/${encodeURIComponent(medicalEventId)}`, medicalEvent)
 }
+
+export function deleteMedicalEvent(medicalEventId) {
+  return api.delete(`/medicalEvents/${encodeURIComponent(medicalEventId)}`)
+}
