@@ -19,6 +19,7 @@ const ADMIN_LINKS = [
 
 const ADOPTER_LINKS = [
   { path: '/trial-cohabitation-requests', label: 'Mis solicitudes', end: true },
+  { path: '/adoptions/mine', label: 'Mis adopciones', end: true },
 ]
 
 function linksFor(role) {

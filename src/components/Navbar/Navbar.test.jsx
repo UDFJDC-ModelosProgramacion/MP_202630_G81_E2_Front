@@ -65,6 +65,17 @@ describe('Navbar', () => {
     )
   })
 
+  it('links the adopter to the list of their adoptions', () => {
+    getSession.mockReturnValue({ role: 'ADOPTER' })
+
+    renderNavbar()
+
+    expect(screen.getByRole('link', { name: 'Mis adopciones' })).toHaveAttribute(
+      'href',
+      '/adoptions/mine',
+    )
+  })
+
   it('does not show the adopter link to the shelter administrator', () => {
     getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
 

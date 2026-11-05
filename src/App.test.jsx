@@ -21,7 +21,7 @@ vi.mock('./services/petService', () => ({
   addPetPhoto: vi.fn(),
 }))
 
-vi.mock('./services/adoptionService', () => ({ createAdoption: vi.fn() }))
+vi.mock('./services/adoptionService', () => ({ createAdoption: vi.fn(), getAdoptions: vi.fn() }))
 
 vi.mock('./services/adoptionRequestService', () => ({ getAdoptionRequests: vi.fn() }))
 
@@ -149,6 +149,12 @@ describe('App', () => {
     renderAt('/trial-cohabitation-requests/1')
 
     expect(await screen.findByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
+  })
+
+  it('shows the adoptions of the adopter on /adoptions/mine', () => {
+    renderAt('/adoptions/mine')
+
+    expect(screen.getByRole('heading', { name: 'Mis adopciones' })).toBeInTheDocument()
   })
 
   it('shows the adoption registration form on /adoptions/new', async () => {

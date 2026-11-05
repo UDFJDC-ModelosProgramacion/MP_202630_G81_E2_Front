@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createAdoption } from './adoptionService'
+import { createAdoption, getAdoptions } from './adoptionService'
 
 function mockFetch(response) {
   const fetchMock = vi.fn().mockResolvedValue(response)
@@ -9,6 +9,29 @@ function mockFetch(response) {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+})
+
+describe('getAdoptions', () => {
+  it('requests every adoption when there are no filters', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 200, json: () => Promise.resolve([{ id: 1 }]) })
+
+    const result = await getAdoptions({ adopterId: '' })
+
+    expect(result).toEqual([{ id: 1 }])
+    expect(fetchMock).toHaveBeenCalledWith('/api/adoptions', expect.any(Object))
+  })
+
+  it('sends the adopter as a query parameter and leaves out the blank filters', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 200, json: () => Promise.resolve([]) })
+
+    await getAdoptions({ adopterId: 2, petId: '', status: '  ' })
+
+    const url = new URL(fetchMock.mock.calls[0][0], 'http://localhost')
+    expect(url.pathname).toBe('/api/adoptions')
+    expect(url.searchParams.get('adopterId')).toBe('2')
+    expect(url.searchParams.has('petId')).toBe(false)
+    expect(url.searchParams.has('status')).toBe(false)
+  })
 })
 
 describe('createAdoption', () => {
