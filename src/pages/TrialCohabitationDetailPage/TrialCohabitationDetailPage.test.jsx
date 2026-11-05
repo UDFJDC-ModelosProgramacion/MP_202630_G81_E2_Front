@@ -1,14 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import TrialCohabitationDetailPage from './TrialCohabitationDetailPage'
 import { getSession } from '../../config/roleSession'
 import { ApiError } from '../../services/apiClient'
-import { getTrialCohabitationRequest } from '../../services/trialCohabitationService'
+import {
+  getTrialCohabitationRequest,
+  updateTrialCohabitationRequest,
+} from '../../services/trialCohabitationService'
 
 vi.mock('../../services/trialCohabitationService', () => ({
   getTrialCohabitationRequest: vi.fn(),
+  updateTrialCohabitationRequest: vi.fn(),
 }))
 vi.mock('../../config/roleSession', () => ({
   ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', VETERINARIAN: 'VETERINARIAN', ADOPTER: 'ADOPTER' },
@@ -45,6 +49,10 @@ describe('TrialCohabitationDetailPage', () => {
     vi.clearAllMocks()
     getSession.mockReturnValue({ role: 'ADOPTER', userId: 2 })
     getTrialCohabitationRequest.mockResolvedValue(REQUEST)
+    updateTrialCohabitationRequest.mockImplementation(async (id, body) => ({
+      ...REQUEST,
+      status: body.status,
+    }))
   })
 
   it('shows the details of the request to the adopter who sent it', async () => {
@@ -128,6 +136,119 @@ describe('TrialCohabitationDetailPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
     expect(getTrialCohabitationRequest).toHaveBeenCalledTimes(2)
+  })
+
+  it('offers the shelter the decisions on a pending request', async () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    expect(screen.getByRole('button', { name: 'Aprobar solicitud' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Rechazar solicitud' })).toBeInTheDocument()
+  })
+
+  it('does not offer the decisions to the adopter', async () => {
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    expect(screen.queryByRole('button', { name: 'Aprobar solicitud' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Rechazar solicitud' })).not.toBeInTheDocument()
+  })
+
+  it('does not offer the decisions once the request is no longer pending', async () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    getTrialCohabitationRequest.mockResolvedValue({ ...REQUEST, status: 'APPROVED' })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    expect(screen.queryByRole('button', { name: 'Aprobar solicitud' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Rechazar solicitud' })).not.toBeInTheDocument()
+  })
+
+  it('approves the request after confirmation and shows the new status', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    await user.click(screen.getByRole('button', { name: 'Aprobar solicitud' }))
+    const dialog = await screen.findByRole('alertdialog', { name: '¿Aprobar esta solicitud?' })
+    expect(updateTrialCohabitationRequest).not.toHaveBeenCalled()
+
+    await user.click(within(dialog).getByRole('button', { name: 'Aprobar solicitud' }))
+
+    await waitFor(() =>
+      expect(updateTrialCohabitationRequest).toHaveBeenCalledWith('1', {
+        status: 'APPROVED',
+        description: 'Quiero convivir con Luna',
+      }),
+    )
+    expect(
+      await screen.findByRole('dialog', { name: '¡Solicitud aprobada con éxito!' }),
+    ).toBeInTheDocument()
+    expect(document.querySelector('[data-status="APPROVED"]')).toHaveTextContent('Aprobada')
+    expect(screen.queryByRole('button', { name: 'Aprobar solicitud' })).not.toBeInTheDocument()
+  })
+
+  it('rejects the request after confirmation', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    await user.click(screen.getByRole('button', { name: 'Rechazar solicitud' }))
+    const dialog = await screen.findByRole('alertdialog', { name: '¿Rechazar esta solicitud?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Rechazar solicitud' }))
+
+    await waitFor(() =>
+      expect(updateTrialCohabitationRequest).toHaveBeenCalledWith('1', {
+        status: 'REJECTED',
+        description: 'Quiero convivir con Luna',
+      }),
+    )
+    expect(
+      await screen.findByRole('dialog', { name: '¡Solicitud rechazada con éxito!' }),
+    ).toBeInTheDocument()
+    expect(document.querySelector('[data-status="REJECTED"]')).toHaveTextContent('Rechazada')
+  })
+
+  it('does not change the request when the confirmation is cancelled', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    await user.click(screen.getByRole('button', { name: 'Aprobar solicitud' }))
+    const dialog = await screen.findByRole('alertdialog', { name: '¿Aprobar esta solicitud?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
+    expect(updateTrialCohabitationRequest).not.toHaveBeenCalled()
+    expect(document.querySelector('[data-status="PENDING"]')).toHaveTextContent('Pendiente')
+  })
+
+  it('shows the back-end message when the decision is refused', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    updateTrialCohabitationRequest.mockRejectedValue(
+      new ApiError('A finalized request (approved, rejected or cancelled) cannot be modified', 412),
+    )
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    await user.click(screen.getByRole('button', { name: 'Aprobar solicitud' }))
+    const dialog = await screen.findByRole('alertdialog', { name: '¿Aprobar esta solicitud?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Aprobar solicitud' }))
+
+    const errorDialog = await screen.findByRole('alertdialog', {
+      name: 'No se pudo guardar la decisión',
+    })
+    expect(
+      within(errorDialog).getByText(
+        'A finalized request (approved, rejected or cancelled) cannot be modified',
+      ),
+    ).toBeInTheDocument()
+    expect(document.querySelector('[data-status="PENDING"]')).toHaveTextContent('Pendiente')
   })
 
   it('notes when the request already generated a trial cohabitation', async () => {

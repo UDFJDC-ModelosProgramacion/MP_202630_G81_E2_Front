@@ -3,6 +3,7 @@ import {
   createTrialCohabitationRequest,
   getTrialCohabitationRequest,
   getTrialCohabitationRequests,
+  updateTrialCohabitationRequest,
 } from './trialCohabitationService'
 
 function mockFetch(response) {
@@ -19,6 +20,26 @@ const okResponse = (body, status = 200) => ({
 
 afterEach(() => {
   vi.unstubAllGlobals()
+})
+
+describe('updateTrialCohabitationRequest', () => {
+  it('puts the decision on the request and returns the updated one', async () => {
+    const fetchMock = mockFetch(okResponse({ id: 5, status: 'APPROVED' }))
+
+    const result = await updateTrialCohabitationRequest(5, {
+      status: 'APPROVED',
+      description: 'Quiero convivir con Luna',
+    })
+
+    expect(result).toEqual({ id: 5, status: 'APPROVED' })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/trialCohabitationRequests/5')
+    expect(options.method).toBe('PUT')
+    expect(JSON.parse(options.body)).toEqual({
+      status: 'APPROVED',
+      description: 'Quiero convivir con Luna',
+    })
+  })
 })
 
 describe('getTrialCohabitationRequest', () => {

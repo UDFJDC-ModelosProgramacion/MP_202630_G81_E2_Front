@@ -15,3 +15,14 @@ export function canViewTrialRequest(request, session) {
   }
   return false
 }
+
+// Only a pending request can be approved or rejected; the back-end blocks any other change.
+export function isPendingRequest(request) {
+  return request.status === 'PENDING'
+}
+
+// The back-end keeps the adopter, the pet, and the period when they are not sent, and it
+// requires the description, so a decision only needs the new status and the description.
+export function buildDecisionPayload(request, status) {
+  return { status, description: request.description }
+}

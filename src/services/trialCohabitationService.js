@@ -13,6 +13,10 @@ export function getTrialCohabitationRequest(requestId) {
   return api.get(`/trialCohabitationRequests/${encodeURIComponent(requestId)}`)
 }
 
+export function updateTrialCohabitationRequest(requestId, request) {
+  return api.put(`/trialCohabitationRequests/${encodeURIComponent(requestId)}`, request)
+}
+
 export function createTrialCohabitationRequest(request) {
   return api.post('/trialCohabitationRequests', request)
 }

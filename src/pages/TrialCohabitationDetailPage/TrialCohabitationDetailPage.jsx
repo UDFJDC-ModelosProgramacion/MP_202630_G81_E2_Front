@@ -1,11 +1,42 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog'
+import ErrorDialog from '../../components/ErrorDialog/ErrorDialog'
 import ScreenState from '../../components/ScreenState/ScreenState'
+import SuccessDialog from '../../components/SuccessDialog/SuccessDialog'
 import { getSession, ROLES } from '../../config/roleSession'
-import { getTrialCohabitationRequest } from '../../services/trialCohabitationService'
+import {
+  getTrialCohabitationRequest,
+  updateTrialCohabitationRequest,
+} from '../../services/trialCohabitationService'
 import { durationInDays, formatDay } from '../../utils/dates'
-import { canViewTrialRequest, trialRequestStatusLabel } from '../../utils/trialCohabitation'
+import {
+  buildDecisionPayload,
+  canViewTrialRequest,
+  isPendingRequest,
+  trialRequestStatusLabel,
+} from '../../utils/trialCohabitation'
 import styles from './TrialCohabitationDetailPage.module.css'
+
+const DECISIONS = {
+  APPROVED: {
+    question: '¿Aprobar esta solicitud?',
+    button: 'Aprobar solicitud',
+    outcome: 'quedará aprobada',
+    past: 'aprobada',
+    done: '¡Solicitud aprobada con éxito!',
+  },
+  REJECTED: {
+    question: '¿Rechazar esta solicitud?',
+    button: 'Rechazar solicitud',
+    outcome: 'quedará rechazada',
+    past: 'rechazada',
+    done: '¡Solicitud rechazada con éxito!',
+  },
+}
+
+const DECISION_HINT =
+  'Verifique la solicitud antes de continuar o comuníquese con la administración si considera que se trata de un error.'
 
 const dayOf = (value) => String(value ?? '').slice(0, 10)
 
@@ -16,9 +47,14 @@ const adopterName = (adopter) =>
 
 export default function TrialCohabitationDetailPage() {
   const { requestId } = useParams()
+  const navigate = useNavigate()
   const session = getSession()
   const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState({ status: 'loading', request: null, message: '' })
+  const [decision, setDecision] = useState(null)
+  const [deciding, setDeciding] = useState(false)
+  const [decisionError, setDecisionError] = useState(null)
+  const [decided, setDecided] = useState(null)
 
   useEffect(() => {
     let mounted = true
@@ -37,6 +73,25 @@ export default function TrialCohabitationDetailPage() {
   function retry() {
     setResult((current) => ({ ...current, status: 'loading' }))
     setAttempt((value) => value + 1)
+  }
+
+  async function handleDecision() {
+    setDeciding(true)
+    try {
+      const saved = await updateTrialCohabitationRequest(
+        requestId,
+        buildDecisionPayload(result.request, decision),
+      )
+      setResult((current) => ({
+        ...current,
+        request: { ...current.request, status: saved?.status ?? decision },
+      }))
+      setDecided(decision)
+    } catch (error) {
+      setDecisionError({ message: error.message, status: error.status })
+    }
+    setDeciding(false)
+    setDecision(null)
   }
 
   const { status, request, message } = result
@@ -80,6 +135,9 @@ export default function TrialCohabitationDetailPage() {
   }
 
   const days = durationInDays(dayOf(request.startDate), dayOf(request.endDate))
+  const canDecide = isShelter && isPendingRequest(request)
+  const petName = request.pet?.name
+  const adopter = adopterName(request.adopter)
 
   return (
     <section className={styles.page}>
@@ -96,7 +154,7 @@ export default function TrialCohabitationDetailPage() {
       <dl className={styles.details}>
         <div className={styles.row}>
           <dt>Adoptante</dt>
-          <dd>{adopterName(request.adopter)}</dd>
+          <dd>{adopter}</dd>
         </div>
         <div className={styles.row}>
           <dt>Contacto</dt>
@@ -129,7 +187,54 @@ export default function TrialCohabitationDetailPage() {
         <p className={styles.note}>Esta solicitud ya generó una convivencia de prueba.</p>
       )}
 
+      {canDecide && (
+        <div className={styles.decisions}>
+          <button type="button" className={styles.approve} onClick={() => setDecision('APPROVED')}>
+            {DECISIONS.APPROVED.button}
+          </button>
+          <button type="button" className={styles.reject} onClick={() => setDecision('REJECTED')}>
+            {DECISIONS.REJECTED.button}
+          </button>
+        </div>
+      )}
+
       <div className={styles.toolbar}>{backLink}</div>
+
+      {decision && (
+        <ConfirmDialog
+          title={DECISIONS[decision].question}
+          message={`La solicitud de ${petName} de ${adopter} ${DECISIONS[decision].outcome}. Una solicitud finalizada no se puede modificar después.`}
+          confirmLabel={DECISIONS[decision].button}
+          pendingLabel="Guardando..."
+          pending={deciding}
+          onConfirm={handleDecision}
+          onCancel={() => setDecision(null)}
+        />
+      )}
+
+      {decisionError && (
+        <ErrorDialog
+          title="No se pudo guardar la decisión"
+          message={decisionError.message}
+          status={decisionError.status}
+          hint={DECISION_HINT}
+          actionLabel="Cerrar"
+          onClose={() => setDecisionError(null)}
+        />
+      )}
+
+      {decided && (
+        <SuccessDialog
+          title={DECISIONS[decided].done}
+          message={`La solicitud de ${petName} de ${adopter} quedó ${DECISIONS[decided].past}.`}
+          details={[{ label: 'Estado', value: trialRequestStatusLabel(decided) }]}
+          statusLabel="Código HTTP 200 • Actualizada con éxito"
+          actionLabel="Volver a las solicitudes recibidas"
+          closeLabel="Quedarme en el detalle"
+          onAction={() => navigate('/trial-cohabitation-requests/received')}
+          onClose={() => setDecided(null)}
+        />
+      )}
     </section>
   )
 }
