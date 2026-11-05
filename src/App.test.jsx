@@ -2,12 +2,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
+import { getShelters } from './services/shelterService'
 import { getVeterinarians } from './services/veterinarianService'
+
+vi.mock('./services/shelterService', () => ({
+  createShelter: vi.fn(),
+  getShelters: vi.fn(),
+}))
 
 vi.mock('./services/veterinarianService', () => ({
   getVeterinarians: vi.fn(),
   getVeterinarian: vi.fn(),
-  createVeterinarian: vi.fn(),
 }))
 
 function renderAt(path) {
@@ -21,6 +26,7 @@ function renderAt(path) {
 describe('App', () => {
   beforeEach(() => {
     getVeterinarians.mockResolvedValue([])
+    getShelters.mockResolvedValue([])
   })
 
   it('shows the navbar and the veterinarians page', async () => {
@@ -56,11 +62,10 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Mascotas (pendiente)' })).toBeInTheDocument()
   })
 
-  it('shows the registration form on /veterinarians/new', () => {
-    renderAt('/veterinarians/new')
+  it('shows the list of shelters', async () => {
+    renderAt('/shelters')
 
-    expect(screen.getByRole('heading', { name: 'Registre un veterinario' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Busca un Refugio cerca de Ti' })).toBeInTheDocument()
+    expect(await screen.findByText('Aún no hay refugios registrados')).toBeInTheDocument()
   })
 })
-
-
