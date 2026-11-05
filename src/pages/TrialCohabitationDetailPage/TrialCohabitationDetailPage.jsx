@@ -12,8 +12,9 @@ import {
 import { durationInDays, formatDay } from '../../utils/dates'
 import {
   buildDecisionPayload,
+  canCancelTrialRequest,
+  canDecideTrialRequest,
   canViewTrialRequest,
-  isPendingRequest,
   trialRequestStatusLabel,
 } from '../../utils/trialCohabitation'
 import styles from './TrialCohabitationDetailPage.module.css'
@@ -32,6 +33,14 @@ const DECISIONS = {
     outcome: 'quedará rechazada',
     past: 'rechazada',
     done: '¡Solicitud rechazada con éxito!',
+  },
+  CANCELLED: {
+    question: '¿Cancelar esta solicitud?',
+    button: 'Cancelar solicitud',
+    dismiss: 'Mantener solicitud',
+    outcome: 'quedará cancelada',
+    past: 'cancelada',
+    done: '¡Solicitud cancelada con éxito!',
   },
 }
 
@@ -135,7 +144,8 @@ export default function TrialCohabitationDetailPage() {
   }
 
   const days = durationInDays(dayOf(request.startDate), dayOf(request.endDate))
-  const canDecide = isShelter && isPendingRequest(request)
+  const canDecide = canDecideTrialRequest(request, session)
+  const canCancel = canCancelTrialRequest(request, session)
   const petName = request.pet?.name
   const adopter = adopterName(request.adopter)
 
@@ -198,6 +208,14 @@ export default function TrialCohabitationDetailPage() {
         </div>
       )}
 
+      {canCancel && (
+        <div className={styles.decisions}>
+          <button type="button" className={styles.cancelRequest} onClick={() => setDecision('CANCELLED')}>
+            {DECISIONS.CANCELLED.button}
+          </button>
+        </div>
+      )}
+
       <div className={styles.toolbar}>{backLink}</div>
 
       {decision && (
@@ -205,6 +223,7 @@ export default function TrialCohabitationDetailPage() {
           title={DECISIONS[decision].question}
           message={`La solicitud de ${petName} de ${adopter} ${DECISIONS[decision].outcome}. Una solicitud finalizada no se puede modificar después.`}
           confirmLabel={DECISIONS[decision].button}
+          cancelLabel={DECISIONS[decision].dismiss ?? 'Cancelar'}
           pendingLabel="Guardando..."
           pending={deciding}
           onConfirm={handleDecision}
@@ -229,9 +248,9 @@ export default function TrialCohabitationDetailPage() {
           message={`La solicitud de ${petName} de ${adopter} quedó ${DECISIONS[decided].past}.`}
           details={[{ label: 'Estado', value: trialRequestStatusLabel(decided) }]}
           statusLabel="Código HTTP 200 • Actualizada con éxito"
-          actionLabel="Volver a las solicitudes recibidas"
+          actionLabel={backLabel}
           closeLabel="Quedarme en el detalle"
-          onAction={() => navigate('/trial-cohabitation-requests/received')}
+          onAction={() => navigate(backPath)}
           onClose={() => setDecided(null)}
         />
       )}

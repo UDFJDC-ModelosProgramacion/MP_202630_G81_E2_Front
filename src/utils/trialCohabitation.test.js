@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildDecisionPayload,
+  canCancelTrialRequest,
+  canDecideTrialRequest,
   canViewTrialRequest,
   isPendingRequest,
   trialRequestStatusLabel,
@@ -44,6 +46,38 @@ describe('isPendingRequest', () => {
     expect(isPendingRequest({ status: 'APPROVED' })).toBe(false)
     expect(isPendingRequest({ status: 'REJECTED' })).toBe(false)
     expect(isPendingRequest({ status: 'CANCELLED' })).toBe(false)
+  })
+})
+
+describe('canDecideTrialRequest', () => {
+  const PENDING = { status: 'PENDING', pet: { shelter: { id: 1 } } }
+
+  it('lets the shelter that owns the pet decide on a pending request', () => {
+    expect(canDecideTrialRequest(PENDING, { role: 'SHELTER_ADMIN', shelterId: 1 })).toBe(true)
+  })
+
+  it('keeps the adopter, another shelter, and finalized requests out', () => {
+    expect(canDecideTrialRequest(PENDING, { role: 'ADOPTER', userId: 2 })).toBe(false)
+    expect(canDecideTrialRequest(PENDING, { role: 'SHELTER_ADMIN', shelterId: 2 })).toBe(false)
+    expect(
+      canDecideTrialRequest({ ...PENDING, status: 'APPROVED' }, { role: 'SHELTER_ADMIN', shelterId: 1 }),
+    ).toBe(false)
+  })
+})
+
+describe('canCancelTrialRequest', () => {
+  const PENDING = { status: 'PENDING', adopter: { id: 2 } }
+
+  it('lets the adopter who sent a pending request cancel it', () => {
+    expect(canCancelTrialRequest(PENDING, { role: 'ADOPTER', userId: 2 })).toBe(true)
+  })
+
+  it('keeps other adopters, the shelter, and finalized requests out', () => {
+    expect(canCancelTrialRequest(PENDING, { role: 'ADOPTER', userId: 3 })).toBe(false)
+    expect(canCancelTrialRequest(PENDING, { role: 'SHELTER_ADMIN', shelterId: 1 })).toBe(false)
+    expect(
+      canCancelTrialRequest({ ...PENDING, status: 'REJECTED' }, { role: 'ADOPTER', userId: 2 }),
+    ).toBe(false)
   })
 })
 

@@ -21,6 +21,24 @@ export function isPendingRequest(request) {
   return request.status === 'PENDING'
 }
 
+// Only the shelter that owns the pet approves or rejects a pending request.
+export function canDecideTrialRequest(request, session) {
+  return (
+    session.role === ROLES.SHELTER_ADMIN &&
+    Number(request.pet?.shelter?.id) === Number(session.shelterId) &&
+    isPendingRequest(request)
+  )
+}
+
+// Only the adopter who sent a pending request can cancel it.
+export function canCancelTrialRequest(request, session) {
+  return (
+    session.role === ROLES.ADOPTER &&
+    Number(request.adopter?.id) === Number(session.userId) &&
+    isPendingRequest(request)
+  )
+}
+
 // The back-end keeps the adopter, the pet, and the period when they are not sent, and it
 // requires the description, so a decision only needs the new status and the description.
 export function buildDecisionPayload(request, status) {

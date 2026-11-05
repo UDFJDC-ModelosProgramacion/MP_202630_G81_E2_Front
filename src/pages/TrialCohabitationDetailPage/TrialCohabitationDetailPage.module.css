@@ -148,6 +148,26 @@
   background: #fef3f2;
 }
 
+.cancelRequest {
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancelRequest:hover {
+  background: var(--color-surface-muted);
+}
+
+.cancelRequest:focus-visible {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
 .approve:focus-visible,
 .reject:focus-visible {
   outline: 3px solid var(--color-primary-ring);
