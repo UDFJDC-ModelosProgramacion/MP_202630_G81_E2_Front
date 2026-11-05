@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 39 test files / 404 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 44 test files / 429 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -151,6 +151,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/trial-cohabitation-requests/new` | Request a trial cohabitation (HU29) | Adopter | ✅ Implemented |
 | `/trial-cohabitation-requests/received` | Trial cohabitation requests received by the shelter (HU31) | Shelter admin | ✅ Implemented |
 | `/trial-cohabitation-requests/:requestId` | Trial cohabitation request detail (HU32) | Adopter who sent it, or the shelter of its pet | ✅ Implemented |
+| `/adoptions/new` | Register an adoption from an approved adoption request (HU35) | Shelter admin | ✅ Implemented |
 | `/trial-cohabitation-requests` | Trial cohabitation requests of the adopter (HU30) | Adopter | ✅ Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
 | `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
@@ -184,6 +185,8 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `GET` | `/trialCohabitationRequests?petId=&status=` | HU31 (requests of the shelter's pets) | `getTrialCohabitationRequests` |
 | `GET` | `/trialCohabitationRequests/{id}` | HU32 (request detail) | `getTrialCohabitationRequest` |
 | `PUT` | `/trialCohabitationRequests/{id}` | HU33 and HU34 (approve, reject, or cancel) | `updateTrialCohabitationRequest` |
+| `GET` | `/adoptionRequests?petId=&status=&currentUserRole=` | HU35 (approved requests for the shelter's pets) | `getAdoptionRequests` |
+| `POST` | `/adoptions` | HU35 (register an adoption) | `createAdoption` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -215,6 +218,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU32** | View the detail of a trial cohabitation request | `/trial-cohabitation-requests/:requestId` | ✅ Implemented |
 | **HU33** | Approve or reject a trial cohabitation request | `/trial-cohabitation-requests/:requestId` | ✅ Implemented |
 | **HU34** | Cancel a trial cohabitation request | `/trial-cohabitation-requests/:requestId` | ✅ Implemented |
+| **HU35** | Register an adoption | `/adoptions/new` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -481,6 +485,28 @@ While the request is **pending**, the adopter sees **Cancelar solicitud** on its
 4. Start the front as the shelter administrator and open the same request: it should show "Cancelada" and no decision buttons.
 5. Open an approved request as its adopter: no cancel button should be offered.
 
+### HU35 – Register an Adoption
+
+**Route:** `/adoptions/new` · **Role:** shelter administrator (`SHELTER_ADMIN`)
+
+The shelter registers the adoption of one of its pets from an **approved adoption request**. The request defines the pet and the adopter, so the form only asks for the request (listed with the pet and the adopter), the adoption date, and the important notes. The new adoption starts as **En curso** (`IN_PROGRESS`).
+
+Only the requests that can still become an adoption are offered: the pet belongs to the shelter, is active, and is not adopted (a cancelled adoption does not count); the adopter is active; and the request has no adoption yet. The pets that are already adopted are not queried at all.
+
+- **Back-end:** `POST /api/adoptions` with `date`, `status: "IN_PROGRESS"`, `importantNotes`, and the pet, shelter, adopter, and adoption request as `{ id }` references. The approved requests come from `GET /api/adoptionRequests?petId=&status=APPROVED&currentUserRole=ADMIN`. The back-end shows every request only to the `ADMIN` role, which is the shelter administrator here.
+- **Rules checked by the back-end:** the pet and the adopter are active; the pet is not adopted and has no pending trial cohabitation; the request is approved and not used yet. Each error is shown next to the request, the date, or the notes, or in an error dialog.
+- **States:** loading, error with its cause (and a **Reintentar** button), and three empty messages: the shelter has no pets, every pet is already adopted, or there is no approved request to use.
+- **Known gap:** after an adoption is created, the adoption request still shows `adoption: null`. The screen therefore checks the adoptions of the pet, so the request is not offered again.
+- **Approving adoption requests** has no screen in this block (HU35 to HU40). The approval is done through the API for now.
+
+**Manual testing:**
+
+1. Create an adoption request for an active pet of the shelter and an active adopter with `POST /api/adoptionRequests` (it starts as `PENDING`), then approve it with `PUT /api/adoptionRequests/{id}` using `status: "APPROVED"` and the description.
+2. Start the front as the shelter administrator (the default role) and open `/adoptions/new`: the approved request should be listed with the pet and the adopter.
+3. Submit the empty form: the errors should appear, and the focus should move to the request.
+4. Choose the request, a date, and notes, and register: the confirmation should show "En curso".
+5. Open the form again: the request should not be listed anymore. When every pet of the shelter is adopted, the message "No hay mascotas disponibles para adopción en tu refugio." should be displayed.
+
 ### HU06 – Register a Pet
 
 **Route:** `/pets/new` · **Role:** shelter administrator
@@ -560,9 +586,10 @@ npx vitest src/pages/TrialCohabitationRequestPage # HU29
 npx vitest src/pages/TrialCohabitationListPage   # HU30
 npx vitest src/pages/TrialCohabitationReceivedPage # HU31
 npx vitest src/pages/TrialCohabitationDetailPage   # HU32
+npx vitest src/pages/AdoptionRegisterPage         # HU35
 ```
 
-Current state: **39 test files, 404 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **44 test files, 429 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -584,6 +611,7 @@ Tests live next to the module they cover:
 | **HU32** | `TrialCohabitationDetailPage.test.jsx` (roles, access, errors), `trialCohabitation.test.js` (visibility rule), `trialCohabitationService.test.js` (by id), and the detail links of the HU30 and HU31 lists |
 | **HU33** | `TrialCohabitationDetailPage.test.jsx` (decisions by role and status, confirmation, refusals), `trialCohabitation.test.js` (pending rule and payload), `trialCohabitationService.test.js` (PUT) |
 | **HU34** | `TrialCohabitationDetailPage.test.jsx` (cancellation by role and status, dismissal, refusals), `trialCohabitation.test.js` (cancellation rule) |
+| **HU35** | `AdoptionRegisterPage.test.jsx` (offered requests, payload, errors, reload), `adoptionForm.test.js`, `adoptionService.test.js`, `adoptionRequestService.test.js` (query with the admin role), `adoptions.test.js` (adopted pets), `Navbar.test.jsx` (admin link) |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube
