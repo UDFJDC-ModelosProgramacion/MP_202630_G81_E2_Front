@@ -5,6 +5,7 @@ import App from './App'
 import { getMedicalEvent, getMedicalEvents } from './services/medicalEventService'
 import { getPet, getPets } from './services/petService'
 import { getTrialCohabitationRequest } from './services/trialCohabitationService'
+import { getAdoptionRequests } from './services/adoptionRequestService'
 import { getVeterinarians } from './services/veterinarianService'
 
 vi.mock('./services/veterinarianService', () => ({
@@ -19,6 +20,10 @@ vi.mock('./services/petService', () => ({
   createPet: vi.fn(),
   addPetPhoto: vi.fn(),
 }))
+
+vi.mock('./services/adoptionService', () => ({ createAdoption: vi.fn() }))
+
+vi.mock('./services/adoptionRequestService', () => ({ getAdoptionRequests: vi.fn() }))
 
 vi.mock('./services/trialCohabitationService', () => ({
   createTrialCohabitationRequest: vi.fn(),
@@ -144,6 +149,13 @@ describe('App', () => {
     renderAt('/trial-cohabitation-requests/1')
 
     expect(await screen.findByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
+  })
+
+  it('shows the adoption registration form on /adoptions/new', async () => {
+    renderAt('/adoptions/new')
+
+    expect(await screen.findByRole('heading', { name: 'Registrar adopción' })).toBeInTheDocument()
+    expect(getAdoptionRequests).not.toHaveBeenCalled()
   })
 
   it('shows the requests received by the shelter on /trial-cohabitation-requests/received', () => {

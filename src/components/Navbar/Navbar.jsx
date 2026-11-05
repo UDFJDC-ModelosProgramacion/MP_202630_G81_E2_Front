@@ -14,6 +14,7 @@ const ADMIN_LINKS = [
   { path: '/pets/new', label: 'Registrar mascota', end: true },
   { path: '/medical-events/new', label: 'Registrar evento médico', end: true },
   { path: '/trial-cohabitation-requests/received', label: 'Solicitudes de convivencia', end: true },
+  { path: '/adoptions/new', label: 'Registrar adopción', end: true },
 ]
 
 const ADOPTER_LINKS = [
