@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 39 test files / 394 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 39 test files / 404 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -183,7 +183,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `GET` | `/trialCohabitationRequests?adopterId=` | HU30 (adopter's requests) | `getTrialCohabitationRequests` |
 | `GET` | `/trialCohabitationRequests?petId=&status=` | HU31 (requests of the shelter's pets) | `getTrialCohabitationRequests` |
 | `GET` | `/trialCohabitationRequests/{id}` | HU32 (request detail) | `getTrialCohabitationRequest` |
-| `PUT` | `/trialCohabitationRequests/{id}` | HU33 (approve or reject) | `updateTrialCohabitationRequest` |
+| `PUT` | `/trialCohabitationRequests/{id}` | HU33 and HU34 (approve, reject, or cancel) | `updateTrialCohabitationRequest` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -214,6 +214,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU31** | View the trial cohabitation requests received by the shelter | `/trial-cohabitation-requests/received` | ✅ Implemented |
 | **HU32** | View the detail of a trial cohabitation request | `/trial-cohabitation-requests/:requestId` | ✅ Implemented |
 | **HU33** | Approve or reject a trial cohabitation request | `/trial-cohabitation-requests/:requestId` | ✅ Implemented |
+| **HU34** | Cancel a trial cohabitation request | `/trial-cohabitation-requests/:requestId` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -463,6 +464,23 @@ On the detail of a **pending** request, the shelter sees two buttons: **Aprobar 
 
 **Known gap:** the back-end does not check, when approving, that the pet is still available. A new pending request can be created for a pet that already has an approved one, and approving it would be accepted. This is a back-end rule to review, not a front-end one.
 
+### HU34 – Cancel a Trial Cohabitation Request
+
+**Route:** `/trial-cohabitation-requests/:requestId` (action on the detail page) · **Role:** the adopter who sent the request
+
+While the request is **pending**, the adopter sees **Cancelar solicitud** on its detail. The action asks for confirmation: **Cancelar solicitud** confirms it, and **Mantener solicitud** keeps the request. Once cancelled, the status becomes "Cancelada" and the button disappears. An approved, rejected, or already cancelled request cannot be cancelled.
+
+- **Back-end:** `PUT /api/trialCohabitationRequests/{id}` with `status: "CANCELLED"` and the description, the same call as HU33. The back-end accepts it only for a pending request. A finalized request returns 412 with the back-end message, which is shown in an error dialog.
+- **Who:** only the adopter who sent the request, the same ownership rule as the detail (HU32).
+
+**Manual testing:**
+
+1. Start the front as the adopter who sent a pending request (`VITE_ROLE=ADOPTER`, with `VITE_USER_ID` set to its id) and open its detail.
+2. Click **Cancelar solicitud** and choose **Mantener solicitud**: the request should not change.
+3. Click **Cancelar solicitud** again and confirm: the success dialog should appear, the status should become "Cancelada", and the button should disappear.
+4. Start the front as the shelter administrator and open the same request: it should show "Cancelada" and no decision buttons.
+5. Open an approved request as its adopter: no cancel button should be offered.
+
 ### HU06 – Register a Pet
 
 **Route:** `/pets/new` · **Role:** shelter administrator
@@ -544,7 +562,7 @@ npx vitest src/pages/TrialCohabitationReceivedPage # HU31
 npx vitest src/pages/TrialCohabitationDetailPage   # HU32
 ```
 
-Current state: **39 test files, 394 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **39 test files, 404 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -565,6 +583,7 @@ Tests live next to the module they cover:
 | **HU31** | `TrialCohabitationReceivedPage.test.jsx` (scoping to the shelter's pets, filters, race handling), `Navbar.test.jsx` (shelter link) |
 | **HU32** | `TrialCohabitationDetailPage.test.jsx` (roles, access, errors), `trialCohabitation.test.js` (visibility rule), `trialCohabitationService.test.js` (by id), and the detail links of the HU30 and HU31 lists |
 | **HU33** | `TrialCohabitationDetailPage.test.jsx` (decisions by role and status, confirmation, refusals), `trialCohabitation.test.js` (pending rule and payload), `trialCohabitationService.test.js` (PUT) |
+| **HU34** | `TrialCohabitationDetailPage.test.jsx` (cancellation by role and status, dismissal, refusals), `trialCohabitation.test.js` (cancellation rule) |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube
