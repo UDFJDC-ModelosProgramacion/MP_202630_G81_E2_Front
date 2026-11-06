@@ -32,7 +32,7 @@ describe('App', () => {
   it('shows the navbar and the veterinarians page', async () => {
     renderAt('/veterinarians')
 
-    expect(screen.getByText('Pet Adoption Platform')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Huellitas Seguras' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Veterinarios' })).toBeInTheDocument()
     expect(await screen.findByText('Aún no hay veterinarios registrados.')).toBeInTheDocument()
   })

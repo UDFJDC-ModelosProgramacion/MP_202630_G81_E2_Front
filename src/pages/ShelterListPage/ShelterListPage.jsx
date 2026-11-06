@@ -77,6 +77,7 @@ export default function ShelterListPage() {
   const lastRequest = useRef(0)
 
   // Only the answer of the latest request is shown, so a slow old one cannot overwrite it.
+  // It never rejects (errors become the 'error' state), so callers can ignore the promise with void.
   const search = useCallback((appliedFilters) => {
     const requestId = ++lastRequest.current
     return getShelters(appliedFilters)
@@ -105,7 +106,7 @@ export default function ShelterListPage() {
   }, [])
 
   useEffect(() => {
-    search(NO_FILTERS).then((shelters) => {
+    void search(NO_FILTERS).then((shelters) => {
       if (shelters) setCities(cityOptions(shelters))
     })
   }, [search])
@@ -118,13 +119,13 @@ export default function ShelterListPage() {
   function handleSubmit(event) {
     event.preventDefault()
     setResult((current) => ({ ...current, status: 'loading' }))
-    search(filters)
+    void search(filters)
   }
 
   function clearFilters() {
     setFilters(NO_FILTERS)
     setResult((current) => ({ ...current, status: 'loading' }))
-    search(NO_FILTERS)
+    void search(NO_FILTERS)
   }
 
   const { status, shelters, filtered, message } = result
@@ -135,7 +136,12 @@ export default function ShelterListPage() {
         <span className={styles.mark} aria-hidden="true">
           <HeartIcon className={styles.markIcon} />
         </span>
-        <h1 className={styles.title}>Busca un Refugio cerca de Ti</h1>
+        <div>
+          <h1 className={styles.title}>Busca un Refugio cerca de Ti</h1>
+          <p className={styles.subtitle}>
+            Consulta los refugios registrados y filtra por ciudad o dirección.
+          </p>
+        </div>
       </header>
 
       <form className={styles.filters} onSubmit={handleSubmit} aria-label="Filtros de refugios">

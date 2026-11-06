@@ -29,7 +29,7 @@ describe('Navbar', () => {
       'href',
       '/veterinarians',
     )
-    expect(screen.getByRole('link', { name: 'Pet Adoption Platform' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Huellitas Seguras' })).toBeInTheDocument()
   })
 
   it('shows the option to register a pet to the shelter administrator', () => {
@@ -90,5 +90,16 @@ describe('Navbar', () => {
     const user = screen.getByRole('group', { name: 'Usuario actual' })
     expect(user).toHaveTextContent('Usuario')
     expect(user).toHaveTextContent('Visitante')
+  })
+
+  it('shows the initials of the user in the avatar', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', name: 'AdminUser' })
+    const { unmount } = renderNavbar()
+    expect(screen.getByRole('group', { name: 'Usuario actual' })).toHaveTextContent('AU')
+    unmount()
+
+    getSession.mockReturnValue({ role: 'ADOPTER', name: 'luna' })
+    renderNavbar()
+    expect(screen.getByRole('group', { name: 'Usuario actual' })).toHaveTextContent('LU')
   })
 })
