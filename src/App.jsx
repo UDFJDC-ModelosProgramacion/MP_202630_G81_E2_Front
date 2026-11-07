@@ -5,6 +5,7 @@ import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
 import ShelterRegisterPage from './pages/ShelterRegisterPage/ShelterRegisterPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
 import VeterinariansPage from './pages/VeterinariansPage/VeterinariansPage'
+import UpdateVeterinarianPage from './pages/UpdateVeterinarianPage/UpdateVeterinarianPage'
 
 function Pending({ title }) {
   return <h1>{title} (pendiente)</h1>
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/veterinarians" element={<VeterinariansPage />} />
         <Route path="/veterinarians/new" element={<RegisterVeterinarianPage />} />
         <Route path="/veterinarians/:veterinarianId" element={<VeterinarianProfilePage />} />
+        <Route path="/veterinarians/:veterinarianId/edit" element={<UpdateVeterinarianPage />} />
       </Route>
     </Routes>
   )

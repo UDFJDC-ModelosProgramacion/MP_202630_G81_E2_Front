@@ -17,3 +17,7 @@ export function getVeterinarian(veterinarianId) {
 export function createVeterinarian(veterinarian) {
   return api.post('/veterinarians', veterinarian)
 }
+
+export function updateVeterinarian(veterinarianId, changes) {
+  return api.put(`/veterinarians/${encodeURIComponent(veterinarianId)}`, changes)
+}

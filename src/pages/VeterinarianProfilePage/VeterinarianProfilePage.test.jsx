@@ -3,7 +3,12 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import VeterinarianProfilePage from './VeterinarianProfilePage'
 import { getVeterinarian } from '../../services/veterinarianService'
+import { getSession } from '../../config/session'
 
+vi.mock('../../config/session', () => ({
+  ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
+  getSession: vi.fn(),
+}))
 vi.mock('../../services/veterinarianService', () => ({
   getVeterinarians: vi.fn(),
   getVeterinarian: vi.fn(),
@@ -24,9 +29,9 @@ const VETERINARIAN = {
   ],
 }
 
-function renderProfile() {
+function renderProfile(entry = '/veterinarians/3') {
   return render(
-    <MemoryRouter initialEntries={['/veterinarians/3']}>
+    <MemoryRouter initialEntries={[entry]}>
       <Routes>
         <Route path="/veterinarians/:veterinarianId" element={<VeterinarianProfilePage />} />
         <Route path="/veterinarians" element={<h1>Listado</h1>} />
@@ -38,6 +43,7 @@ function renderProfile() {
 describe('VeterinarianProfilePage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
   })
 
   it('shows the veterinarian with their follow-ups and medical events', async () => {
@@ -95,5 +101,47 @@ describe('VeterinarianProfilePage', () => {
       'href',
       '/veterinarians',
     )
+  })
+
+  it('offers the shelter administrator a link to edit the specialization and availability', async () => {
+    getVeterinarian.mockResolvedValue(VETERINARIAN)
+
+    renderProfile()
+
+    expect(
+      await screen.findByRole('link', { name: 'Editar especialización y disponibilidad' }),
+    ).toHaveAttribute('href', '/veterinarians/3/edit')
+  })
+
+  it('hides the edit link from users who are not shelter administrators', async () => {
+    getSession.mockReturnValue({ role: 'ADOPTER' })
+    getVeterinarian.mockResolvedValue(VETERINARIAN)
+
+    renderProfile()
+
+    await screen.findByRole('heading', { name: 'Laura Gómez' })
+    expect(
+      screen.queryByRole('link', { name: 'Editar especialización y disponibilidad' }),
+    ).not.toBeInTheDocument()
+  })
+
+    it('confirms the update when arriving from the edit form', async () => {
+    getVeterinarian.mockResolvedValue(VETERINARIAN)
+
+    renderProfile({ pathname: '/veterinarians/3', state: { updated: true } })
+
+    await screen.findByRole('heading', { name: 'Laura Gómez' })
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Los datos del veterinario se actualizaron correctamente.',
+    )
+  })
+
+  it('does not show the confirmation on a normal visit', async () => {
+    getVeterinarian.mockResolvedValue(VETERINARIAN)
+
+    renderProfile()
+
+    await screen.findByRole('heading', { name: 'Laura Gómez' })
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 })

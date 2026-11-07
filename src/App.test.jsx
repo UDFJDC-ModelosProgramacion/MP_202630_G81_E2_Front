@@ -2,12 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
-import { getVeterinarians } from './services/veterinarianService'
+import { getVeterinarian, getVeterinarians } from './services/veterinarianService'
 
 vi.mock('./services/veterinarianService', () => ({
   getVeterinarians: vi.fn(),
   getVeterinarian: vi.fn(),
   createVeterinarian: vi.fn(),
+  updateVeterinarian: vi.fn(),
 }))
 
 function renderAt(path) {
@@ -61,6 +62,19 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: 'Registre un veterinario' })).toBeInTheDocument()
   })
-})
 
+  it('shows the update form on /veterinarians/:id/edit', async () => {
+    getVeterinarian.mockResolvedValue({
+      id: 3,
+      firstName: 'Camila',
+      lastName: 'Rojas',
+      specialization: 'Cirugía',
+      availability: 'Lunes a viernes',
+    })
+
+    renderAt('/veterinarians/3/edit')
+
+    expect(await screen.findByRole('heading', { name: 'Actualizar veterinario' })).toBeInTheDocument()
+  })
+})
 
