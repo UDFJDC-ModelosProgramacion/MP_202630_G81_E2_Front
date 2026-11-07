@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { api, ApiError } from './apiClient'
-import { createVeterinarian, getVeterinarian, getVeterinarians } from './veterinarianService'
+import {
+  createVeterinarian,
+  getVeterinarian,
+  getVeterinarians,
+  updateVeterinarian,
+} from './veterinarianService'
 
 function mockFetch(response) {
   const fetchMock = vi.fn().mockResolvedValue(response)
@@ -121,6 +126,43 @@ describe('createVeterinarian', () => {
     expect(error.message).toBe(
       'Two veterinarians cannot be associated with the same user; this user already exists',
     )
+  })
+})
+
+describe('updateVeterinarian', () => {
+  const CHANGES = { specialization: 'Cirugía', availability: 'Lunes a viernes' }
+
+  it('puts only the changes as JSON on the veterinarian url', async () => {
+    const fetchMock = mockFetch(okResponse({ id: 4, ...CHANGES }))
+
+    const result = await updateVeterinarian(4, CHANGES)
+
+    expect(result).toEqual({ id: 4, ...CHANGES })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/veterinarians/4')
+    expect(options.method).toBe('PUT')
+    expect(options.headers).toEqual({ 'Content-Type': 'application/json' })
+    expect(JSON.parse(options.body)).toEqual(CHANGES)
+  })
+
+  it('encodes the id so it cannot change the path', async () => {
+    const fetchMock = mockFetch(okResponse({}))
+
+    await updateVeterinarian('4/../5', CHANGES)
+
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/veterinarians/4%2F..%2F5')
+  })
+
+  it('fails with the message sent by the backend when the veterinarian does not exist', async () => {
+    mockFetch(
+      errorResponse(404, { apierror: { status: 'NOT_FOUND', message: 'Veterinarian not found' } }),
+    )
+
+    const error = await updateVeterinarian(999, CHANGES).catch((e) => e)
+
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.status).toBe(404)
+    expect(error.message).toBe('Veterinarian not found')
   })
 })
 
