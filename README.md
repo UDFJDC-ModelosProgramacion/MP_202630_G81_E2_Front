@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 45 test files / 438 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 46 test files / 452 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -153,6 +153,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/trial-cohabitation-requests/:requestId` | Trial cohabitation request detail (HU32) | Adopter who sent it, or the shelter of its pet | ✅ Implemented |
 | `/adoptions/new` | Register an adoption from an approved adoption request (HU35) | Shelter admin | ✅ Implemented |
 | `/adoptions/mine` | Adoptions of the adopter (HU36) | Adopter | ✅ Implemented |
+| `/adoptions/:adoptionId` | Adoption detail, with reviews and follow-ups (HU37) | Adopter who takes part, or the shelter of its pet | ✅ Implemented |
 | `/trial-cohabitation-requests` | Trial cohabitation requests of the adopter (HU30) | Adopter | ✅ Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
 | `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
@@ -189,6 +190,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `GET` | `/adoptionRequests?petId=&status=&currentUserRole=` | HU35 (approved requests for the shelter's pets) | `getAdoptionRequests` |
 | `POST` | `/adoptions` | HU35 (register an adoption) | `createAdoption` |
 | `GET` | `/adoptions?adopterId=` | HU36 (adopter's adoptions) | `getAdoptions` |
+| `GET` | `/adoptions/{id}` | HU37 (adoption detail) | `getAdoption` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -222,6 +224,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU34** | Cancel a trial cohabitation request | `/trial-cohabitation-requests/:requestId` | ✅ Implemented |
 | **HU35** | Register an adoption | `/adoptions/new` | ✅ Implemented |
 | **HU36** | View my adoptions | `/adoptions/mine` | ✅ Implemented |
+| **HU37** | View the detail of an adoption | `/adoptions/:adoptionId` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -526,6 +529,25 @@ The adopter sees the adoptions in which they take part, newest first. Each card 
 2. Start the front as an adopter without adoptions: the empty message should be displayed.
 3. Stop the back-end: the error and the retry button should be displayed.
 
+### HU37 – View the Detail of an Adoption
+
+**Route:** `/adoptions/:adoptionId` · **Role:** the adopter who takes part in the adoption, or the shelter that owns its pet
+
+The detail shows the pet, the status (En curso, Finalizada, or Cancelada), the adopter (name and contact), the shelter, the date of the adoption, the adoption request, and the important notes. It also lists the **reviews** (rating, date, and comment) and the **follow-ups** (date and observation), newest first. When there are none, the section says so. The screen is read-only: editing and deleting are HU39 and HU40.
+
+- **Back-end:** `GET /api/adoptions/{id}`, which returns the adoption with its reviews and follow-ups. An adoption that does not exist returns 404 with the back-end message.
+- **Access:** checked on the front-end (`canViewAdoption`), as in HU32, because the back-end has no authentication yet.
+- **States:** loading, error with its cause (and a **Reintentar** button), and access denied.
+- **Links:** each card of **Mis adopciones** (HU36) has a **Ver detalle** link.
+- **Follow-ups:** the follow-up controller is not in this branch of the back-end (it is in the adopters branch), so the back-end returns no follow-ups here. The screen shows whatever the back-end returns.
+
+**Manual testing:**
+
+1. Start the front as an adopter who takes part in an adoption (`VITE_ROLE=ADOPTER`, with `VITE_USER_ID` set to its id) and open it from **Mis adopciones**: the details, the reviews, and the follow-ups should be shown.
+2. Start the front as another adopter and open the same URL: the access message should be displayed.
+3. Start the front as the shelter administrator and open the same URL: the details should be shown, with a back link to the pets.
+4. Open `/adoptions/999`: the back-end message should be displayed, with a **Reintentar** button.
+
 ### HU06 – Register a Pet
 
 **Route:** `/pets/new` · **Role:** shelter administrator
@@ -607,9 +629,10 @@ npx vitest src/pages/TrialCohabitationReceivedPage # HU31
 npx vitest src/pages/TrialCohabitationDetailPage   # HU32
 npx vitest src/pages/AdoptionRegisterPage         # HU35
 npx vitest src/pages/MyAdoptionsPage              # HU36
+npx vitest src/pages/AdoptionDetailPage            # HU37
 ```
 
-Current state: **45 test files, 438 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **46 test files, 452 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -633,6 +656,7 @@ Tests live next to the module they cover:
 | **HU34** | `TrialCohabitationDetailPage.test.jsx` (cancellation by role and status, dismissal, refusals), `trialCohabitation.test.js` (cancellation rule) |
 | **HU35** | `AdoptionRegisterPage.test.jsx` (offered requests, payload, errors, reload), `adoptionForm.test.js`, `adoptionService.test.js`, `adoptionRequestService.test.js` (query with the admin role), `adoptions.test.js` (adopted pets), `Navbar.test.jsx` (admin link) |
 | **HU36** | `MyAdoptionsPage.test.jsx` (adopter's adoptions, order, states, role), `adoptionService.test.js` (query string), `Navbar.test.jsx` (adopter link) |
+| **HU37** | `AdoptionDetailPage.test.jsx` (roles, access, reviews and follow-ups order, empty states, errors), `adoptions.test.js` (visibility rule), `adoptionService.test.js` (by id), and the detail links of the HU36 list (`MyAdoptionsPage.test.jsx`) |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube
