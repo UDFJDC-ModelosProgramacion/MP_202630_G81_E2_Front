@@ -1,6 +1,6 @@
-﻿# Pets ÔÇô Front-end
+﻿# Pets – Front-end
 
-Web application for managing pet adoptions. This project was developed for the **Programming Models** course at Universidad Distrital Francisco Jos├® de Caldas, group **G81**, team **E2**.
+Web application for managing pet adoptions. This project was developed for the **Programming Models** course at Universidad Distrital Francisco José de Caldas, group **G81**, team **E2**.
 
 The front-end consumes the REST API provided by the back-end (Spring Boot), developed during Cycle 1.
 
@@ -25,11 +25,11 @@ The front-end consumes the REST API provided by the back-end (Spring Boot), deve
 
 | Team Member |
 |---|
-| Ardila Duran, Camilo Andr├®s |
+| Ardila Duran, Camilo Andrés |
 | Escobar Barrios, Alejandro |
 | Leal Rivera, Anggel Felipe |
 | Nossa Orjuela, Isabella |
-| Sandoval Rodr├¡guez, Luna Alejandra |
+| Sandoval Rodríguez, Luna Alejandra |
 
 ## Technologies
 
@@ -96,12 +96,12 @@ Automated tests ignore these variables (see `vite.config.js`), so they run succe
 
 ```text
 src/
-Ôö£ÔöÇÔöÇ components/        Reusable components
-Ôö£ÔöÇÔöÇ config/
-Ôö£ÔöÇÔöÇ constants/
-Ôö£ÔöÇÔöÇ pages/             One folder per screen (component, styles, and tests)
-Ôö£ÔöÇÔöÇ services/
-ÔööÔöÇÔöÇ utils/
+├── components/        Reusable components
+├── config/
+├── constants/
+├── pages/             One folder per screen (component, styles, and tests)
+├── services/
+└── utils/
 ```
 
 Each screen lives in its own folder alongside its CSS Module and tests. Logic that does not depend on React (such as validation and request body construction) is kept in separate modules, such as `PetRegisterPage/petForm.js`, so it can be tested independently.
@@ -112,6 +112,9 @@ Each screen lives in its own folder alongside its CSS Module and tests. Logic th
 |---|---|---|
 | `/veterinarians` | Veterinarian list with filters (HU70) | Implemented |
 | `/veterinarians/:veterinarianId` | Veterinarian profile (HU70) | Implemented |
+| `/shelters` | Shelter list with filters (HU02) | Implemented |
+| `/shelters/new` | Register a shelter (HU01) | Implemented |
+| `/shelters/:shelterId` | Shelter detail (HU03) | Placeholder, pending |
 | `/pets/new` | Register a pet (HU06) | Implemented |
 | `/pets` | Pet search (HU07) | Placeholder, pending |
 | `/pets/:petId` | Pet profile (HU08) | Placeholder, pending |
@@ -132,11 +135,12 @@ The back-end does not yet implement authentication. For now, the user and their 
 |---|---|---|---|
 | **HU70** | Veterinarian list with filters | `/veterinarians` | Implemented |
 | **HU01** | Register a shelter | `/shelters/new` | Implemented |
+| **HU02** | View the list of shelters | `/shelters` | Implemented |
 | **HU06** | Register a pet | `/pets/new` | Implemented |
 
-### HU70 ÔÇô Veterinarian List with Filters
+### HU70 – Veterinarian List with Filters
 
-**Route:** `/veterinarians` ┬À **Profile:** `/veterinarians/:veterinarianId`
+**Route:** `/veterinarians` · **Profile:** `/veterinarians/:veterinarianId`
 
 Shelter users can view veterinarians along with their **name, specialization, and availability**. They can filter the list by specialization and/or availability using the **Search** button (case-insensitive). If no veterinarians match the selected filters, a message informs the user that no results were found.
 
@@ -153,9 +157,32 @@ Opening a veterinarian's profile also displays their **follow-ups** and **medica
 4. Open a veterinarian's profile and verify that their follow-ups and medical events are displayed.
 5. Stop the back-end and verify that an error message is displayed.
 
-### HU06 ÔÇô Register a Pet
+### HU02 – View the List of Shelters
 
-**Route:** `/pets/new` ┬À **Role:** Shelter administrator.
+**Route:** `/shelters` · **Role:** any (visitor, adopter, veterinarian, or shelter administrator).
+
+Shows every registered shelter with its **name, NIT, city, and address**. Selecting a shelter opens its detail page `/shelters/{id}` (HU03, pending implementation).
+
+- **Filters:** two optional filters, **city** and **address**, which can be combined (a shelter must meet every filter provided). They are applied with the **Search** button.
+- **Exact match:** the back-end compares the exact text ignoring upper/lower case, not partial matches (for example, `carrera 15 # 85 - 32` finds that address, but `carrera 15` does not). The screen explains this with a help text. Empty filters are not sent to the back-end.
+- **Empty states:** `Aún no hay refugios registrados` when there are no shelters, and `No se encontraron refugios con esos filtros` with a **Limpiar filtros** button when the filters match none.
+- **Back-end:** `GET /api/shelters?city=&location=`.
+- **States:** loading, error with its cause, empty list, and empty result.
+- **Automated tests:** `ShelterListPage.test.jsx` and `shelterService.test.js`.
+
+**Manual Testing:**
+
+1. Register two shelters in different cities (HU01) and open `/shelters`. Both should be listed with name, NIT, city, and address.
+2. Select a city and click **Search**. Only the shelters in that city should remain.
+3. Type an address exactly as registered (any casing) and click **Search**. Only that shelter should remain. Type only part of it: no shelter should be found.
+4. Combine city and address with a mismatch. The message `No se encontraron refugios con esos filtros` and the **Limpiar filtros** button should appear; clicking it restores the full list.
+5. With an empty database, the message `Aún no hay refugios registrados` should appear.
+6. Click a shelter. The application should navigate to `/shelters/{id}`.
+7. Stop the back-end and search again. An error message should be displayed.
+
+### HU06 – Register a Pet
+
+**Route:** `/pets/new` · **Role:** Shelter administrator.
 
 The administrator registers a pet under their shelter, including at least one **arrival event** (date, type, and description).
 
