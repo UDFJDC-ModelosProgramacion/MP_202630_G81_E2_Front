@@ -56,16 +56,21 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Registre su Refugio' })).toBeInTheDocument()
   })
 
-  it('keeps the pages of other stories as pending', () => {
+  it('keeps the pages of other stories as unavailable, with a way out', () => {
     renderAt('/pets')
 
-    expect(screen.getByRole('heading', { name: 'Mascotas (pendiente)' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Mascotas' })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('todavía no está disponible')
+    expect(screen.getByRole('link', { name: 'Ir a la lista de refugios' })).toHaveAttribute(
+      'href',
+      '/shelters',
+    )
   })
 
   it('shows the list of shelters', async () => {
     renderAt('/shelters')
 
-    expect(screen.getByRole('heading', { name: 'Busca un Refugio cerca de Ti' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Busque un Refugio cerca de usted' })).toBeInTheDocument()
     expect(await screen.findByText('Aún no hay refugios registrados')).toBeInTheDocument()
   })
 })

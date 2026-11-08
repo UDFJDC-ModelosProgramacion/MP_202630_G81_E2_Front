@@ -249,7 +249,7 @@ describe('PetRegisterPage', () => {
 
     const dialog = await screen.findByRole('dialog', { name: '¡Mascota registrada con éxito!' })
     expect(dialog).toHaveTextContent('"Luna" ha sido registrada satisfactoriamente')
-    expect(dialog).toHaveTextContent('Código HTTP 201')
+    expect(dialog).toHaveTextContent('Registro exitoso')
     expect(dialog).toHaveTextContent('Perro')
     expect(dialog).toHaveTextContent('Criollo')
     expect(dialog).not.toHaveTextContent('la foto no se pudo guardar')
@@ -323,7 +323,7 @@ describe('PetRegisterPage', () => {
 
     const dialog = await screen.findByRole('alertdialog', { name: 'Error al registrar la mascota' })
     expect(dialog).toHaveTextContent(message)
-    expect(dialog).toHaveTextContent('Error 412')
+    expect(dialog).toHaveTextContent('Conflicto de registro')
     expect(textbox('Nombre')).toHaveValue('Luna')
   })
 
