@@ -6,6 +6,7 @@ import { getMedicalEvent, getMedicalEvents } from './services/medicalEventServic
 import { getPet, getPets } from './services/petService'
 import { getTrialCohabitationRequest } from './services/trialCohabitationService'
 import { getAdoptionRequests } from './services/adoptionRequestService'
+import { getAdoption } from './services/adoptionService'
 import { getVeterinarians } from './services/veterinarianService'
 
 vi.mock('./services/veterinarianService', () => ({
@@ -21,7 +22,11 @@ vi.mock('./services/petService', () => ({
   addPetPhoto: vi.fn(),
 }))
 
-vi.mock('./services/adoptionService', () => ({ createAdoption: vi.fn(), getAdoptions: vi.fn() }))
+vi.mock('./services/adoptionService', () => ({
+  createAdoption: vi.fn(),
+  getAdoption: vi.fn(),
+  getAdoptions: vi.fn(),
+}))
 
 vi.mock('./services/adoptionRequestService', () => ({ getAdoptionRequests: vi.fn() }))
 
@@ -147,6 +152,24 @@ describe('App', () => {
       trialCohabitation: null,
     })
     renderAt('/trial-cohabitation-requests/1')
+
+    expect(await screen.findByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
+  })
+
+  it('shows the detail of an adoption on /adoptions/:adoptionId', async () => {
+    getAdoption.mockResolvedValue({
+      id: 1,
+      date: '2026-11-08',
+      status: 'IN_PROGRESS',
+      importantNotes: 'Revisar vacunas cada mes',
+      pet: { id: 1, name: 'Luna', species: 'Perro', shelter: { id: 1 } },
+      shelter: { id: 1, name: 'Refugio Patitas' },
+      adopter: { id: 2, firstName: 'Carlos', lastName: 'Perez', email: 'carlos@mail.com', phone: '3000000000' },
+      adoptionRequest: { id: 11 },
+      reviews: [],
+      followUps: [],
+    })
+    renderAt('/adoptions/1')
 
     expect(await screen.findByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
   })

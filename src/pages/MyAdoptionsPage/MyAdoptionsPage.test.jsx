@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import MyAdoptionsPage from './MyAdoptionsPage'
 import { getSession } from '../../config/roleSession'
 import { ApiError } from '../../services/apiClient'
@@ -48,7 +49,11 @@ function fakeBackend({ adopterId }) {
 }
 
 function renderPage() {
-  return render(<MyAdoptionsPage />)
+  return render(
+    <MemoryRouter initialEntries={['/adoptions/mine']}>
+      <MyAdoptionsPage />
+    </MemoryRouter>,
+  )
 }
 
 describe('MyAdoptionsPage', () => {
@@ -68,6 +73,10 @@ describe('MyAdoptionsPage', () => {
     expect(items).toHaveLength(2)
     expect(within(items[0]).getByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
     expect(within(items[1]).getByRole('heading', { name: 'Kiara — Gato' })).toBeInTheDocument()
+    expect(within(items[0]).getByRole('link', { name: 'Ver detalle de la adopción de Luna' })).toHaveAttribute(
+      'href',
+      '/adoptions/2',
+    )
     expect(screen.queryByText('Nala — Gato')).not.toBeInTheDocument()
   })
 

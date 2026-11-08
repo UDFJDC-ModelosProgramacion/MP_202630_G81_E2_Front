@@ -10,6 +10,10 @@ export function getAdoptions({ adopterId, petId, shelterId, status } = {}) {
   return api.get(query ? `/adoptions?${query}` : '/adoptions')
 }
 
+export function getAdoption(adoptionId) {
+  return api.get(`/adoptions/${encodeURIComponent(adoptionId)}`)
+}
+
 export function createAdoption(adoption) {
   return api.post('/adoptions', adoption)
 }

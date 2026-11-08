@@ -81,6 +81,17 @@
   margin: 0;
 }
 
+.detailLink {
+  align-self: flex-start;
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+.detailLink:focus-visible {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
 .retry {
   margin-top: 0.75rem;
   padding: 0.5rem 0.9rem;

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { adoptionStatusLabel, hasActiveAdoption } from './adoptions'
+﻿import { describe, expect, it } from 'vitest'
+import { adoptionStatusLabel, canViewAdoption, hasActiveAdoption } from './adoptions'
 
 describe('adoptionStatusLabel', () => {
   it('shows each status in Spanish', () => {
@@ -24,5 +24,23 @@ describe('hasActiveAdoption', () => {
   it('is true while an adoption is in progress or finalized', () => {
     expect(hasActiveAdoption({ adoptions: [{ status: 'IN_PROGRESS' }] })).toBe(true)
     expect(hasActiveAdoption({ adoptions: [{ status: 'FINALIZED' }] })).toBe(true)
+  })
+})
+
+describe('canViewAdoption', () => {
+  const ADOPTION = { adopter: { id: 2 }, pet: { id: 1, shelter: { id: 1 } } }
+
+  it('lets the adopter who takes part in the adoption see it', () => {
+    expect(canViewAdoption(ADOPTION, { role: 'ADOPTER', userId: 2 })).toBe(true)
+    expect(canViewAdoption(ADOPTION, { role: 'ADOPTER', userId: 3 })).toBe(false)
+  })
+
+  it('lets the shelter that owns the pet see the adoption', () => {
+    expect(canViewAdoption(ADOPTION, { role: 'SHELTER_ADMIN', shelterId: 1 })).toBe(true)
+    expect(canViewAdoption(ADOPTION, { role: 'SHELTER_ADMIN', shelterId: 2 })).toBe(false)
+  })
+
+  it('keeps the other roles out', () => {
+    expect(canViewAdoption(ADOPTION, { role: 'VETERINARIAN', userId: 2, shelterId: 1 })).toBe(false)
   })
 })

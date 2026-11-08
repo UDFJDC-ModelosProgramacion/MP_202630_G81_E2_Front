@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createAdoption, getAdoptions } from './adoptionService'
+import { createAdoption, getAdoption, getAdoptions } from './adoptionService'
 
 function mockFetch(response) {
   const fetchMock = vi.fn().mockResolvedValue(response)
@@ -9,6 +9,17 @@ function mockFetch(response) {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+})
+
+describe('getAdoption', () => {
+  it('requests one adoption by id', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 200, json: () => Promise.resolve({ id: 4 }) })
+
+    const result = await getAdoption(4)
+
+    expect(result).toEqual({ id: 4 })
+    expect(fetchMock).toHaveBeenCalledWith('/api/adoptions/4', expect.any(Object))
+  })
 })
 
 describe('getAdoptions', () => {

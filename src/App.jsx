@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout/Layout'
+import AdoptionDetailPage from './pages/AdoptionDetailPage/AdoptionDetailPage'
 import AdoptionRegisterPage from './pages/AdoptionRegisterPage/AdoptionRegisterPage'
 import MyAdoptionsPage from './pages/MyAdoptionsPage/MyAdoptionsPage'
 import MedicalEventDetailPage from './pages/MedicalEventDetailPage/MedicalEventDetailPage'
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/trial-cohabitation-requests/received" element={<TrialCohabitationReceivedPage />} />
         <Route path="/adoptions/new" element={<AdoptionRegisterPage />} />
         <Route path="/adoptions/mine" element={<MyAdoptionsPage />} />
+        <Route path="/adoptions/:adoptionId" element={<AdoptionDetailPage />} />
         <Route path="/trial-cohabitation-requests/:requestId" element={<TrialCohabitationDetailPage />} />
         <Route path="/shelters/new" element={<ShelterRegisterPage />} />
         <Route path="/shelters/:shelterId" element={<Pending title="Detalle del refugio" />} />

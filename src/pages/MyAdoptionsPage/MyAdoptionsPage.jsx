@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { getSession, ROLES } from '../../config/roleSession'
 import { getAdoptions } from '../../services/adoptionService'
@@ -75,6 +76,13 @@ function AdoptionsList({ adopterId }) {
                 <time dateTime={dayOf(adoption.date)}>{formatDay(adoption.date)}</time>
               </p>
               <p className={styles.notes}>Notas importantes: {adoption.importantNotes}</p>
+              <Link
+                to={`/adoptions/${adoption.id}`}
+                className={styles.detailLink}
+                aria-label={`Ver detalle de la adopción de ${adoption.pet?.name}`}
+              >
+                Ver detalle
+              </Link>
             </li>
           ))}
         </ul>
