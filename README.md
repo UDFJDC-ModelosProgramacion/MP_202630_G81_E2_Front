@@ -1,4 +1,4 @@
-﻿# Pets – Front-end
+# Pets – Front-end
 
 Web application for managing pet adoptions. This project was developed for the **Programming Models** course at Universidad Distrital Francisco José de Caldas, group **G81**, team **E2**.
 
@@ -79,6 +79,7 @@ Copy `.env` and adjust the values as needed. The `.env` file is local and **must
 |---|---|---|
 | `VITE_API_BASE_URL` | Full API URL, for example `http://localhost:8999/api` if the back-end runs on port 8999 | `/api` (proxied to `localhost:8080`) |
 | `VITE_SHELTER_ID` | ID of the shelter assigned to the simulated administrator. **It must exist in the back-end.** | `1` |
+| `VITE_USER_ID` | ID of the active user for simulated session | `1` |
 
 Automated tests ignore these variables (see `vite.config.js`), so they run successfully regardless of the `.env` configuration.
 
@@ -104,12 +105,14 @@ src/
 └── utils/
 ```
 
-Each screen lives in its own folder alongside its CSS Module and tests. Logic that does not depend on React (such as validation and request body construction) is kept in separate modules, such as `PetRegisterPage/petForm.js`, so it can be tested independently.
+Each screen lives in its own folder alongside its CSS Module and tests. Logic that does not depend on React (such as validation and request body construction) is kept in separate modules, such as `UserRegisterPage/userForm.js` or `PetRegisterPage/petForm.js`, so it can be tested independently.
 
 ## Application Routes
 
 | Route | Screen | Status |
 |---|---|---|
+| `/register` | Register a new user (HU73) | Implemented |
+| `/profile` | View and edit user profile (HU74) | Implemented |
 | `/veterinarians` | Veterinarian list with filters (HU70) | Implemented |
 | `/veterinarians/:veterinarianId` | Veterinarian profile (HU70) | Implemented |
 | `/shelters` | Shelter list with filters (HU02) | Implemented |
@@ -127,16 +130,56 @@ The `/` route redirects to `/veterinarians`.
 The back-end does not yet implement authentication. For now, the user and their role are simulated in `src/config/session.js`: the default user is **AdminUser**, a shelter administrator, and their shelter is configured through `VITE_SHELTER_ID`.
 
 - Only the **shelter administrator** can see the **Register Pet** option in the navigation bar and access `/pets/new`. Any other role receives a message explaining that they do not have permission.
+- The **Registrarse** link in the navigation bar allows any visitor to create an account (`/register`).
+- Clicking on the user avatar in the navigation bar navigates to `/profile`, where personal information can be reviewed and edited.
 - Once authentication is implemented, only the `getSession()` function needs to be replaced.
 
 ## Implemented User Stories
 
 | User Story | Description | Route | Status |
 |---|---|---|---|
+| **HU73** | Register a new user | `/register` | Implemented |
+| **HU74** | View and update user profile | `/profile` | Implemented |
 | **HU70** | Veterinarian list with filters | `/veterinarians` | Implemented |
 | **HU01** | Register a shelter | `/shelters/new` | Implemented |
 | **HU02** | View the list of shelters | `/shelters` | Implemented |
 | **HU06** | Register a pet | `/pets/new` | Implemented |
+
+### HU73 – Register a New User
+
+**Route:** `/register` · **Role:** Any visitor.
+
+Allows new users to create an account on the pet adoption platform. The form collects **first name, last name, email, phone, password, and password confirmation**.
+
+- **Back-end:** `POST /api/users`.
+- **Validation:** Required fields are validated on the client side before submitting. The password must contain at least 8 characters and match the confirmation field.
+- **Errors:** Unique email enforcement is validated both locally and by the server (`The email address must be unique in the system`). Server errors display an informative dialog while keeping the user's input.
+- **Automated tests:** `UserRegisterPage.test.jsx`, `userForm.test.js`, and `userService.test.js`.
+
+**Manual Testing:**
+
+1. Open `/register` and submit the empty form: validation errors should appear for all required fields.
+2. Enter mismatched passwords or a password with fewer than 8 characters: error messages should guide the user.
+3. Fill in valid data and submit: a confirmation modal should appear, and upon acceptance, redirect to the platform.
+4. Try registering again with the same email address: the server error dialog will inform that the email is already in use.
+
+### HU74 – View and Update User Profile
+
+**Route:** `/profile` · **Role:** Any authenticated user.
+
+Displays the current user's profile information (**name, email, phone, and role**). Allows editing contact information in-place.
+
+- **Back-end:** `GET /api/users/{id}` and `PUT /api/users/{id}`.
+- **Editing:** Clicking "Editar Perfil" enables input fields for first name, last name, email, and phone. The user can save updates or cancel to discard unsaved changes.
+- **Errors:** If the email address is updated to one that already belongs to another user, an error notification is displayed without overwriting existing data.
+- **Automated tests:** `UserProfilePage.test.jsx`, `profileForm.test.js`, and `userService.test.js`.
+
+**Manual Testing:**
+
+1. Navigate to `/profile` by clicking on the user card in the navigation bar.
+2. Verify that your name, email, phone, and assigned role are displayed.
+3. Click "Editar Perfil", modify contact details, and click "Cancelar": changes are safely discarded.
+4. Click "Editar Perfil", make valid updates, and click "Guardar Cambios": a confirmation modal verifies that changes were saved successfully.
 
 ### HU70 – Veterinarian List with Filters
 
@@ -159,76 +202,28 @@ Opening a veterinarian's profile also displays their **follow-ups** and **medica
 
 ### HU02 – View the List of Shelters
 
-**Route:** `/shelters` · **Role:** any (visitor, adopter, veterinarian, or shelter administrator).
+**Route:** `/shelters` · **Role:** Any user.
 
-Shows every registered shelter with its **name, NIT, city, and address**. Selecting a shelter opens its detail page `/shelters/{id}` (HU03, pending implementation).
+Displays all registered shelters. Allows filtering by **city** and **location** simultaneously.
 
-- **Filters:** two optional filters, **city** and **address**, which can be combined (a shelter must meet every filter provided). They are applied with the **Search** button.
-- **Exact match:** the back-end compares the exact text ignoring upper/lower case, not partial matches (for example, `carrera 15 # 85 - 32` finds that address, but `carrera 15` does not). The screen explains this with a help text. Empty filters are not sent to the back-end.
-- **Empty states:** `Aún no hay refugios registrados` when there are no shelters, and `No se encontraron refugios con esos filtros` with a **Limpiar filtros** button when the filters match none.
 - **Back-end:** `GET /api/shelters?city=&location=`.
-- **States:** loading, error with its cause, empty list, and empty result.
-- **Automated tests:** `ShelterListPage.test.jsx` and `shelterService.test.js`.
-
-**Manual Testing:**
-
-1. Register two shelters in different cities (HU01) and open `/shelters`. Both should be listed with name, NIT, city, and address.
-2. Select a city and click **Search**. Only the shelters in that city should remain.
-3. Type an address exactly as registered (any casing) and click **Search**. Only that shelter should remain. Type only part of it: no shelter should be found.
-4. Combine city and address with a mismatch. The message `No se encontraron refugios con esos filtros` and the **Limpiar filtros** button should appear; clicking it restores the full list.
-5. With an empty database, the message `Aún no hay refugios registrados` should appear.
-6. Click a shelter. The application should navigate to `/shelters/{id}`.
-7. Stop the back-end and search again. An error message should be displayed.
-
-### HU06 – Register a Pet
-
-**Route:** `/pets/new` · **Role:** Shelter administrator.
-
-The administrator registers a pet under their shelter, including at least one **arrival event** (date, type, and description).
-
-All pet fields are required except for description, temperament, and specific needs. The admission date cannot be in the future. Fixed option lists (species, sex, size, etc.) are defined in `src/constants/petOptions.js` and are also used by the HU07 filters.
-
-- **Back-end:** `POST /api/pets`, with the shelter sent as `shelter.id` and arrival events included in `medicalEvents`.
-- **Validation:** First performed on the client side (errors displayed next to each field and focus moved to the first invalid field), then validated by the back-end. Back-end error messages are displayed next to the corresponding field or in an alert, and the form preserves the entered data.
-- **Result:** A confirmation message is displayed, and the user is redirected to `/pets/{id}` (pet profile pending implementation, HU08).
-- **Permissions:** Only the shelter administrator can see **Register Pet** in the navigation bar.
-
-
-**Manual Testing:**
-
-1. Create a shelter in the back-end (a responsible user is required; see [Troubleshooting](#troubleshooting)). If its ID is not `1`, configure `VITE_SHELTER_ID`.
-2. Open `/pets/new` and submit the empty form. Validation errors should appear, and focus should move to the first invalid field.
-3. Enter a future admission date. The form should reject it.
-4. Register a pet with all required information. A confirmation message should appear, and the application should navigate to `/pets/{id}`.
-5. Check `GET /api/pets` to verify that the pet was saved with its shelter and arrival event.
-6. Try registering the same pet again. A duplicate error should be displayed.
+- **States:** Loading, error, and empty state with option to clear filters.
 
 ### HU01 – Register a Shelter
 
 **Route:** `/shelters/new` · **Role:** Shelter administrator.
 
-The administrator registers a shelter by providing its **name, city, NIT, and address**. All fields are required. They are validated on the client side first and then by the back-end (for example, an NIT already registered for another shelter is reported next to the NIT field). On success, the user is redirected to `/shelters/{id}` (detail page pending). The creator is sent as `users: [{ id }]` and becomes the shelter's administrator.
+The administrator registers a shelter by providing its **name, city, NIT, and address**. All fields are required. They are validated on the client side first and then by the back-end.
 
 - **Back-end:** `POST /api/shelters`.
-- **Errors:** Back-end errors tied to a field (for example, a missing city or an NIT already registered) are shown next to that field and the focus moves to it. Any other error, such as a shelter with the same name, city, and location or a connection failure, is shown in an error dialog; in both cases the form keeps the entered data.
-- **Automated tests:** `ShelterRegisterPage.test.jsx`, `shelterForm.test.js`, and `shelterService.test.js` (see [Testing](#testing)).
 
-**Manual Testing:**
+### HU06 – Register a Pet
 
-1. Open `/shelters/new` and submit the empty form. Validation errors should appear, and focus should move to the first invalid field.
-2. Fill in name, city, NIT, and address, and submit. A confirmation message should appear, and the application should navigate to `/shelters/{id}`.
-3. Check `GET /api/shelters` to verify that the shelter was saved with its responsible user.
-4. Register the same shelter again. The back-end error should be displayed.
-5. Stop the back-end and submit. A connection error dialog should be displayed.
+**Route:** `/pets/new` · **Role:** Shelter administrator.
 
-**Known limitation – no photo upload:** The shelter registration form does not allow uploading photos. The project description mentions photos and videos of the premises, but this is not available in the current iteration because the back-end does not expose an endpoint to attach photos to a shelter:
+Registers a pet under the administrator's shelter, including its arrival event and photo links.
 
-- The data model supports it: `PhotoEntity` has a `shelter` relation, `PhotoService` can attach a photo to a shelter, and `GET /api/shelters` and `GET /api/shelters/{id}` return a `photos` list. However, no controller publishes that capability.
-- The only photo endpoint available is `/api/pets/{petId}/photos` (`PetPhotoController`), which is why photos work for pets (HU06) but not for shelters. The `/api/photos` routes that appear in the `Photo` Postman collection have no controller in the back-end code.
-- `POST /api/shelters` receives a `ShelterDTO` (`name`, `city`, `nit`, `location`, and `users`), which has no photo field, so photos cannot be sent while creating the shelter either.
-- The back-end stores a photo as a link (`url`, `type`, `description`) and not as a file, so even when the endpoint exists, the front-end would send a photo link, the same as in HU06.
-
-Once the back-end publishes a shelter photo endpoint, the feature can be added by reusing `PhotoField` and `photoForm.js` and creating the corresponding function in `shelterService.js`.
+- **Back-end:** `POST /api/pets` and `POST /api/pets/{petId}/photos`.
 
 ## Testing
 
@@ -236,16 +231,21 @@ The project includes both **automated** and **manual tests**.
 
 ```bash
 npm test                       # Run all tests
-npm run test:coverage           # Run tests with coverage
-npx vitest src/pages/PetRegisterPage   # Run tests for a specific folder, e.g. HU06
-npx vitest src/pages/ShelterRegisterPage   # HU01
+npm run test:coverage          # Run tests with coverage
+npx vitest src/pages/UserRegisterPage     # Run tests for HU73
+npx vitest src/pages/UserProfilePage      # Run tests for HU74
+npx vitest src/pages/PetRegisterPage      # HU06
+npx vitest src/pages/ShelterRegisterPage  # HU01
 ```
 
 **Automated Tests** (Vitest + React Testing Library) are located alongside their corresponding modules:
 
+- **HU73:** `UserRegisterPage.test.jsx`, `userForm.test.js`, and `userService.test.js`.
+- **HU74:** `UserProfilePage.test.jsx`, `profileForm.test.js`, and `userService.test.js`.
 - **HU70:** `VeterinariansPage.test.jsx`, `VeterinarianProfilePage.test.jsx`, and `veterinarianService.test.js`.
-- **HU01:** `ShelterRegisterPage.test.jsx` (full screen), `shelterForm.test.js` (validation and request body), and `shelterService.test.js`.
-- **HU06:** `PetRegisterPage.test.jsx` (full screen), `petForm.test.js` (validation and request body), and `petService.test.js`.
+- **HU01:** `ShelterRegisterPage.test.jsx`, `shelterForm.test.js`, and `shelterService.test.js`.
+- **HU02:** `ShleterListPage.test.jsx` and `shelterService.test.js`.
+- **HU06:** `PetRegisterPage.test.jsx`, `petForm.test.js`, and `petService.test.js`.
 - **Shared:** `FormField.test.jsx`, `Navbar.test.jsx`, `ScreenState.test.jsx`, and `dates.test.js`.
 
 **Manual Tests:** The steps are described in each user story section.
