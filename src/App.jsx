@@ -3,6 +3,8 @@ import Layout from './components/Layout/Layout'
 import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
 import ShelterListPage from './pages/ShelterListPage/ShelterListPage'
 import ShelterRegisterPage from './pages/ShelterRegisterPage/ShelterRegisterPage'
+import UserProfilePage from './pages/UserProfilePage/UserProfilePage'
+import UserRegisterPage from './pages/UserRegisterPage/UserRegisterPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
 import VeterinariansPage from './pages/VeterinariansPage/VeterinariansPage'
 
@@ -15,6 +17,8 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/veterinarians" replace />} />
+        <Route path="/register" element={<UserRegisterPage />} />
+        <Route path="/profile" element={<UserProfilePage />} />
         <Route path="/pets" element={<Pending title="Mascotas" />} />
         <Route path="/pets/new" element={<PetRegisterPage />} />
         <Route path="/pets/:petId" element={<Pending title="Perfil de mascota" />} />
