@@ -28,7 +28,7 @@ export default function SuccessDialog({
       describedBy={messageId}
       onClose={onClose}
     >
-      <DialogPill>Código HTTP 201 • Creado con éxito</DialogPill>
+      <DialogPill>Registro exitoso</DialogPill>
       <DialogTitle id={titleId}>{title}</DialogTitle>
       <p id={messageId} className={styles.message}>
         {message}

@@ -71,15 +71,15 @@ describe('ShelterListPage', () => {
     )
   })
 
-  it('explains that the search is an exact match that ignores case', async () => {
+  it('explains that the address must be written in full, ignoring case', async () => {
     getShelters.mockResolvedValue([PATITAS])
 
     renderPage()
     await waitForList()
 
-    expect(screen.getByText(/compara el texto exacto, sin distinguir mayúsculas/)).toBeInTheDocument()
+    expect(screen.getByText(/Escriba la dirección completa, tal como está registrada/)).toBeInTheDocument()
     expect(screen.getByLabelText('Dirección')).toHaveAccessibleDescription(
-      /compara el texto exacto/,
+      /Escriba la dirección completa/,
     )
   })
 

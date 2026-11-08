@@ -9,10 +9,9 @@ import styles from './ErrorDialog.module.css'
 
 const STATUS_NAMES = { 404: 'No encontrado', 412: 'Conflicto de registro' }
 
-function statusLabel(status) {
-  const name = STATUS_NAMES[status]
-  return name ? `Error ${status} • ${name}` : `Error ${status}`
-}
+const DEFAULT_STATUS_NAME = 'No se pudo completar la solicitud'
+
+const statusLabel = (status) => STATUS_NAMES[status] ?? DEFAULT_STATUS_NAME
 
 export default function ErrorDialog({
   title,
