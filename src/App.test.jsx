@@ -2,11 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
-import { getShelters } from './services/shelterService'
+import { getShelter, getShelters } from './services/shelterService'
 import { getVeterinarians } from './services/veterinarianService'
 
 vi.mock('./services/shelterService', () => ({
   createShelter: vi.fn(),
+  getShelter: vi.fn(),
   getShelters: vi.fn(),
 }))
 
@@ -72,5 +73,13 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: 'Busque un Refugio cerca de usted' })).toBeInTheDocument()
     expect(await screen.findByText('Aún no hay refugios registrados')).toBeInTheDocument()
+  })
+
+  it('shows the shelter detail', async () => {
+    getShelter.mockResolvedValue({ id: 1, name: 'Patitas Felices', pets: [], events: [] })
+
+    renderAt('/shelters/1')
+
+    expect(await screen.findByRole('heading', { name: 'Patitas Felices' })).toBeInTheDocument()
   })
 })
