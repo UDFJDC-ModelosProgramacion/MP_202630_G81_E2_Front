@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 49 test files / 489 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 49 test files / 500 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -195,6 +195,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `GET` | `/adoptions/{id}` | HU37 (adoption detail) | `getAdoption` |
 | `GET` | `/adoptions?shelterId=&petId=&status=` | HU38 (adoptions of the shelter, with filters) | `getAdoptions` |
 | `PUT` | `/adoptions/{id}` | HU39 (edit an adoption) | `updateAdoption` |
+| `DELETE` | `/adoptions/{id}` | HU40 (delete an adoption) | `deleteAdoption` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -231,6 +232,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU37** | View the detail of an adoption | `/adoptions/:adoptionId` | ✅ Implemented |
 | **HU38** | View the adoptions of the shelter, with filters | `/adoptions/shelter` | ✅ Implemented |
 | **HU39** | Edit an adoption | `/adoptions/:adoptionId/edit` | ✅ Implemented |
+| **HU40** | Delete an adoption | `/adoptions/:adoptionId` (action) | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -594,6 +596,23 @@ The shelter changes the status, the date, or the important notes of an adoption.
 4. Open the same adoption: the new notes should be shown on the detail.
 5. Change the status to **Finalizada** and save: the adoption should no longer show the edit link, and its edit URL should say that it cannot be modified.
 
+### HU40 – Delete an Adoption
+
+**Route:** the **Eliminar adopción** action on the detail (`/adoptions/:adoptionId`) · **Role:** shelter administrator, for an adoption of one of its pets
+
+The shelter deletes an adoption that is **not in progress** and has **no reviews or follow-ups**. The button only appears when those rules allow it. It asks for confirmation first: **Eliminar adopción** confirms it, and **Mantener adopción** keeps it. After the deletion, the shelter goes to **Adopciones del refugio** with the message "Se eliminó la adopción de …".
+
+- **Back-end:** `DELETE /api/adoptions/{id}` (204 with no content). The back-end refuses an adoption in progress, one with reviews, or one with follow-ups (412, with its message). An adoption that does not exist returns 404, and an invalid id returns 412.
+- **Rules in the screen:** the button is not offered for an adoption in progress or one with reviews or follow-ups, and only to the shelter that owns the pet. The back-end still checks them: a refused deletion shows its message in an error dialog, and the adoption stays on screen.
+- **Note:** the screen uses the `reviews` and `followUps` of the detail (HU37). In this branch of the back-end the follow-ups cannot be created, so here only the reviews block the deletion.
+
+**Manual testing:**
+
+1. Start the front as the shelter administrator and open a cancelled or finalized adoption with no reviews from **Adopciones del refugio**.
+2. Click **Eliminar adopción** and choose **Mantener adopción**: the adoption should not change.
+3. Click **Eliminar adopción** again and confirm: the shelter list should open with the message "Se eliminó la adopción de …", and the adoption should not be listed.
+4. Open an adoption in progress: no delete button should be offered.
+
 ### HU06 – Register a Pet
 
 **Route:** `/pets/new` · **Role:** shelter administrator
@@ -680,7 +699,7 @@ npx vitest src/pages/ShelterAdoptionsPage         # HU38
 npx vitest src/pages/AdoptionEditPage              # HU39
 ```
 
-Current state: **49 test files, 489 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **49 test files, 500 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -707,6 +726,7 @@ Tests live next to the module they cover:
 | **HU37** | `AdoptionDetailPage.test.jsx` (roles, access, reviews and follow-ups order, empty states, errors), `adoptions.test.js` (visibility rule), `adoptionService.test.js` (by id), and the detail links of the HU36 list (`MyAdoptionsPage.test.jsx`) |
 | **HU38** | `ShelterAdoptionsPage.test.jsx` (shelter scope, filters, combinations, empty states, race handling, role), `adoptionService.test.js` (shelter and status query), `Navbar.test.jsx` (shelter link) |
 | **HU39** | `AdoptionEditPage.test.jsx` (fixed pet and adopter, closed adoptions, validation, refusals, cancel), `adoptionEditForm.test.js` (payload and field mapping), `adoptions.test.js` (edit rule), `adoptionService.test.js` (PUT), `AdoptionDetailPage.test.jsx` (edit link) |
+| **HU40** | `AdoptionDetailPage.test.jsx` (delete action by role and state, confirmation, dismissal, refusals), `ShelterAdoptionsPage.test.jsx` (notice after deleting), `adoptions.test.js` (delete rule), `adoptionService.test.js` (DELETE) |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube
