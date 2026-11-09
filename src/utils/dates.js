@@ -35,3 +35,19 @@ export function dayStartISO(day) {
   const minutes = String(Math.abs(offset) % 60).padStart(2, '0')
   return `${day}T00:00:00${sign}${hours}:${minutes}`
 }
+
+// Newest first, without changing the array that was received. Works with any record that
+// has a 'date' field, in 'YYYY-MM-DD' or ISO timestamp form.
+export function sortByDateDescending(records) {
+  return [...records].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')))
+}
+
+// Number of days of a period, both ends included, or null while the period is incomplete.
+export function durationInDays(startDate, endDate) {
+  if (!startDate || !endDate || endDate < startDate) return null
+  const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
+  const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
+  const difference =
+    Date.UTC(endYear, endMonth - 1, endDay) - Date.UTC(startYear, startMonth - 1, startDay)
+  return Math.round(difference / 86400000) + 1
+}

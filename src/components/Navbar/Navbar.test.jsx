@@ -32,6 +32,69 @@ describe('Navbar', () => {
     expect(screen.getByRole('link', { name: 'Pet Adoption Platform' })).toBeInTheDocument()
   })
 
+  it('links the adopter to the list of the trial cohabitation requests', () => {
+    getSession.mockReturnValue({ role: 'ADOPTER' })
+
+    renderNavbar()
+
+    expect(screen.getByRole('link', { name: 'Mis solicitudes' })).toHaveAttribute(
+      'href',
+      '/trial-cohabitation-requests',
+    )
+  })
+
+  it('links the shelter administrator to the requests received by the shelter', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
+
+    renderNavbar()
+
+    expect(screen.getByRole('link', { name: 'Solicitudes de convivencia' })).toHaveAttribute(
+      'href',
+      '/trial-cohabitation-requests/received',
+    )
+  })
+
+  it('links the shelter administrator to the adoption registration', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
+
+    renderNavbar()
+
+    expect(screen.getByRole('link', { name: 'Registrar adopción' })).toHaveAttribute(
+      'href',
+      '/adoptions/new',
+    )
+  })
+
+  it('links the adopter to the list of their adoptions', () => {
+    getSession.mockReturnValue({ role: 'ADOPTER' })
+
+    renderNavbar()
+
+    expect(screen.getByRole('link', { name: 'Mis adopciones' })).toHaveAttribute(
+      'href',
+      '/adoptions/mine',
+    )
+  })
+
+  it('links the shelter administrator to the adoptions of the shelter', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
+
+    renderNavbar()
+
+    expect(screen.getByRole('link', { name: 'Adopciones del refugio' })).toHaveAttribute(
+      'href',
+      '/adoptions/shelter',
+    )
+  })
+
+  it('does not show the adopter link to the shelter administrator', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
+
+    renderNavbar()
+
+    expect(screen.queryByRole('link', { name: 'Mis solicitudes' })).not.toBeInTheDocument()
+  })
+
   it('links to the medical events list for every role', () => {
     renderNavbar()
 
