@@ -26,6 +26,7 @@ vi.mock('./services/adoptionService', () => ({
   createAdoption: vi.fn(),
   getAdoption: vi.fn(),
   getAdoptions: vi.fn(),
+  updateAdoption: vi.fn(),
 }))
 
 vi.mock('./services/adoptionRequestService', () => ({ getAdoptionRequests: vi.fn() }))
@@ -154,6 +155,21 @@ describe('App', () => {
     renderAt('/trial-cohabitation-requests/1')
 
     expect(await screen.findByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
+  })
+
+  it('shows the edit form of an adoption on /adoptions/:adoptionId/edit', async () => {
+    getAdoption.mockResolvedValue({
+      id: 1,
+      date: '2026-11-08',
+      status: 'IN_PROGRESS',
+      importantNotes: 'Revisar vacunas cada mes',
+      pet: { id: 1, name: 'Luna', species: 'Perro', shelter: { id: 1 } },
+      shelter: { id: 1 },
+      adopter: { id: 2, firstName: 'Carlos', lastName: 'Perez' },
+    })
+    renderAt('/adoptions/1/edit')
+
+    expect(await screen.findByRole('heading', { name: 'Editar adopción' })).toBeInTheDocument()
   })
 
   it('shows the adoptions of the shelter on /adoptions/shelter', async () => {

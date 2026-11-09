@@ -16,6 +16,20 @@ export function canViewAdoption(adoption, session) {
   return false
 }
 
+// A finalized or cancelled adoption cannot be modified (the back-end rule).
+export function isClosedAdoption(adoption) {
+  return ['FINALIZED', 'CANCELLED'].includes(adoption.status)
+}
+
+// Only the shelter that owns the pet edits an adoption that is still in progress.
+export function canEditAdoption(adoption, session) {
+  return (
+    session.role === ROLES.SHELTER_ADMIN &&
+    Number(adoption.pet?.shelter?.id) === Number(session.shelterId) &&
+    !isClosedAdoption(adoption)
+  )
+}
+
 // A pet is adopted while it has an adoption that was not cancelled (the back-end rule).
 export function hasActiveAdoption(pet) {
   return (pet?.adoptions ?? []).some((adoption) => adoption.status !== 'CANCELLED')

@@ -90,7 +90,35 @@ describe('AdoptionDetailPage', () => {
     renderPage()
 
     expect(await screen.findByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Volver a mascotas' })).toHaveAttribute('href', '/pets')
+    expect(
+      screen.getByRole('link', { name: 'Volver a las adopciones del refugio' }),
+    ).toHaveAttribute('href', '/adoptions/shelter')
+  })
+
+  it('offers the shelter the edit link while the adoption is in progress', async () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    expect(screen.getByRole('link', { name: 'Editar adopción' })).toHaveAttribute(
+      'href',
+      '/adoptions/1/edit',
+    )
+  })
+
+  it('does not offer the edit link to the adopter or once the adoption is closed', async () => {
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+    expect(screen.queryByRole('link', { name: 'Editar adopción' })).not.toBeInTheDocument()
+  })
+
+  it('does not offer the edit link on a finalized adoption', async () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    getAdoption.mockResolvedValue({ ...ADOPTION, status: 'FINALIZED' })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    expect(screen.queryByRole('link', { name: 'Editar adopción' })).not.toBeInTheDocument()
   })
 
   it('links the adopter back to their adoptions', async () => {

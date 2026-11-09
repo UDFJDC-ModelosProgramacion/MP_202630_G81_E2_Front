@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { getSession, ROLES } from '../../config/roleSession'
 import { getAdoption } from '../../services/adoptionService'
-import { adoptionStatusLabel, canViewAdoption } from '../../utils/adoptions'
+import { adoptionStatusLabel, canEditAdoption, canViewAdoption } from '../../utils/adoptions'
 import { formatDay, sortByDateDescending } from '../../utils/dates'
 import styles from './AdoptionDetailPage.module.css'
 
@@ -39,8 +39,8 @@ export default function AdoptionDetailPage() {
 
   const { status, adoption, message } = result
   const isShelter = session.role === ROLES.SHELTER_ADMIN
-  const backPath = isShelter ? '/pets' : '/adoptions/mine'
-  const backLabel = isShelter ? 'Volver a mascotas' : 'Volver a mis adopciones'
+  const backPath = isShelter ? '/adoptions/shelter' : '/adoptions/mine'
+  const backLabel = isShelter ? 'Volver a las adopciones del refugio' : 'Volver a mis adopciones'
   const backLink = (
     <Link to={backPath} className={styles.backLink}>
       {backLabel}
@@ -159,7 +159,14 @@ export default function AdoptionDetailPage() {
         )}
       </section>
 
-      <div className={styles.toolbar}>{backLink}</div>
+      <div className={styles.toolbar}>
+        {canEditAdoption(adoption, session) && (
+          <Link to={`/adoptions/${adoption.id}/edit`} className={styles.editLink}>
+            Editar adopción
+          </Link>
+        )}
+        {backLink}
+      </div>
     </section>
   )
 }
