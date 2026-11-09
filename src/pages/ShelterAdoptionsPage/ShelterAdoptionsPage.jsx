@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { ADOPTION_STATUSES } from '../../constants/adoptionOptions'
 import { getSession, ROLES } from '../../config/roleSession'
@@ -21,6 +21,8 @@ const adopterName = (adopter) =>
   `${adopter?.firstName ?? ''} ${adopter?.lastName ?? ''}`.trim() || 'Sin nombre'
 
 function ShelterAdoptions({ shelterId }) {
+  const { state } = useLocation()
+  const deleted = state?.deleted
   const [filters, setFilters] = useState(NO_FILTERS)
   const [pets, setPets] = useState([])
   const [result, setResult] = useState({
@@ -104,6 +106,12 @@ function ShelterAdoptions({ shelterId }) {
       <p className={styles.subtitle}>
         Consulta las adopciones de las mascotas de tu refugio y filtra por mascota o estado.
       </p>
+
+      {deleted && (
+        <p role="status" className={styles.notice}>
+          Se eliminó la adopción de {deleted}.
+        </p>
+      )}
 
       <form
         className={styles.filters}

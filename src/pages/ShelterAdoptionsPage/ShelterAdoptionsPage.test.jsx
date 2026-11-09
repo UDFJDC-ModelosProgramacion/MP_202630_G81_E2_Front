@@ -78,9 +78,9 @@ function deferred() {
   return { promise, resolve }
 }
 
-function renderPage() {
+function renderPage(state) {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[{ pathname: '/adoptions/shelter', state }]}>
       <ShelterAdoptionsPage />
     </MemoryRouter>,
   )
@@ -106,6 +106,12 @@ describe('ShelterAdoptionsPage', () => {
       screen.getByText('Solo el personal del refugio puede consultar las adopciones del refugio.'),
     ).toBeInTheDocument()
     expect(getAdoptions).not.toHaveBeenCalled()
+  })
+
+  it('confirms an adoption that was just deleted', async () => {
+    renderPage({ deleted: 'Luna' })
+
+    expect(await screen.findByText('Se eliminó la adopción de Luna.')).toBeInTheDocument()
   })
 
   it('lists only the adoptions of the shelter, newest first', async () => {

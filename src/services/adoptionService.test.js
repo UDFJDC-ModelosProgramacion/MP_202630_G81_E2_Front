@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createAdoption, getAdoption, getAdoptions, updateAdoption } from './adoptionService'
+import {
+  createAdoption,
+  deleteAdoption,
+  getAdoption,
+  getAdoptions,
+  updateAdoption,
+} from './adoptionService'
 
 function mockFetch(response) {
   const fetchMock = vi.fn().mockResolvedValue(response)
@@ -9,6 +15,19 @@ function mockFetch(response) {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+})
+
+describe('deleteAdoption', () => {
+  it('sends a DELETE request and resolves without content', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 204 })
+
+    const result = await deleteAdoption(5)
+
+    expect(result).toBeNull()
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adoptions/5')
+    expect(options.method).toBe('DELETE')
+  })
 })
 
 describe('updateAdoption', () => {

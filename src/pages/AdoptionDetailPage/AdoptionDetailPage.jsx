@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog'
+import ErrorDialog from '../../components/ErrorDialog/ErrorDialog'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { getSession, ROLES } from '../../config/roleSession'
-import { getAdoption } from '../../services/adoptionService'
-import { adoptionStatusLabel, canEditAdoption, canViewAdoption } from '../../utils/adoptions'
+import { deleteAdoption, getAdoption } from '../../services/adoptionService'
+import {
+  adoptionStatusLabel,
+  canDeleteAdoption,
+  canEditAdoption,
+  canViewAdoption,
+} from '../../utils/adoptions'
 import { formatDay, sortByDateDescending } from '../../utils/dates'
 import styles from './AdoptionDetailPage.module.css'
 
@@ -12,11 +19,18 @@ const dayOf = (value) => String(value ?? '').slice(0, 10)
 const adopterName = (adopter) =>
   `${adopter?.firstName ?? ''} ${adopter?.lastName ?? ''}`.trim() || 'Sin nombre'
 
+const DELETE_ERROR_HINT =
+  'Verifique la adopción antes de continuar o comuníquese con la administración si considera que se trata de un error.'
+
 export default function AdoptionDetailPage() {
   const { adoptionId } = useParams()
+  const navigate = useNavigate()
   const session = getSession()
   const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState({ status: 'loading', adoption: null, message: '' })
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState(null)
 
   useEffect(() => {
     let mounted = true
@@ -35,6 +49,18 @@ export default function AdoptionDetailPage() {
   function retry() {
     setResult((current) => ({ ...current, status: 'loading' }))
     setAttempt((value) => value + 1)
+  }
+
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await deleteAdoption(adoptionId)
+      navigate('/adoptions/shelter', { state: { deleted: result.adoption.pet?.name } })
+    } catch (error) {
+      setDeleting(false)
+      setConfirmingDelete(false)
+      setDeleteError({ message: error.message, status: error.status })
+    }
   }
 
   const { status, adoption, message } = result
@@ -165,8 +191,41 @@ export default function AdoptionDetailPage() {
             Editar adopción
           </Link>
         )}
+        {canDeleteAdoption(adoption, session) && (
+          <button
+            type="button"
+            className={styles.deleteButton}
+            onClick={() => setConfirmingDelete(true)}
+          >
+            Eliminar adopción
+          </button>
+        )}
         {backLink}
       </div>
+
+      {confirmingDelete && (
+        <ConfirmDialog
+          title="¿Eliminar esta adopción?"
+          message={`La adopción de ${adoption.pet?.name} por ${adopterName(adoption.adopter)} se borrará. Esta acción no se puede deshacer.`}
+          confirmLabel="Eliminar adopción"
+          cancelLabel="Mantener adopción"
+          pendingLabel="Eliminando..."
+          pending={deleting}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmingDelete(false)}
+        />
+      )}
+
+      {deleteError && (
+        <ErrorDialog
+          title="No se pudo eliminar la adopción"
+          message={deleteError.message}
+          status={deleteError.status}
+          hint={DELETE_ERROR_HINT}
+          actionLabel="Cerrar"
+          onClose={() => setDeleteError(null)}
+        />
+      )}
     </section>
   )
 }

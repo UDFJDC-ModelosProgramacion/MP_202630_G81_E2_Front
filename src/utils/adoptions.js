@@ -30,6 +30,18 @@ export function canEditAdoption(adoption, session) {
   )
 }
 
+// The shelter deletes an adoption that is not in progress and has no reviews or follow-ups (the
+// back-end rules). The back-end still checks them, so a refused deletion shows its message.
+export function canDeleteAdoption(adoption, session) {
+  return (
+    session.role === ROLES.SHELTER_ADMIN &&
+    Number(adoption.pet?.shelter?.id) === Number(session.shelterId) &&
+    adoption.status !== 'IN_PROGRESS' &&
+    (adoption.reviews ?? []).length === 0 &&
+    (adoption.followUps ?? []).length === 0
+  )
+}
+
 // A pet is adopted while it has an adoption that was not cancelled (the back-end rule).
 export function hasActiveAdoption(pet) {
   return (pet?.adoptions ?? []).some((adoption) => adoption.status !== 'CANCELLED')

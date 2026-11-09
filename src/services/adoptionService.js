@@ -14,6 +14,10 @@ export function getAdoption(adoptionId) {
   return api.get(`/adoptions/${encodeURIComponent(adoptionId)}`)
 }
 
+export function deleteAdoption(adoptionId) {
+  return api.delete(`/adoptions/${encodeURIComponent(adoptionId)}`)
+}
+
 export function updateAdoption(adoptionId, adoption) {
   return api.put(`/adoptions/${encodeURIComponent(adoptionId)}`, adoption)
 }

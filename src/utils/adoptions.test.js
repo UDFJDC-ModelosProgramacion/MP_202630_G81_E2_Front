@@ -1,6 +1,7 @@
 ﻿import { describe, expect, it } from 'vitest'
 import {
   adoptionStatusLabel,
+  canDeleteAdoption,
   canEditAdoption,
   canViewAdoption,
   hasActiveAdoption,
@@ -30,6 +31,24 @@ describe('hasActiveAdoption', () => {
   it('is true while an adoption is in progress or finalized', () => {
     expect(hasActiveAdoption({ adoptions: [{ status: 'IN_PROGRESS' }] })).toBe(true)
     expect(hasActiveAdoption({ adoptions: [{ status: 'FINALIZED' }] })).toBe(true)
+  })
+})
+
+describe('canDeleteAdoption', () => {
+  const CLOSED = { status: 'CANCELLED', pet: { shelter: { id: 1 } }, reviews: [], followUps: [] }
+
+  it('lets the shelter that owns the pet delete a closed adoption without reviews or follow-ups', () => {
+    expect(canDeleteAdoption(CLOSED, { role: 'SHELTER_ADMIN', shelterId: 1 })).toBe(true)
+    expect(canDeleteAdoption({ ...CLOSED, status: 'FINALIZED' }, { role: 'SHELTER_ADMIN', shelterId: 1 })).toBe(true)
+  })
+
+  it('keeps an adoption in progress, one with reviews or follow-ups, and other users out', () => {
+    const session = { role: 'SHELTER_ADMIN', shelterId: 1 }
+    expect(canDeleteAdoption({ ...CLOSED, status: 'IN_PROGRESS' }, session)).toBe(false)
+    expect(canDeleteAdoption({ ...CLOSED, reviews: [{ id: 1 }] }, session)).toBe(false)
+    expect(canDeleteAdoption({ ...CLOSED, followUps: [{ id: 1 }] }, session)).toBe(false)
+    expect(canDeleteAdoption(CLOSED, { role: 'SHELTER_ADMIN', shelterId: 2 })).toBe(false)
+    expect(canDeleteAdoption(CLOSED, { role: 'ADOPTER', userId: 2 })).toBe(false)
   })
 })
 

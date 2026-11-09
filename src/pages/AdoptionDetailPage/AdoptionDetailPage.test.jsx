@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import AdoptionDetailPage from './AdoptionDetailPage'
 import { getSession } from '../../config/roleSession'
 import { ApiError } from '../../services/apiClient'
-import { getAdoption } from '../../services/adoptionService'
+import { deleteAdoption, getAdoption } from '../../services/adoptionService'
 
-vi.mock('../../services/adoptionService', () => ({ getAdoption: vi.fn() }))
+vi.mock('../../services/adoptionService', () => ({
+  getAdoption: vi.fn(),
+  deleteAdoption: vi.fn(),
+}))
 vi.mock('../../config/roleSession', () => ({
   ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', VETERINARIAN: 'VETERINARIAN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
@@ -29,12 +32,18 @@ const ADOPTION = {
   followUps: [{ id: 1, date: '2026-11-15', observation: 'Luna se adapta bien' }],
 }
 
+function ShelterListStub() {
+  const { state } = useLocation()
+  return <p>Adopciones del refugio: {state?.deleted}</p>
+}
+
 function renderPage(adoptionId = '1') {
   return render(
     <MemoryRouter initialEntries={[`/adoptions/${adoptionId}`]}>
       <Routes>
         <Route path="/adoptions/:adoptionId" element={<AdoptionDetailPage />} />
         <Route path="/adoptions/mine" element={<p>Mis adopciones</p>} />
+        <Route path="/adoptions/shelter" element={<ShelterListStub />} />
         <Route path="/pets" element={<p>Mascotas</p>} />
       </Routes>
     </MemoryRouter>,
@@ -46,6 +55,7 @@ describe('AdoptionDetailPage', () => {
     vi.clearAllMocks()
     getSession.mockReturnValue({ role: 'ADOPTER', userId: 2 })
     getAdoption.mockResolvedValue(ADOPTION)
+    deleteAdoption.mockResolvedValue(null)
   })
 
   it('shows the details of the adoption to the adopter who takes part in it', async () => {
@@ -154,6 +164,91 @@ describe('AdoptionDetailPage', () => {
     expect(
       await screen.findByText('The adoption with the given id was not found'),
     ).toBeInTheDocument()
+  })
+
+  it('offers the shelter the delete action on a closed adoption without reviews or follow-ups', async () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    getAdoption.mockResolvedValue({ ...ADOPTION, status: 'CANCELLED', reviews: [], followUps: [] })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    expect(screen.getByRole('button', { name: 'Eliminar adopción' })).toBeInTheDocument()
+  })
+
+  it('does not offer the delete action while the adoption is in progress', async () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    expect(screen.queryByRole('button', { name: 'Eliminar adopción' })).not.toBeInTheDocument()
+  })
+
+  it('does not offer the delete action to a closed adoption that has reviews', async () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    getAdoption.mockResolvedValue({ ...ADOPTION, status: 'FINALIZED' })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    expect(screen.queryByRole('button', { name: 'Eliminar adopción' })).not.toBeInTheDocument()
+  })
+
+  it('does not offer the delete action to the adopter', async () => {
+    getAdoption.mockResolvedValue({ ...ADOPTION, status: 'CANCELLED', reviews: [], followUps: [] })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    expect(screen.queryByRole('button', { name: 'Eliminar adopción' })).not.toBeInTheDocument()
+  })
+
+  it('deletes the adoption after confirmation and returns to the shelter adoptions', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    getAdoption.mockResolvedValue({ ...ADOPTION, status: 'CANCELLED', reviews: [], followUps: [] })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    await user.click(screen.getByRole('button', { name: 'Eliminar adopción' }))
+    const dialog = await screen.findByRole('alertdialog', { name: '¿Eliminar esta adopción?' })
+    expect(deleteAdoption).not.toHaveBeenCalled()
+
+    await user.click(within(dialog).getByRole('button', { name: 'Eliminar adopción' }))
+
+    await waitFor(() => expect(deleteAdoption).toHaveBeenCalledWith('1'))
+    expect(await screen.findByText('Adopciones del refugio: Luna')).toBeInTheDocument()
+  })
+
+  it('keeps the adoption when the deletion is dismissed', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    getAdoption.mockResolvedValue({ ...ADOPTION, status: 'CANCELLED', reviews: [], followUps: [] })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    await user.click(screen.getByRole('button', { name: 'Eliminar adopción' }))
+    const dialog = await screen.findByRole('alertdialog', { name: '¿Eliminar esta adopción?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Mantener adopción' }))
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
+    expect(deleteAdoption).not.toHaveBeenCalled()
+    expect(screen.getByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
+  })
+
+  it('shows the back-end message when the deletion is refused', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 1, shelterId: 1 })
+    getAdoption.mockResolvedValue({ ...ADOPTION, status: 'CANCELLED', reviews: [], followUps: [] })
+    deleteAdoption.mockRejectedValue(new ApiError('An adoption in progress cannot be deleted', 412))
+    renderPage()
+    await screen.findByRole('heading', { name: 'Luna — Perro' })
+
+    await user.click(screen.getByRole('button', { name: 'Eliminar adopción' }))
+    const dialog = await screen.findByRole('alertdialog', { name: '¿Eliminar esta adopción?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Eliminar adopción' }))
+
+    const errorDialog = await screen.findByRole('alertdialog', {
+      name: 'No se pudo eliminar la adopción',
+    })
+    expect(within(errorDialog).getByText('An adoption in progress cannot be deleted')).toBeInTheDocument()
   })
 
   it('lets the user retry after a connection error', async () => {
