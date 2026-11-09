@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 47 test files / 467 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 49 test files / 489 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -155,6 +155,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/adoptions/mine` | Adoptions of the adopter (HU36) | Adopter | ✅ Implemented |
 | `/adoptions/:adoptionId` | Adoption detail, with reviews and follow-ups (HU37) | Adopter who takes part, or the shelter of its pet | ✅ Implemented |
 | `/adoptions/shelter` | Adoptions of the shelter, with filters (HU38) | Shelter admin | ✅ Implemented |
+| `/adoptions/:adoptionId/edit` | Edit an adoption in progress (HU39) | Shelter admin, for its pets | ✅ Implemented |
 | `/trial-cohabitation-requests` | Trial cohabitation requests of the adopter (HU30) | Adopter | ✅ Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
 | `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
@@ -193,6 +194,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `GET` | `/adoptions?adopterId=` | HU36 (adopter's adoptions) | `getAdoptions` |
 | `GET` | `/adoptions/{id}` | HU37 (adoption detail) | `getAdoption` |
 | `GET` | `/adoptions?shelterId=&petId=&status=` | HU38 (adoptions of the shelter, with filters) | `getAdoptions` |
+| `PUT` | `/adoptions/{id}` | HU39 (edit an adoption) | `updateAdoption` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -228,6 +230,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU36** | View my adoptions | `/adoptions/mine` | ✅ Implemented |
 | **HU37** | View the detail of an adoption | `/adoptions/:adoptionId` | ✅ Implemented |
 | **HU38** | View the adoptions of the shelter, with filters | `/adoptions/shelter` | ✅ Implemented |
+| **HU39** | Edit an adoption | `/adoptions/:adoptionId/edit` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -571,6 +574,26 @@ The shelter sees the adoptions of its pets, newest first, and can filter them by
 4. Press **Limpiar filtros**: every adoption should be listed again.
 5. Open the detail of an adoption with **Ver detalle**: it should show the adoption (HU37).
 
+### HU39 – Edit an Adoption
+
+**Route:** `/adoptions/:adoptionId/edit` · **Role:** shelter administrator, for an adoption of one of its pets that is still in progress
+
+The shelter changes the status, the date, or the important notes of an adoption. The pet and the adopter cannot be changed: they are shown as fixed information. The status can be En curso, Finalizada, or Cancelada. A finalized or cancelled adoption cannot be modified, so the screen does not offer the form for it and explains why. The **Editar adopción** link appears on the detail (HU37) only for the shelter, and only while the adoption is in progress.
+
+- **Back-end:** `PUT /api/adoptions/{id}` with `status`, `importantNotes`, and `date`. The pet and the adopter are not sent, so the back-end keeps them. If the date is not sent, the back-end keeps the current one.
+- **Rules checked by the back-end:** a finalized or cancelled adoption cannot be modified (412), and the notes are required (412). Each error is shown in a dialog and, when it belongs to the status, the date, or the notes, next to that field.
+- **States:** loading, error with its cause (and a **Reintentar** button), access denied, and a closed adoption.
+- **Changes in HU37:** the back link of the detail for the shelter now goes to **Volver a las adopciones del refugio** (HU38).
+- **Known gap:** the back-end does not check the order of the status changes. The form offers the three statuses, so the shelter can move an adoption from one to another.
+
+**Manual testing:**
+
+1. Start the front as the shelter administrator, open an adoption in progress from **Adopciones del refugio**, and click **Editar adopción**.
+2. Verify that the pet and the adopter are shown as fixed information, and that the form has the current status, date, and notes.
+3. Change the notes and save: the confirmation should appear with the new status and date.
+4. Open the same adoption: the new notes should be shown on the detail.
+5. Change the status to **Finalizada** and save: the adoption should no longer show the edit link, and its edit URL should say that it cannot be modified.
+
 ### HU06 – Register a Pet
 
 **Route:** `/pets/new` · **Role:** shelter administrator
@@ -654,9 +677,10 @@ npx vitest src/pages/AdoptionRegisterPage         # HU35
 npx vitest src/pages/MyAdoptionsPage              # HU36
 npx vitest src/pages/AdoptionDetailPage            # HU37
 npx vitest src/pages/ShelterAdoptionsPage         # HU38
+npx vitest src/pages/AdoptionEditPage              # HU39
 ```
 
-Current state: **47 test files, 467 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **49 test files, 489 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -682,6 +706,7 @@ Tests live next to the module they cover:
 | **HU36** | `MyAdoptionsPage.test.jsx` (adopter's adoptions, order, states, role), `adoptionService.test.js` (query string), `Navbar.test.jsx` (adopter link) |
 | **HU37** | `AdoptionDetailPage.test.jsx` (roles, access, reviews and follow-ups order, empty states, errors), `adoptions.test.js` (visibility rule), `adoptionService.test.js` (by id), and the detail links of the HU36 list (`MyAdoptionsPage.test.jsx`) |
 | **HU38** | `ShelterAdoptionsPage.test.jsx` (shelter scope, filters, combinations, empty states, race handling, role), `adoptionService.test.js` (shelter and status query), `Navbar.test.jsx` (shelter link) |
+| **HU39** | `AdoptionEditPage.test.jsx` (fixed pet and adopter, closed adoptions, validation, refusals, cancel), `adoptionEditForm.test.js` (payload and field mapping), `adoptions.test.js` (edit rule), `adoptionService.test.js` (PUT), `AdoptionDetailPage.test.jsx` (edit link) |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube
