@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 46 test files / 452 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 47 test files / 467 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -154,6 +154,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/adoptions/new` | Register an adoption from an approved adoption request (HU35) | Shelter admin | ✅ Implemented |
 | `/adoptions/mine` | Adoptions of the adopter (HU36) | Adopter | ✅ Implemented |
 | `/adoptions/:adoptionId` | Adoption detail, with reviews and follow-ups (HU37) | Adopter who takes part, or the shelter of its pet | ✅ Implemented |
+| `/adoptions/shelter` | Adoptions of the shelter, with filters (HU38) | Shelter admin | ✅ Implemented |
 | `/trial-cohabitation-requests` | Trial cohabitation requests of the adopter (HU30) | Adopter | ✅ Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
 | `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
@@ -191,6 +192,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `POST` | `/adoptions` | HU35 (register an adoption) | `createAdoption` |
 | `GET` | `/adoptions?adopterId=` | HU36 (adopter's adoptions) | `getAdoptions` |
 | `GET` | `/adoptions/{id}` | HU37 (adoption detail) | `getAdoption` |
+| `GET` | `/adoptions?shelterId=&petId=&status=` | HU38 (adoptions of the shelter, with filters) | `getAdoptions` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -225,6 +227,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU35** | Register an adoption | `/adoptions/new` | ✅ Implemented |
 | **HU36** | View my adoptions | `/adoptions/mine` | ✅ Implemented |
 | **HU37** | View the detail of an adoption | `/adoptions/:adoptionId` | ✅ Implemented |
+| **HU38** | View the adoptions of the shelter, with filters | `/adoptions/shelter` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -548,6 +551,26 @@ The detail shows the pet, the status (En curso, Finalizada, or Cancelada), the a
 3. Start the front as the shelter administrator and open the same URL: the details should be shown, with a back link to the pets.
 4. Open `/adoptions/999`: the back-end message should be displayed, with a **Reintentar** button.
 
+### HU38 – View the Adoptions of the Shelter, with Filters
+
+**Route:** `/adoptions/shelter` · **Role:** shelter administrator (`SHELTER_ADMIN`)
+
+The shelter sees the adoptions of its pets, newest first, and can filter them by **Mascota** and **Estado**. The filters can be combined and are applied with **Buscar**; **Limpiar filtros** restores the list. Each card shows the pet, the status, the adopter, the date, and the important notes, and links to the detail (HU37).
+
+- **Back-end:** `GET /api/adoptions?shelterId=&petId=&status=`. The back-end filters by shelter, so one query returns the whole list, and the adoptions of other shelters are never returned. The status is compared without regard to case.
+- **Pets:** the pet filter offers the pets of the shelter, including the adopted ones, so their history can still be consulted.
+- **States:** loading, error with its cause, and three empty messages: the shelter has no pets, it has no adoptions, or no adoption matches the filters.
+- **Race handling:** only the answer to the latest search is shown.
+- **Navigation:** the **Adopciones del refugio** item of the navigation bar opens this screen.
+
+**Manual testing:**
+
+1. Start the front as the shelter administrator (the default role) and open `/adoptions/shelter`: the adoptions of the shelter's pets should be listed, newest first.
+2. Filter by pet and by status: only the matching adoptions should be listed.
+3. Combine filters with no matches: the "no matches" message should be displayed.
+4. Press **Limpiar filtros**: every adoption should be listed again.
+5. Open the detail of an adoption with **Ver detalle**: it should show the adoption (HU37).
+
 ### HU06 – Register a Pet
 
 **Route:** `/pets/new` · **Role:** shelter administrator
@@ -630,9 +653,10 @@ npx vitest src/pages/TrialCohabitationDetailPage   # HU32
 npx vitest src/pages/AdoptionRegisterPage         # HU35
 npx vitest src/pages/MyAdoptionsPage              # HU36
 npx vitest src/pages/AdoptionDetailPage            # HU37
+npx vitest src/pages/ShelterAdoptionsPage         # HU38
 ```
 
-Current state: **46 test files, 452 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **47 test files, 467 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -657,6 +681,7 @@ Tests live next to the module they cover:
 | **HU35** | `AdoptionRegisterPage.test.jsx` (offered requests, payload, errors, reload), `adoptionForm.test.js`, `adoptionService.test.js`, `adoptionRequestService.test.js` (query with the admin role), `adoptions.test.js` (adopted pets), `Navbar.test.jsx` (admin link) |
 | **HU36** | `MyAdoptionsPage.test.jsx` (adopter's adoptions, order, states, role), `adoptionService.test.js` (query string), `Navbar.test.jsx` (adopter link) |
 | **HU37** | `AdoptionDetailPage.test.jsx` (roles, access, reviews and follow-ups order, empty states, errors), `adoptions.test.js` (visibility rule), `adoptionService.test.js` (by id), and the detail links of the HU36 list (`MyAdoptionsPage.test.jsx`) |
+| **HU38** | `ShelterAdoptionsPage.test.jsx` (shelter scope, filters, combinations, empty states, race handling, role), `adoptionService.test.js` (shelter and status query), `Navbar.test.jsx` (shelter link) |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube
