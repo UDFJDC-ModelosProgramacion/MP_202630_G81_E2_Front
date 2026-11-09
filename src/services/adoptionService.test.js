@@ -32,6 +32,16 @@ describe('getAdoptions', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/adoptions', expect.any(Object))
   })
 
+  it('sends the shelter and the status as query parameters', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 200, json: () => Promise.resolve([]) })
+
+    await getAdoptions({ shelterId: 1, status: 'FINALIZED' })
+
+    const url = new URL(fetchMock.mock.calls[0][0], 'http://localhost')
+    expect(url.searchParams.get('shelterId')).toBe('1')
+    expect(url.searchParams.get('status')).toBe('FINALIZED')
+  })
+
   it('sends the adopter as a query parameter and leaves out the blank filters', async () => {
     const fetchMock = mockFetch({ ok: true, status: 200, json: () => Promise.resolve([]) })
 

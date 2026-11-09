@@ -6,7 +6,7 @@ import { getMedicalEvent, getMedicalEvents } from './services/medicalEventServic
 import { getPet, getPets } from './services/petService'
 import { getTrialCohabitationRequest } from './services/trialCohabitationService'
 import { getAdoptionRequests } from './services/adoptionRequestService'
-import { getAdoption } from './services/adoptionService'
+import { getAdoption, getAdoptions } from './services/adoptionService'
 import { getVeterinarians } from './services/veterinarianService'
 
 vi.mock('./services/veterinarianService', () => ({
@@ -154,6 +154,13 @@ describe('App', () => {
     renderAt('/trial-cohabitation-requests/1')
 
     expect(await screen.findByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
+  })
+
+  it('shows the adoptions of the shelter on /adoptions/shelter', async () => {
+    getAdoptions.mockResolvedValue([])
+    renderAt('/adoptions/shelter')
+
+    expect(await screen.findByRole('heading', { name: 'Adopciones de mi refugio' })).toBeInTheDocument()
   })
 
   it('shows the detail of an adoption on /adoptions/:adoptionId', async () => {

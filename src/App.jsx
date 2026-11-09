@@ -3,6 +3,7 @@ import Layout from './components/Layout/Layout'
 import AdoptionDetailPage from './pages/AdoptionDetailPage/AdoptionDetailPage'
 import AdoptionRegisterPage from './pages/AdoptionRegisterPage/AdoptionRegisterPage'
 import MyAdoptionsPage from './pages/MyAdoptionsPage/MyAdoptionsPage'
+import ShelterAdoptionsPage from './pages/ShelterAdoptionsPage/ShelterAdoptionsPage'
 import MedicalEventDetailPage from './pages/MedicalEventDetailPage/MedicalEventDetailPage'
 import MedicalEventEditPage from './pages/MedicalEventEditPage/MedicalEventEditPage'
 import MedicalEventHistoryPage from './pages/MedicalEventHistoryPage/MedicalEventHistoryPage'
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/trial-cohabitation-requests/received" element={<TrialCohabitationReceivedPage />} />
         <Route path="/adoptions/new" element={<AdoptionRegisterPage />} />
         <Route path="/adoptions/mine" element={<MyAdoptionsPage />} />
+        <Route path="/adoptions/shelter" element={<ShelterAdoptionsPage />} />
         <Route path="/adoptions/:adoptionId" element={<AdoptionDetailPage />} />
         <Route path="/trial-cohabitation-requests/:requestId" element={<TrialCohabitationDetailPage />} />
         <Route path="/shelters/new" element={<ShelterRegisterPage />} />
