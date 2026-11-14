@@ -14,3 +14,7 @@ export function getMedicalEvent(medicalEventId) {
 export function createMedicalEvent(medicalEvent) {
   return api.post('/medicalEvents', medicalEvent)
 }
+
+export function updateMedicalEvent(medicalEventId, medicalEvent) {
+  return api.put(`/medicalEvents/${encodeURIComponent(medicalEventId)}`, medicalEvent)
+}

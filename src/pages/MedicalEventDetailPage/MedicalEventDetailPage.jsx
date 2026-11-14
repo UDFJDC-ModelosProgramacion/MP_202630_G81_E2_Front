@@ -87,6 +87,12 @@ export default function MedicalEventDetailPage() {
       </dl>
 
       <div className={styles.toolbar}>
+        <Link
+          to={`/medical-events/${medicalEvent.id}/edit`}
+          className={styles.editLink}
+        >
+          Editar evento
+        </Link>
         {petPath ? (
           <Link to={petPath} className={styles.backLink}>
             Volver a la historia médica

@@ -30,6 +30,7 @@ vi.mock('./services/medicalEventService', () => ({
   getMedicalEvents: vi.fn(),
   getMedicalEvent: vi.fn(),
   createMedicalEvent: vi.fn(),
+  updateMedicalEvent: vi.fn(),
 }))
 
 vi.mock('./services/petService', () => ({
@@ -131,6 +132,12 @@ describe('App', () => {
     renderAt('/medical-events/1')
 
     expect(await screen.findByRole('heading', { name: 'Cirugía' })).toBeInTheDocument()
+  })
+
+  it('shows the edit form of a medical event', async () => {
+    renderAt('/medical-events/1/edit')
+
+    expect(await screen.findByRole('heading', { name: 'Editar evento médico' })).toBeInTheDocument()
   })
 })
 

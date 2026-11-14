@@ -14,6 +14,7 @@ export default function SuccessDialog({
   warning,
   actionLabel,
   closeLabel,
+  statusLabel = 'Código HTTP 201 • Creado con éxito',
   onAction,
   onClose,
 }) {
