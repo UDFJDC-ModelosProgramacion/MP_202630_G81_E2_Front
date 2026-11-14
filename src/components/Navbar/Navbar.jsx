@@ -9,7 +9,7 @@ const LINKS = [
   { path: '/shelters', label: 'Refugios', end: true },
   { path: '/notifications', label: 'Notificaciones' },
   { path: '/veterinarians', label: 'Veterinarios' },
-  { path: '/medical-events', label: 'Eventos médicos', end: true },
+  { path: '/register', label: 'Registrarse' },
 ]
 
 const ADMIN_LINKS = [
@@ -78,7 +78,7 @@ export default function Navbar() {
             </nav>
           )}
 
-          <div className={styles.user} role="group" aria-label="Usuario actual">
+          <Link to="/profile" className={styles.user} role="group" aria-label="Usuario actual">
             <span className={styles.avatar}>
               {session.name ? initials(session.name) : <UserIcon className={styles.avatarIcon} />}
             </span>
@@ -86,7 +86,7 @@ export default function Navbar() {
               <span className={styles.userName}>{session.name ?? 'Usuario'}</span>
               <span className={styles.userRole}>{ROLE_LABELS[session.role] ?? 'Visitante'}</span>
             </span>
-          </div>
+          </Link>
         </div>
       </div>
     </header>
