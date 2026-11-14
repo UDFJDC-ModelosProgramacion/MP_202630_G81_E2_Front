@@ -142,7 +142,7 @@ describe('apiClient', () => {
 
     const error = await api.get('/veterinarians').catch((e) => e)
 
-    expect(error.message).toBe('No se pudo conectar con el servidor. Inténtalo de nuevo.')
+    expect(error.message).toBe('No se pudo conectar con el servidor. Inténtelo de nuevo.')
     expect(error.status).toBe(0)
   })
 
