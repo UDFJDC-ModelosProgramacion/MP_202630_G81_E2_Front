@@ -4,6 +4,10 @@ export function getPets() {
   return api.get('/pets')
 }
 
+export function getPet(petId) {
+  return api.get(`/pets/${encodeURIComponent(petId)}`)
+}
+
 export function createPet(pet) {
   return api.post('/pets', pet)
 }

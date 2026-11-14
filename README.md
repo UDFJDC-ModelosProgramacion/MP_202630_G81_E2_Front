@@ -148,6 +148,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/shelters/:shelterId` | Shelter detail | Any | 🚧 Placeholder |
 | `/pets/new` | Register a pet (HU06) | Shelter admin | ✅ Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
+| `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
 | `/pets` | Pet search (HU07) | Any | 🚧 Placeholder |
 | `/pets/:petId` | Pet profile (HU08) | Any | 🚧 Placeholder |
 
@@ -164,6 +165,8 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `POST` | `/pets` | HU06 | `createPet` |
 | `POST` | `/pets/{petId}/photos` | HU06 (pet photos) | `addPetPhoto` |
 | `GET` | `/pets` | HU23 (pet list) | `getPets` |
+| `GET` | `/pets/{id}` | HU24 (pet header) | `getPet` |
+| `GET` | `/medicalEvents?petId=` | HU24 (medical history) | `getMedicalEvents` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -183,6 +186,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU01** | Register a shelter | `/shelters/new` | ✅ Implemented |
 | **HU06** | Register a pet | `/pets/new` | ✅ Implemented |
 | **HU23** | Register a medical event | `/medical-events/new` | ✅ Implemented |
+| **HU24** | View the medical history of a pet | `/pets/:petId/medical-events` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -323,6 +327,7 @@ Tests live next to the module they cover:
 | **HU01** | `ShelterRegisterPage.test.jsx`, `shelterForm.test.js`, `shelterService.test.js` |
 | **HU06** | `PetRegisterPage.test.jsx`, `petForm.test.js`, `petService.test.js` |
 | **HU23** | `MedicalEventRegisterPage.test.jsx`, `medicalEventForm.test.js` |
+| **HU24** | `MedicalEventHistoryPage.test.jsx` |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube
