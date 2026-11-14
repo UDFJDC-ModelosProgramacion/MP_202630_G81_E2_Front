@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
+import { getShelters } from './services/shelterService'
 import { getVeterinarians } from './services/veterinarianService'
+
+vi.mock('./services/shelterService', () => ({
+  createShelter: vi.fn(),
+  getShelters: vi.fn(),
+}))
 
 vi.mock('./services/veterinarianService', () => ({
   getVeterinarians: vi.fn(),
@@ -20,12 +26,13 @@ function renderAt(path) {
 describe('App', () => {
   beforeEach(() => {
     getVeterinarians.mockResolvedValue([])
+    getShelters.mockResolvedValue([])
   })
 
   it('shows the navbar and the veterinarians page', async () => {
     renderAt('/veterinarians')
 
-    expect(screen.getByText('Pet Adoption Platform')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Huellitas Seguras' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Veterinarios' })).toBeInTheDocument()
     expect(await screen.findByText('Aún no hay veterinarios registrados.')).toBeInTheDocument()
   })
@@ -37,9 +44,33 @@ describe('App', () => {
     expect(await screen.findByText('Aún no hay veterinarios registrados.')).toBeInTheDocument()
   })
 
-  it('keeps the pages of other stories as pending', () => {
+  it('shows the pet registration form', () => {
+    renderAt('/pets/new')
+
+    expect(screen.getByRole('heading', { name: 'Registre su Mascota' })).toBeInTheDocument()
+  })
+
+  it('shows the shelter registration form', () => {
+    renderAt('/shelters/new')
+
+    expect(screen.getByRole('heading', { name: 'Registre su Refugio' })).toBeInTheDocument()
+  })
+
+  it('keeps the pages of other stories as unavailable, with a way out', () => {
     renderAt('/pets')
 
-    expect(screen.getByRole('heading', { name: 'Mascotas (pendiente)' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Mascotas' })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('todavía no está disponible')
+    expect(screen.getByRole('link', { name: 'Ir a la lista de refugios' })).toHaveAttribute(
+      'href',
+      '/shelters',
+    )
+  })
+
+  it('shows the list of shelters', async () => {
+    renderAt('/shelters')
+
+    expect(screen.getByRole('heading', { name: 'Busque un Refugio cerca de usted' })).toBeInTheDocument()
+    expect(await screen.findByText('Aún no hay refugios registrados')).toBeInTheDocument()
   })
 })

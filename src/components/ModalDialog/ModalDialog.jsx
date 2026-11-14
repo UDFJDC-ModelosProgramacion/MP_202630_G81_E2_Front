@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import styles from './ModalDialog.module.css'
 
 const BADGE_SYMBOL = { error: '!', success: '✓' }
@@ -11,46 +11,35 @@ export default function ModalDialog({
   onClose,
   children,
 }) {
-  const dialogRef = useRef(null)
-
   useEffect(() => {
     const closeOnEscape = (event) => {
-      if (event.key === 'Escape') {
-        onClose()
-      }
+      if (event.key === 'Escape') onClose()
     }
-
     document.addEventListener('keydown', closeOnEscape)
-
-    return () => {
-      document.removeEventListener('keydown', closeOnEscape)
-    }
+    return () => document.removeEventListener('keydown', closeOnEscape)
   }, [onClose])
 
-  const handleBackdropClick = (event) => {
-    if (event.target === event.currentTarget) {
-      onClose()
-    }
-  }
-
   return (
-    <div
-      className={styles.backdrop}
-      onMouseDown={handleBackdropClick}
-    >
+    <div className={styles.backdrop}>
+      {/* A native button behind the box: it closes with a click outside, and the div stays free
+          of mouse handlers. It is out of the tab order because Escape already closes by keyboard. */}
+      <button
+        type="button"
+        className={styles.backdropClose}
+        aria-label="Cerrar"
+        tabIndex={-1}
+        onClick={onClose}
+      />
       <div
-        ref={dialogRef}
         className={`${styles.dialog} ${styles[tone]}`}
         role={role}
         aria-modal="true"
         aria-labelledby={labelledBy}
         aria-describedby={describedBy}
-        tabIndex={-1}
       >
         <div className={styles.badge} aria-hidden="true">
           {BADGE_SYMBOL[tone]}
         </div>
-
         {children}
       </div>
     </div>
@@ -74,11 +63,5 @@ export function DialogActions({ children }) {
 }
 
 export function DialogButton({ variant = 'primary', ...buttonProps }) {
-  return (
-    <button
-      type="button"
-      className={styles[variant]}
-      {...buttonProps}
-    />
-  )
+  return <button type="button" className={styles[variant]} {...buttonProps} />
 }

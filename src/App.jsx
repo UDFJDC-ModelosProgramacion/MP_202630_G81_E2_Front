@@ -8,14 +8,13 @@ import FollowUpRegisterPage from './pages/FollowUpRegisterPage/FollowUpRegisterP
 import FollowUpEditPage from './pages/FollowUpEditPage/FollowUpEditPage'
 import FollowUpsIndexPage from './pages/FollowUpsIndexPage/FollowUpsIndexPage'
 import FollowUpsPage from './pages/FollowUpsPage/FollowUpsPage'
+import PendingPage from './components/PendingPage/PendingPage'
+import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
+import ShelterListPage from './pages/ShelterListPage/ShelterListPage'
+import ShelterRegisterPage from './pages/ShelterRegisterPage/ShelterRegisterPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
 import VeterinariansPage from './pages/VeterinariansPage/VeterinariansPage'
 
-function Pending({ title }) {
-  return <h1>{title} (pendiente)</h1>
-}
-
-// Each user story replaces the <Pending> of its own route (one line per story).
 export default function App() {
   return (
     <Routes>
@@ -34,6 +33,12 @@ export default function App() {
         <Route path="/adoptions/:adoptionId/followUps" element={<FollowUpsPage />} />
         <Route path="/followUps" element={<FollowUpsIndexPage />} />
         <Route path="/notifications" element={<Pending title="Notificaciones" />} />
+        <Route path="/pets/new" element={<PetRegisterPage />} />
+        <Route path="/pets/:petId" element={<PendingPage title="Perfil de mascota" />} />
+        <Route path="/shelters" element={<ShelterListPage />} />
+        <Route path="/shelters/new" element={<ShelterRegisterPage />} />
+        <Route path="/shelters/:shelterId" element={<PendingPage title="Detalle del refugio" />} />
+        <Route path="/notifications" element={<PendingPage title="Notificaciones" />} />
         <Route path="/veterinarians" element={<VeterinariansPage />} />
         <Route path="/veterinarians/:veterinarianId" element={<VeterinarianProfilePage />} />
       </Route>

@@ -1,8 +1,6 @@
 import { api } from './apiClient'
 
-// Lists the veterinarians, optionally filtered by specialization and/or availability.
-// The backend compares both filters ignoring case. Each item also carries its
-// followUps and medicalEvents.
+
 export function getVeterinarians({ specialization = '', availability = '' } = {}) {
   const params = new URLSearchParams()
   if (specialization.trim()) params.set('specialization', specialization.trim())
@@ -13,4 +11,9 @@ export function getVeterinarians({ specialization = '', availability = '' } = {}
 
 export function getVeterinarian(veterinarianId) {
   return api.get(`/veterinarians/${encodeURIComponent(veterinarianId)}`)
+}
+
+
+export function createVeterinarian(veterinarian) {
+  return api.post('/veterinarians', veterinarian)
 }

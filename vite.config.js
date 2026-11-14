@@ -12,8 +12,13 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/setupTests.js',
+    testTimeout: 15000,
+    hookTimeout: 30000,
+    pool: 'vmThreads',
+    maxWorkers: 2,
+    env: { VITE_API_BASE_URL: '', VITE_SHELTER_ID: '' },
     coverage: {
-      reporter: ['text', 'lcov'],
+      reporter: [['text', { maxCols: 200 }], 'lcov'],
     },
   },
 })

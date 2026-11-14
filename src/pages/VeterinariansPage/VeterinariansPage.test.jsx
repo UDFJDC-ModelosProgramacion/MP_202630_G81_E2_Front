@@ -8,6 +8,7 @@ import { getVeterinarians } from '../../services/veterinarianService'
 vi.mock('../../services/veterinarianService', () => ({
   getVeterinarians: vi.fn(),
   getVeterinarian: vi.fn(),
+  createVeterinarian: vi.fn(),
 }))
 
 const LAURA = {
@@ -168,5 +169,37 @@ describe('VeterinariansPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'No se pudo conectar con el servidor.',
     )
+  })
+
+  it('links to the registration form', async () => {
+    getVeterinarians.mockResolvedValue([LAURA])
+
+    renderPage()
+
+    expect(await screen.findByRole('link', { name: 'Registrar veterinario' })).toHaveAttribute(
+      'href',
+      '/veterinarians/new',
+    )
+  })
+
+  it('confirms a veterinarian that was just registered', async () => {
+    getVeterinarians.mockResolvedValue([LAURA])
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/veterinarians', state: { registered: 'Camila Rojas' } }]}>
+        <VeterinariansPage />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('Veterinario/a Camila Rojas registrado/a correctamente.')).toBeInTheDocument()
+  })
+
+  it('shows no confirmation when nothing was registered', async () => {
+    getVeterinarians.mockResolvedValue([LAURA])
+
+    renderPage()
+
+    await screen.findByRole('list', { name: 'Lista de veterinarios' })
+    expect(screen.queryByText(/registrado\/a correctamente/)).not.toBeInTheDocument()
   })
 })

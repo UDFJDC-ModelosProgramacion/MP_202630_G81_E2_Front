@@ -1,0 +1,22 @@
+http://localhost:8999/api/shelters
+{
+    "name": "Refugio Huellitas",
+    "city": "Bogotá",
+    "nit": "900-1",
+    "location": "Chapinero",
+    "users": [ { "id": 1 } ]
+}
+
+http://localhost:8999/api/shelters
+   {
+     "firstName": "Luna",
+     "lastName": "Sandoval",
+     "email": "lunaleja@test.com",
+     "phone": "3001234567",
+     "specialization": "General",
+     "availability": "Lunes a viernes"
+   }
+
+
+
+token Sonar: sqa_8b23c5b8e2c2d3b5d5e7113b56532774c395365c
