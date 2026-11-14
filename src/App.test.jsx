@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
+import { getPets } from './services/petService'
 import { getMedicalEvents } from './services/medicalEventService'
 import { getPet, getPets } from './services/petService'
 import { getShelters } from './services/shelterService'
@@ -27,6 +28,12 @@ vi.mock('./services/petService', () => ({
 vi.mock('./services/medicalEventService', () => ({
   getMedicalEvents: vi.fn(),
   createMedicalEvent: vi.fn(),
+}))
+
+vi.mock('./services/petService', () => ({
+  getPets: vi.fn(),
+  createPet: vi.fn(),
+  addPetPhoto: vi.fn(),
 }))
 
 function renderAt(path) {
@@ -90,6 +97,13 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Busque un Refugio cerca de usted' })).toBeInTheDocument()
     expect(await screen.findByText('Aún no hay refugios registrados')).toBeInTheDocument()
   })
+
+  it('shows the medical event registration form on /medical-events/new', () => {
+    renderAt('/medical-events/new')
+
+    expect(screen.getByRole('heading', { name: 'Registrar evento médico' })).toBeInTheDocument()
+  })
+})
 
   it('shows the medical event registration form on /medical-events/new', () => {
     renderAt('/medical-events/new')

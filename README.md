@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 25 test files / 265 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 24 test files / 258 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -244,23 +244,6 @@ The form records a medical event (consultation, surgery, treatment, ...) in the 
 4. Register an event: a confirmation should appear, and **Ver la mascota** should navigate to `/pets/{id}`.
 5. Register the same event again: the duplicate message from the back-end should be displayed.
 
-### HU24 – View the Medical History of a Pet
-
-**Route:** `/pets/:petId/medical-events` · **Role:** any user
-
-The screen shows the pet's data (name, species, and breed) and the medical events registered for it, newest first. Each event displays its date, type, description, and veterinarian (or a message when no veterinarian was assigned).
-
-- **Back-end:** `GET /api/pets/{id}` and `GET /api/medicalEvents?petId=`.
-- **States:** loading, error with its cause (and a **Reintentar** button), and an empty history message.
-- **Shortcut:** the **Registrar evento médico** button opens `/medical-events/new` (HU23).
-
-**Manual testing:**
-
-1. Start the back-end and register a pet with at least one medical event.
-2. Open `/pets/{id}/medical-events` and verify that the events are shown newest first.
-3. Open the history of a pet without events and verify the empty message.
-4. Stop the back-end and verify that the error and the retry button are displayed.
-
 ### HU06 – Register a Pet
 
 **Route:** `/pets/new` · **Role:** shelter administrator
@@ -331,10 +314,9 @@ npx vitest src/pages/PetRegisterPage          # A specific folder, e.g. HU06
 npx vitest src/pages/ShelterRegisterPage      # HU01
 npx vitest src/pages/VeterinariansPage        # HU70
 npx vitest src/pages/MedicalEventRegisterPage # HU23
-npx vitest src/pages/MedicalEventHistoryPage  # HU24
 ```
 
-Current state: **25 test files, 265 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **24 test files, 258 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
