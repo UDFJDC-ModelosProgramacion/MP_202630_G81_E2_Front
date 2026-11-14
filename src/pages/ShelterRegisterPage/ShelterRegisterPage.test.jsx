@@ -23,7 +23,7 @@ function renderPage() {
       <Routes>
         <Route path="/shelters/new" element={<ShelterRegisterPage />} />
         <Route path="/shelters/:shelterId" element={<ShelterDetailStub />} />
-        <Route path="/" element={<p>Inicio</p>} />
+        <Route path="/shelters" element={<p>Lista de refugios</p>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -141,7 +141,7 @@ describe('ShelterRegisterPage', () => {
 
     const dialog = await screen.findByRole('dialog', { name: '¡Refugio registrado con éxito!' })
     expect(dialog).toHaveTextContent('El refugio "Patitas Felices" ha sido creado satisfactoriamente.')
-    expect(dialog).toHaveTextContent('Código HTTP 201')
+    expect(dialog).toHaveTextContent('Registro exitoso')
     expect(dialog).toHaveTextContent('900069803-1')
     expect(dialog).toHaveTextContent('Bogotá')
     expect(dialog).toHaveTextContent('AdminUser')
@@ -233,7 +233,7 @@ describe('ShelterRegisterPage', () => {
 
     const dialog = await screen.findByRole('alertdialog', { name: 'Error al registrar el refugio' })
     expect(dialog).toHaveTextContent(message)
-    expect(dialog).toHaveTextContent('Error 412 • Conflicto de registro')
+    expect(dialog).toHaveTextContent('Conflicto de registro')
     expect(textbox('Nombre del refugio')).toHaveValue('Patitas Felices')
     expect(textbox('Nombre del refugio')).not.toHaveAccessibleDescription()
   })
@@ -249,7 +249,7 @@ describe('ShelterRegisterPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Cancelar / Volver' }))
 
-    expect(await screen.findByText('Inicio')).toBeInTheDocument()
+    expect(await screen.findByText('Lista de refugios')).toBeInTheDocument()
   })
 
   it('lets the user close the dialog and fix the data', async () => {
@@ -284,6 +284,6 @@ describe('ShelterRegisterPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Cancelar' }))
 
-    expect(await screen.findByText('Inicio')).toBeInTheDocument()
+    expect(await screen.findByText('Lista de refugios')).toBeInTheDocument()
   })
 })

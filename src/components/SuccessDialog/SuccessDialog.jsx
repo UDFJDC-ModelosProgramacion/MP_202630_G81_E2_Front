@@ -29,7 +29,7 @@ export default function SuccessDialog({
       describedBy={messageId}
       onClose={onClose}
     >
-      <DialogPill>{statusLabel}</DialogPill>
+      <DialogPill>Registro exitoso</DialogPill>
       <DialogTitle id={titleId}>{title}</DialogTitle>
       <p id={messageId} className={styles.message}>
         {message}

@@ -1,7 +1,7 @@
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
-const CONNECTION_ERROR = 'No se pudo conectar con el servidor. Inténtalo de nuevo.'
+const CONNECTION_ERROR = 'No se pudo conectar con el servidor. Inténtelo de nuevo.'
 
 export class ApiError extends Error {
   constructor(message, status) {
