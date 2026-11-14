@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 24 test files / 258 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 27 test files / 279 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -149,6 +149,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/pets/new` | Register a pet (HU06) | Shelter admin | ✅ Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
 | `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
+| `/medical-events/:medicalEventId` | Medical event detail (HU25) | Any | ✅ Implemented |
 | `/pets` | Pet search (HU07) | Any | 🚧 Placeholder |
 | `/pets/:petId` | Pet profile (HU08) | Any | 🚧 Placeholder |
 
@@ -167,6 +168,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `GET` | `/pets` | HU23 (pet list) | `getPets` |
 | `GET` | `/pets/{id}` | HU24 (pet header) | `getPet` |
 | `GET` | `/medicalEvents?petId=` | HU24 (medical history) | `getMedicalEvents` |
+| `GET` | `/medicalEvents/{id}` | HU25 (event detail) | `getMedicalEvent` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -187,6 +189,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU06** | Register a pet | `/pets/new` | ✅ Implemented |
 | **HU23** | Register a medical event | `/medical-events/new` | ✅ Implemented |
 | **HU24** | View the medical history of a pet | `/pets/:petId/medical-events` | ✅ Implemented |
+| **HU25** | View the detail of a medical event | `/medical-events/:medicalEventId` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -243,6 +246,39 @@ The form records a medical event (consultation, surgery, treatment, ...) in the 
 3. Enter a future date: the form should reject it.
 4. Register an event: a confirmation should appear, and **Ver la mascota** should navigate to `/pets/{id}`.
 5. Register the same event again: the duplicate message from the back-end should be displayed.
+
+### HU24 – View the Medical History of a Pet
+
+**Route:** `/pets/:petId/medical-events` · **Role:** any user
+
+The screen shows the pet's data (name, species, and breed) and the medical events registered for it, newest first. Each event displays its date, type, description, and veterinarian (or a message when no veterinarian was assigned).
+
+- **Back-end:** `GET /api/pets/{id}` and `GET /api/medicalEvents?petId=`.
+- **States:** loading, error with its cause (and a **Reintentar** button), and an empty history message.
+- **Shortcut:** the **Registrar evento médico** button opens `/medical-events/new` (HU23).
+
+**Manual testing:**
+
+1. Start the back-end and register a pet with at least one medical event.
+2. Open `/pets/{id}/medical-events` and verify that the events are shown newest first.
+3. Open the history of a pet without events and verify the empty message.
+4. Stop the back-end and verify that the error and the retry button are displayed.
+
+### HU25 – View the Detail of a Medical Event
+
+**Route:** `/medical-events/:medicalEventId` · **Role:** any user
+
+Shows a single medical event with its type, date, pet (linked to the pet's medical history), veterinarian, and description. Each event title in the history list (HU24) links to this screen.
+
+- **Back-end:** `GET /api/medicalEvents/{id}` (404 when the event does not exist, 412 when the id is invalid).
+- **States:** loading, error with its cause (and a **Reintentar** button), and a link back to the pet history (or to `/pets` when the event could not be loaded).
+
+**Manual testing:**
+
+1. Open `/pets/{id}/medical-events` and click the title of an event.
+2. Verify that the type, date, pet, veterinarian, and description are displayed.
+3. Use **Volver a la historia médica** to return to the pet history.
+4. Open `/medical-events/999` and verify that the error and the retry button are displayed.
 
 ### HU06 – Register a Pet
 
@@ -314,9 +350,11 @@ npx vitest src/pages/PetRegisterPage          # A specific folder, e.g. HU06
 npx vitest src/pages/ShelterRegisterPage      # HU01
 npx vitest src/pages/VeterinariansPage        # HU70
 npx vitest src/pages/MedicalEventRegisterPage # HU23
+npx vitest src/pages/MedicalEventHistoryPage  # HU24
+npx vitest src/pages/MedicalEventDetailPage   # HU25
 ```
 
-Current state: **24 test files, 258 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **27 test files, 279 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -328,6 +366,7 @@ Tests live next to the module they cover:
 | **HU06** | `PetRegisterPage.test.jsx`, `petForm.test.js`, `petService.test.js` |
 | **HU23** | `MedicalEventRegisterPage.test.jsx`, `medicalEventForm.test.js` |
 | **HU24** | `MedicalEventHistoryPage.test.jsx` |
+| **HU25** | `MedicalEventDetailPage.test.jsx`, `medicalEvents.test.js` |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube

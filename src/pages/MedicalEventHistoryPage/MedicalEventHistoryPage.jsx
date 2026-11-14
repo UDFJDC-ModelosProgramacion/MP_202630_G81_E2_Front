@@ -1,20 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
-import { MEDICAL_EVENT_TYPES } from '../../constants/medicalEventOptions'
 import { getMedicalEvents } from '../../services/medicalEventService'
 import { getPet } from '../../services/petService'
 import { formatDay } from '../../utils/dates'
+import { medicalEventTypeLabel, veterinarianName } from '../../utils/medicalEvents'
 import styles from './MedicalEventHistoryPage.module.css'
-
-const typeLabel = (value) =>
-  MEDICAL_EVENT_TYPES.find((option) => option.value === value)?.label ?? value ?? 'Evento médico'
-
-const veterinarianName = (veterinarian) => {
-  if (!veterinarian) return 'Sin veterinario asignado'
-  const name = `Dr(a). ${veterinarian.firstName ?? ''} ${veterinarian.lastName ?? ''}`.trim()
-  return name === 'Dr(a).' ? 'Sin veterinario asignado' : name
-}
 
 const byDateDescending = (events) =>
   [...events].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')))
@@ -91,7 +82,15 @@ export default function MedicalEventHistoryPage() {
           {events.map((event, index) => (
             <li key={event.id ?? `${event.date}-${index}`} className={styles.card}>
               <div className={styles.cardHeader}>
-                <h2 className={styles.type}>{typeLabel(event.type)}</h2>
+                <h2 className={styles.type}>
+                  <Link
+                    to={`/medical-events/${event.id}`}
+                    className={styles.cardLink}
+                    aria-label={`Ver detalle de ${medicalEventTypeLabel(event.type)}`}
+                  >
+                    {medicalEventTypeLabel(event.type)}
+                  </Link>
+                </h2>
                 <time className={styles.date} dateTime={event.date}>
                   {formatDay(event.date)}
                 </time>

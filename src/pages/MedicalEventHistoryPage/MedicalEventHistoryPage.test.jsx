@@ -58,6 +58,10 @@ describe('MedicalEventHistoryPage', () => {
     expect(within(items[0]).getByText('10 sep 2026')).toBeInTheDocument()
     expect(within(items[1]).getByText('Vacunación')).toBeInTheDocument()
     expect(within(items[1]).getByText('5 sep 2026')).toBeInTheDocument()
+    expect(within(items[0]).getByRole('link', { name: 'Ver detalle de Cirugía' })).toHaveAttribute(
+      'href',
+      '/medical-events/2',
+    )
   })
 
   it('shows the veterinarian of the event or a message when there is none', async () => {
