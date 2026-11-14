@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from './apiClient'
-import { createShelter } from './shelterService'
+import { createShelter, getShelters } from './shelterService'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -46,5 +46,61 @@ describe('createShelter', () => {
     expect(error).toBeInstanceOf(ApiError)
     expect(error.message).toBe('El NIT ya está registrado para otro refugio')
     expect(error.status).toBe(412)
+  })
+})
+
+function stubFetchWith(body) {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: () => Promise.resolve(body),
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  return fetchMock
+}
+
+describe('getShelters', () => {
+  it('requests every shelter when there are no filters', async () => {
+    const fetchMock = stubFetchWith([{ id: 1 }])
+
+    const result = await getShelters()
+
+    expect(result).toEqual([{ id: 1 }])
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/shelters')
+  })
+
+  it('sends only the filters that have text, trimmed', async () => {
+    const fetchMock = stubFetchWith([])
+
+    await getShelters({ city: ' Cali ', location: '   ' })
+
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/shelters?city=Cali')
+  })
+
+  it('sends both filters when both are given', async () => {
+    const fetchMock = stubFetchWith([])
+
+    await getShelters({ city: 'Bogotá', location: 'Carrera 15 # 85 - 32' })
+
+    const url = new URL(fetchMock.mock.calls[0][0], 'http://localhost')
+    expect(url.pathname).toBe('/api/shelters')
+    expect(url.searchParams.get('city')).toBe('Bogotá')
+    expect(url.searchParams.get('location')).toBe('Carrera 15 # 85 - 32')
+  })
+
+  it('fails with the message sent by the backend', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ apierror: { message: 'Error interno' } }),
+      }),
+    )
+
+    const error = await getShelters().catch((e) => e)
+
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.message).toBe('Error interno')
   })
 })

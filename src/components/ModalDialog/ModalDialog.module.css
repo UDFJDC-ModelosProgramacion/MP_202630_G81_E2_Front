@@ -115,11 +115,11 @@
 }
 
 .success .primary {
-  background: var(--color-primary);
+  background: var(--color-primary-dark);
 }
 
 .success .primary:hover {
-  background: var(--color-primary-dark);
+  background: var(--color-primary-deep);
 }
 
 .secondary {

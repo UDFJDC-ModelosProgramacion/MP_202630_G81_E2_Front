@@ -10,7 +10,7 @@ describe('ScreenState', () => {
 
   it('shows errors as an alert', () => {
     render(<ScreenState state="error" />)
-    expect(screen.getByRole('alert')).toHaveTextContent('Ocurrió un error. Inténtalo de nuevo.')
+    expect(screen.getByRole('alert')).toHaveTextContent('Ocurrió un error. Inténtelo de nuevo.')
   })
 
   it('shows the default empty text', () => {

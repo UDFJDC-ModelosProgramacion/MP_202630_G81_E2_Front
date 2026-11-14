@@ -1,0 +1,356 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mark {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  background: var(--gradient-brand);
+  color: #ffffff;
+  box-shadow: 0 6px 14px -4px rgb(16 185 129 / 45%);
+}
+
+.markIcon {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.9rem;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0.2rem 0 0;
+  color: var(--color-muted);
+}
+
+/* Filters card: same surface as the form sections, with the brand strip of the shelter form. */
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-top: 0.3rem solid var(--color-primary-bright);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.location {
+  flex: 3 1 16rem;
+}
+
+.city {
+  flex: 1 1 11rem;
+}
+
+.search {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 0.8rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--color-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 400;
+}
+
+.field input {
+  padding-left: 2.4rem;
+}
+
+.field input::placeholder {
+  color: #94a3b8;
+}
+
+.field input:focus-visible,
+.field select:focus-visible {
+  border-color: var(--color-primary);
+  outline: 3px solid var(--color-primary-ring);
+}
+
+.submit,
+.clear {
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submit {
+  padding: 0.65rem 1.75rem;
+  border: 1px solid var(--color-primary-dark);
+  background: var(--color-primary-dark);
+  color: #ffffff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.submit:hover {
+  background: var(--color-primary-deep);
+}
+
+.clear {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+}
+
+.clear:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}
+
+.submit:focus-visible,
+.clear:focus-visible {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.help {
+  flex: 1 1 18rem;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-height: min(65vh, 36rem);
+  margin: 0;
+  padding: 0.25rem 0.5rem 0.25rem 0.1rem;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-color: var(--color-primary-bright) var(--color-border);
+  scrollbar-width: thin;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.1rem 2rem 1.1rem 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.card:hover,
+.card:focus-within {
+  border-color: var(--color-primary-bright);
+  box-shadow: 0 8px 20px -8px rgb(16 185 129 / 35%);
+}
+
+.avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: var(--gradient-brand);
+  color: #ffffff;
+  box-shadow: 0 6px 14px -4px rgb(16 185 129 / 40%);
+}
+
+.avatarIcon {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  margin: 0 0 0.35rem;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+}
+
+.link {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.card:hover .link {
+  color: var(--color-primary-dark);
+}
+
+/* The whole card is clickable: the link stretches over it. */
+.link::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  content: '';
+}
+
+.link:focus-visible {
+  outline: none;
+}
+
+.link:focus-visible::after {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
+.data {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.data div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.data dt {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.data dt::after {
+  content: ':';
+}
+
+.data dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.chevron {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.card:hover .chevron {
+  background: var(--color-primary-dark);
+  color: #ffffff;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  border: 2px dashed var(--color-primary-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
+}
+
+@media (max-width: 640px) {
+  .card {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem 1.25rem 1.5rem;
+    border-radius: 2rem;
+    text-align: center;
+  }
+
+  .link::after {
+    border-radius: 2rem;
+  }
+
+  .data div {
+    justify-content: center;
+  }
+
+  .chevron {
+    display: none;
+  }
+
+  .avatar {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+}
