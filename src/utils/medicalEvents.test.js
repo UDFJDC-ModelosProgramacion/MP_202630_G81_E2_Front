@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { medicalEventTypeLabel, petSummary, veterinarianName } from './medicalEvents'
+import {
+  canManageMedicalEvents,
+  medicalEventTypeLabel,
+  petSummary,
+  veterinarianName,
+} from './medicalEvents'
 
 describe('medicalEventTypeLabel', () => {
   it('maps the stored value to its accented label', () => {
@@ -41,5 +46,18 @@ describe('petSummary', () => {
 
   it('returns an empty string when there is no pet', () => {
     expect(petSummary(null)).toBe('')
+  })
+})
+
+describe('canManageMedicalEvents', () => {
+  it('lets the shelter staff edit and delete events', () => {
+    expect(canManageMedicalEvents('SHELTER_ADMIN')).toBe(true)
+    expect(canManageMedicalEvents('VETERINARIAN')).toBe(true)
+  })
+
+  it('keeps the other roles out', () => {
+    expect(canManageMedicalEvents('ADOPTER')).toBe(false)
+    expect(canManageMedicalEvents('VISITOR')).toBe(false)
+    expect(canManageMedicalEvents(undefined)).toBe(false)
   })
 })

@@ -7,11 +7,11 @@ import { SelectField, TextAreaField, TextField } from '../../components/FormFiel
 import ScreenState from '../../components/ScreenState/ScreenState'
 import SuccessDialog from '../../components/SuccessDialog/SuccessDialog'
 import { MEDICAL_EVENT_TYPES } from '../../constants/medicalEventOptions'
-import { getSession, ROLES } from '../../config/session'
+import { getSession } from '../../config/session'
 import { getMedicalEvent, updateMedicalEvent } from '../../services/medicalEventService'
 import { getVeterinarians } from '../../services/veterinarianService'
 import { formatDay, todayISO } from '../../utils/dates'
-import { petSummary } from '../../utils/medicalEvents'
+import { canManageMedicalEvents, petSummary } from '../../utils/medicalEvents'
 import {
   buildMedicalEventPayload,
   fieldOfBackendMessage,
@@ -297,8 +297,7 @@ function MedicalEventForm() {
 }
 
 export default function MedicalEventEditPage() {
-  const session = getSession()
-  const allowed = session.role === ROLES.SHELTER_ADMIN || session.role === ROLES.VETERINARIAN
+  const allowed = canManageMedicalEvents(getSession().role)
 
   if (!allowed) {
     return (
