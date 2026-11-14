@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 29 test files / 302 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 31 test files / 319 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -147,6 +147,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/shelters/new` | Register a shelter (HU01) | Shelter admin | ✅ Implemented |
 | `/shelters/:shelterId` | Shelter detail | Any | 🚧 Placeholder |
 | `/pets/new` | Register a pet (HU06) | Shelter admin | ✅ Implemented |
+| `/medical-events` | Medical events list with filters (HU28) | Any | ✅ Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
 | `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
 | `/medical-events/:medicalEventId` | Medical event detail (HU25) | Any | ✅ Implemented |
@@ -172,6 +173,8 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `GET` | `/medicalEvents/{id}` | HU25 (event detail) | `getMedicalEvent` |
 | `PUT` | `/medicalEvents/{id}` | HU26 (edit event) | `updateMedicalEvent` |
 | `DELETE` | `/medicalEvents/{id}` | HU27 (delete event) | `deleteMedicalEvent` |
+| `GET` | `/medicalEvents?petId=&type=&date=` | HU28 (list with filters) | `getMedicalEvents` |
+| `GET` | `/pets` | HU28 (pet filter options) | `getPets` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -195,6 +198,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU25** | View the detail of a medical event | `/medical-events/:medicalEventId` | ✅ Implemented |
 | **HU26** | Edit a medical event | `/medical-events/:medicalEventId/edit` | ✅ Implemented |
 | **HU27** | Delete a medical event | `/medical-events/:medicalEventId` | ✅ Implemented |
+| **HU28** | View medical events with filters | `/medical-events` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -324,6 +328,27 @@ The **Eliminar evento** button appears on the detail page (HU25) next to **Edita
 4. Click **Eliminar evento** again and confirm. The user should go to the pet's history with the message "Se eliminó el evento médico de …", and the event should no longer be listed.
 5. Open the deleted event's URL: the error from the back-end should be displayed.
 
+### HU28 – View Medical Events with Filters
+
+**Route:** `/medical-events` · **Role:** any user
+
+Lists the medical events of every pet, newest first, and filters them by **Mascota**, **Tipo de evento**, and **Fecha del evento** (the exact day). The filters can be combined and are applied when the user presses **Buscar**, as in the veterinarian list (HU70). **Limpiar filtros** restores the full list. Each event links to its detail (HU25).
+
+- **Back-end:** `GET /api/medicalEvents?petId=&type=&date=`. Blank filters are left out, the type is matched without regard to case, and the date must be `yyyy-MM-dd` (a malformed date is rejected with 412).
+- **Options:** the pets come from `GET /api/pets`, including inactive pets so that their history can still be consulted; the types come from `MEDICAL_EVENT_TYPES`.
+- **States:** loading, error with the back-end message, and an empty list with a different message with and without filters.
+- **Race handling:** only the answer to the latest search is shown, so a slow earlier answer never overwrites a newer one.
+- **Navigation:** the **Eventos médicos** item in the navigation bar opens this screen for every role.
+
+**Manual testing:**
+
+1. Open `/medical-events` and verify that every event is listed, newest first, with its pet and veterinarian.
+2. Select a pet and a type and press **Buscar**: only the matching events should be listed.
+3. Select a day with events and verify that only the events of that day are listed.
+4. Combine filters with no matches and verify the "no matches" message.
+5. Press **Limpiar filtros** and verify that every event is listed again.
+6. Click the title of an event and verify that its detail opens.
+
 ### HU06 – Register a Pet
 
 **Route:** `/pets/new` · **Role:** shelter administrator
@@ -398,9 +423,10 @@ npx vitest src/pages/MedicalEventHistoryPage  # HU24
 npx vitest src/pages/MedicalEventDetailPage   # HU25
 npx vitest src/pages/MedicalEventEditPage     # HU26
 npx vitest src/components/ConfirmDialog       # HU27 (shared dialog)
+npx vitest src/pages/MedicalEventsPage        # HU28
 ```
 
-Current state: **29 test files, 302 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **31 test files, 319 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -415,6 +441,7 @@ Tests live next to the module they cover:
 | **HU25** | `MedicalEventDetailPage.test.jsx`, `medicalEvents.test.js` |
 | **HU26** | `MedicalEventEditPage.test.jsx` (and the `statusLabel` case in `SuccessDialog.test.jsx`) |
 | **HU27** | `ConfirmDialog.test.jsx`, `MedicalEventDetailPage.test.jsx` (delete and roles), `MedicalEventHistoryPage.test.jsx` (notice), `medicalEvents.test.js` (role rule) |
+| **HU28** | `MedicalEventsPage.test.jsx`, `medicalEventService.test.js` (filters and query string) |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube

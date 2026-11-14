@@ -23,6 +23,11 @@ export function petSummary(pet) {
   return `${pet.name ?? ''} — ${pet.species ?? ''}${breed}`
 }
 
+// Newest first, without changing the array that was received.
+export function sortByDateDescending(events) {
+  return [...events].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')))
+}
+
 // Editing and deleting medical events is reserved to the shelter staff (HU23 uses the same rule).
 export function canManageMedicalEvents(role) {
   return role === ROLES.SHELTER_ADMIN || role === ROLES.VETERINARIAN

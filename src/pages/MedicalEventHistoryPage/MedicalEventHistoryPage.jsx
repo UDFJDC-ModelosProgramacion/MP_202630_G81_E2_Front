@@ -4,11 +4,12 @@ import ScreenState from '../../components/ScreenState/ScreenState'
 import { getMedicalEvents } from '../../services/medicalEventService'
 import { getPet } from '../../services/petService'
 import { formatDay } from '../../utils/dates'
-import { medicalEventTypeLabel, veterinarianName } from '../../utils/medicalEvents'
+import {
+  medicalEventTypeLabel,
+  sortByDateDescending,
+  veterinarianName,
+} from '../../utils/medicalEvents'
 import styles from './MedicalEventHistoryPage.module.css'
-
-const byDateDescending = (events) =>
-  [...events].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')))
 
 export default function MedicalEventHistoryPage() {
   const { petId } = useParams()
@@ -27,7 +28,7 @@ export default function MedicalEventHistoryPage() {
     Promise.all([getPet(petId), getMedicalEvents({ petId })])
       .then(([pet, events]) => {
         if (!mounted) return
-        setResult({ status: 'ready', pet, events: byDateDescending(events), message: '' })
+        setResult({ status: 'ready', pet, events: sortByDateDescending(events), message: '' })
       })
       .catch((error) => {
         if (!mounted) return

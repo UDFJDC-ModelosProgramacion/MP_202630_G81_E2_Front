@@ -9,6 +9,7 @@ const LINKS = [
   { path: '/shelters', label: 'Refugios', end: true },
   { path: '/notifications', label: 'Notificaciones' },
   { path: '/veterinarians', label: 'Veterinarios' },
+  { path: '/medical-events', label: 'Eventos médicos', end: true },
 ]
 
 const ADMIN_LINKS = [
