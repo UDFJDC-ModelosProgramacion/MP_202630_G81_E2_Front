@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
+import { getVeterinarian, getVeterinarians } from './services/veterinarianService'
 import { getMedicalEvent, getMedicalEvents } from './services/medicalEventService'
 import { getPets } from './services/petService'
 import { getMedicalEvents } from './services/medicalEventService'
@@ -17,6 +18,8 @@ vi.mock('./services/shelterService', () => ({
 vi.mock('./services/veterinarianService', () => ({
   getVeterinarians: vi.fn(),
   getVeterinarian: vi.fn(),
+  createVeterinarian: vi.fn(),
+  updateVeterinarian: vi.fn(),
 }))
 
 vi.mock('./services/petService', () => ({
@@ -147,7 +150,20 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Editar evento médico' })).toBeInTheDocument()
   })
-})
 
+  it('shows the update form on /veterinarians/:id/edit', async () => {
+    getVeterinarian.mockResolvedValue({
+      id: 3,
+      firstName: 'Camila',
+      lastName: 'Rojas',
+      specialization: 'Cirugía',
+      availability: 'Lunes a viernes',
+    })
+
+    renderAt('/veterinarians/3/edit')
+
+    expect(await screen.findByRole('heading', { name: 'Actualizar veterinario' })).toBeInTheDocument()
+  })
+})
 
 })

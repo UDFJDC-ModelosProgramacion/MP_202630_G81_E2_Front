@@ -11,6 +11,7 @@ import ShelterListPage from './pages/ShelterListPage/ShelterListPage'
 import ShelterRegisterPage from './pages/ShelterRegisterPage/ShelterRegisterPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
 import VeterinariansPage from './pages/VeterinariansPage/VeterinariansPage'
+import UpdateVeterinarianPage from './pages/UpdateVeterinarianPage/UpdateVeterinarianPage'
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/notifications" element={<PendingPage title="Notificaciones" />} />
         <Route path="/veterinarians" element={<VeterinariansPage />} />
         <Route path="/veterinarians/:veterinarianId" element={<VeterinarianProfilePage />} />
+        <Route path="/veterinarians/:veterinarianId/edit" element={<UpdateVeterinarianPage />} />
       </Route>
     </Routes>
   )

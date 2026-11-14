@@ -190,6 +190,10 @@ The back-end does not implement authentication yet, so the user and role are sim
 
 | User Story | Description | Route | Status |
 |---|---|---|---|
+| **HU70** | Veterinarian list with filters | `/veterinarians` | Implemented |
+| **HU01** | Register a shelter | `/shelters/new` | Implemented |
+| **HU06** | Register a pet | `/pets/new` | Implemented |
+| **HU72** | Update a veterinarian's specialization and availability | `/veterinarians/:veterinarianId/edit` | Implemented |
 | **HU70** | Veterinarian list with filters and profile | `/veterinarians` | ✅ Implemented |
 | **HU01** | Register a shelter | `/shelters/new` | ✅ Implemented |
 | **HU06** | Register a pet | `/pets/new` | ✅ Implemented |
@@ -222,6 +226,27 @@ Opening a profile also shows the veterinarian's contact data, **follow-ups**, an
 4. Open a profile and verify that follow-ups and medical events are displayed.
 5. Stop the back-end and verify that an error message is displayed.
 
+### HU72 - Update a Veterinarian's Specialization and Availability
+
+**Route:** `/veterinarians/:veterinarianId/edit` (reached from the **Editar especialización y disponibilidad** link on the veterinarian's profile)
+
+A shelter administrator can change only the **specialization** and the **availability** of a veterinarian. The veterinarian's name is shown read-only, with a notice that only those two fields can be modified. Both fields are required. When the update succeeds, the user is taken back to the profile, which shows a confirmation message.
+
+- **Role:** only `SHELTER_ADMIN` sees the edit link and can open the form; any other role gets an explanatory message.
+- **Back-end:** `GET /api/veterinarians/{id}` to load the current data and `PUT /api/veterinarians/{id}` with `{ specialization, availability }`.
+- **Errors:** the back-end message and its HTTP status are shown in an error dialog (for example `412 Specialization cannot be null or empty` or `404 Veterinarian not found`). When the message refers to a field, that field is marked and receives focus when the dialog is closed.
+- **States:** loading, load error with a link back to the list, and saving.
+
+**Manual Testing:**
+
+1. Open a veterinarian's profile and click the edit link.
+2. Verify that the name is read-only and that the current specialization and availability are selected.
+3. Change both values, click **Guardar**, and verify that the profile shows the new values and the confirmation message.
+4. Clear one or both fields, click **Guardar**, and verify that the required-field errors appear and no request is sent.
+5. Open `/veterinarians/999999/edit` and verify that the "not found" error is displayed with a link back to the list.
+6. Click **Cancelar** and verify that you return to the profile without changes.
+
+### HU06 ÔÇô Register a Pet
 ### Register a Veterinarian
 
 **Route:** `/veterinarians/new` (reachable from the **Registrar veterinario** button on the list)
@@ -428,6 +453,11 @@ npx vitest src/pages/MedicalEventsPage        # HU28
 
 Current state: **31 test files, 319 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
+- **HU70:** `VeterinariansPage.test.jsx`, `VeterinarianProfilePage.test.jsx`, and `veterinarianService.test.js`.
+- **HU72:** `UpdateVeterinarianPage.test.jsx` (full screen), `updateVeterinarianForm.test.js` (validation, payload, and error mapping), `VeterinarianProfilePage.test.jsx` (edit link and confirmation), and `veterinarianService.test.js` (`updateVeterinarian`).
+- **HU01:** `ShelterRegisterPage.test.jsx` (full screen), `shelterForm.test.js` (validation and request body), and `shelterService.test.js`.
+- **HU06:** `PetRegisterPage.test.jsx` (full screen), `petForm.test.js` (validation and request body), and `petService.test.js`.
+- **Shared:** `FormField.test.jsx`, `Navbar.test.jsx`, `ScreenState.test.jsx`, and `dates.test.js`.
 Tests live next to the module they cover:
 
 | Area | Test files |
