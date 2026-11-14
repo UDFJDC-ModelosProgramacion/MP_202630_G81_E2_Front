@@ -39,7 +39,7 @@ describe('ErrorDialog', () => {
   it('does not show a status when there is none (connection errors)', () => {
     renderDialog({ status: 0 })
 
-    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('Error 0')
+    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('No se pudo completar la solicitud')
   })
 
   it('puts the focus on the main action and closes with it', async () => {
