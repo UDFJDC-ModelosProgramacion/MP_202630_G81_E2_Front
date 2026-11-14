@@ -15,6 +15,14 @@ vi.mock('./services/veterinarianService', () => ({
   getVeterinarian: vi.fn(),
 }))
 
+vi.mock('./services/notificationService', () => ({
+  getNotifications: vi.fn().mockResolvedValue([]),
+  getNotification: vi.fn().mockResolvedValue({ id: 1, message: 'Hola', channel: 'EMAIL', sent: false }),
+  createNotification: vi.fn(),
+  updateNotification: vi.fn(),
+  deleteNotification: vi.fn(),
+}))
+
 function renderAt(path) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -72,5 +80,20 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: 'Busque un Refugio cerca de usted' })).toBeInTheDocument()
     expect(await screen.findByText('Aún no hay refugios registrados')).toBeInTheDocument()
+  })
+
+    it('shows the notifications list on /notifications', async () => {
+    renderAt('/notifications')
+    expect(await screen.findByRole('heading', { name: 'Mis notificaciones' })).toBeInTheDocument()
+  })
+
+  it('shows the schedule form on /notifications/new', () => {
+    renderAt('/notifications/new')
+    expect(screen.getByRole('heading', { name: 'Programar notificación' })).toBeInTheDocument()
+  })
+
+  it('shows the edit form on /notifications/:id/edit', async () => {
+    renderAt('/notifications/1/edit')
+    expect(await screen.findByRole('heading', { name: 'Editar notificación' })).toBeInTheDocument()
   })
 })

@@ -6,6 +6,9 @@ import ShelterListPage from './pages/ShelterListPage/ShelterListPage'
 import ShelterRegisterPage from './pages/ShelterRegisterPage/ShelterRegisterPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
 import VeterinariansPage from './pages/VeterinariansPage/VeterinariansPage'
+import NotificationsPage from './pages/NotificationsPage/NotificationsPage'
+import ScheduleNotificationPage from './pages/ScheduleNotificationPage/ScheduleNotificationPage'
+import EditNotificationPage from './pages/EditNotificationPage/EditNotificationPage'
 
 export default function App() {
   return (
@@ -18,7 +21,9 @@ export default function App() {
         <Route path="/shelters" element={<ShelterListPage />} />
         <Route path="/shelters/new" element={<ShelterRegisterPage />} />
         <Route path="/shelters/:shelterId" element={<PendingPage title="Detalle del refugio" />} />
-        <Route path="/notifications" element={<PendingPage title="Notificaciones" />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/notifications/new" element={<ScheduleNotificationPage />} />
+        <Route path="/notifications/:notificationId/edit" element={<EditNotificationPage />} />
         <Route path="/veterinarians" element={<VeterinariansPage />} />
         <Route path="/veterinarians/:veterinarianId" element={<VeterinarianProfilePage />} />
       </Route>

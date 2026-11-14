@@ -1,0 +1,11 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.title {
+    margin: 0;
+    font-size: 1.9rem;
+    letter-spacing: -0.02em;
+}
