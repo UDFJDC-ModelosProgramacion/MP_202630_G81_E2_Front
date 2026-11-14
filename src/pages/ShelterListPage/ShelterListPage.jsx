@@ -10,7 +10,6 @@ const NO_FILTERS = { city: '', location: '' }
 
 const hasFilters = (filters) => Boolean(filters.city.trim() || filters.location.trim())
 
-// Registered cities may include some that are not in the registration list.
 const cityOptions = (shelters) =>
   [...new Set([...CITIES, ...shelters.map((shelter) => shelter.city).filter(Boolean)])].sort(
     (a, b) => a.localeCompare(b),
@@ -76,8 +75,6 @@ export default function ShelterListPage() {
   })
   const lastRequest = useRef(0)
 
-  // Only the answer of the latest request is shown, so a slow old one cannot overwrite it.
-  // It never rejects (errors become the 'error' state), so callers can ignore the promise with void.
   const search = useCallback((appliedFilters) => {
     const requestId = ++lastRequest.current
     return getShelters(appliedFilters)
@@ -137,9 +134,9 @@ export default function ShelterListPage() {
           <HeartIcon className={styles.markIcon} />
         </span>
         <div>
-          <h1 className={styles.title}>Busca un Refugio cerca de Ti</h1>
+          <h1 className={styles.title}>Busque un Refugio cerca de usted</h1>
           <p className={styles.subtitle}>
-            Consulta los refugios registrados y filtra por ciudad o dirección.
+            Consulte los refugios registrados y filtre por ciudad o dirección.
           </p>
         </div>
       </header>
@@ -181,9 +178,8 @@ export default function ShelterListPage() {
 
         <div className={styles.footer}>
           <p id="filters-help" className={styles.help}>
-            La búsqueda compara el texto exacto, sin distinguir mayúsculas de minúsculas. No
-            encuentra coincidencias parciales: la dirección debe escribirse completa, tal como está
-            registrada. Si usa ambos filtros, el refugio debe cumplir los dos.
+            Escriba la dirección completa, tal como está registrada (no distingue mayúsculas).
+            Si usa ambos filtros, el refugio debe cumplir los dos.
           </p>
           <button type="button" className={styles.clear} onClick={clearFilters}>
             Limpiar filtros
