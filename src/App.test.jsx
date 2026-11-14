@@ -4,6 +4,9 @@ import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import { getMedicalEvent, getMedicalEvents } from './services/medicalEventService'
 import { getPet, getPets } from './services/petService'
+import { getTrialCohabitationRequest } from './services/trialCohabitationService'
+import { getAdoptionRequests } from './services/adoptionRequestService'
+import { getAdoption, getAdoptions } from './services/adoptionService'
 import { getVeterinarians } from './services/veterinarianService'
 
 vi.mock('./services/veterinarianService', () => ({
@@ -17,6 +20,21 @@ vi.mock('./services/petService', () => ({
   getPet: vi.fn(),
   createPet: vi.fn(),
   addPetPhoto: vi.fn(),
+}))
+
+vi.mock('./services/adoptionService', () => ({
+  createAdoption: vi.fn(),
+  getAdoption: vi.fn(),
+  getAdoptions: vi.fn(),
+  updateAdoption: vi.fn(),
+}))
+
+vi.mock('./services/adoptionRequestService', () => ({ getAdoptionRequests: vi.fn() }))
+
+vi.mock('./services/trialCohabitationService', () => ({
+  createTrialCohabitationRequest: vi.fn(),
+  getTrialCohabitationRequest: vi.fn(),
+  getTrialCohabitationRequests: vi.fn(),
 }))
 
 vi.mock('./services/medicalEventService', () => ({
@@ -113,6 +131,97 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Eventos médicos' })).toBeInTheDocument()
     expect(screen.getByRole('form', { name: 'Filtros de eventos médicos' })).toBeInTheDocument()
+  })
+
+  it('shows the list of the trial cohabitation requests of the adopter', () => {
+    renderAt('/trial-cohabitation-requests')
+
+    expect(screen.getByRole('heading', { name: 'Mis solicitudes de convivencia' })).toBeInTheDocument()
+  })
+
+  it('shows the detail of a trial cohabitation request on /trial-cohabitation-requests/:requestId', async () => {
+    getTrialCohabitationRequest.mockResolvedValue({
+      id: 1,
+      status: 'PENDING',
+      date: '2026-11-03',
+      description: 'Quiero convivir con Luna',
+      startDate: '2026-11-10',
+      endDate: '2026-11-20',
+      shelter: { id: 1, name: 'Refugio Patitas' },
+      adopter: { id: 2, firstName: 'Carlos', lastName: 'Perez', email: 'carlos@mail.com', phone: '3000000000' },
+      pet: { id: 1, name: 'Luna', species: 'Perro', shelter: { id: 1 } },
+      trialCohabitation: null,
+    })
+    renderAt('/trial-cohabitation-requests/1')
+
+    expect(await screen.findByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
+  })
+
+  it('shows the edit form of an adoption on /adoptions/:adoptionId/edit', async () => {
+    getAdoption.mockResolvedValue({
+      id: 1,
+      date: '2026-11-08',
+      status: 'IN_PROGRESS',
+      importantNotes: 'Revisar vacunas cada mes',
+      pet: { id: 1, name: 'Luna', species: 'Perro', shelter: { id: 1 } },
+      shelter: { id: 1 },
+      adopter: { id: 2, firstName: 'Carlos', lastName: 'Perez' },
+    })
+    renderAt('/adoptions/1/edit')
+
+    expect(await screen.findByRole('heading', { name: 'Editar adopción' })).toBeInTheDocument()
+  })
+
+  it('shows the adoptions of the shelter on /adoptions/shelter', async () => {
+    getAdoptions.mockResolvedValue([])
+    renderAt('/adoptions/shelter')
+
+    expect(await screen.findByRole('heading', { name: 'Adopciones de mi refugio' })).toBeInTheDocument()
+  })
+
+  it('shows the detail of an adoption on /adoptions/:adoptionId', async () => {
+    getAdoption.mockResolvedValue({
+      id: 1,
+      date: '2026-11-08',
+      status: 'IN_PROGRESS',
+      importantNotes: 'Revisar vacunas cada mes',
+      pet: { id: 1, name: 'Luna', species: 'Perro', shelter: { id: 1 } },
+      shelter: { id: 1, name: 'Refugio Patitas' },
+      adopter: { id: 2, firstName: 'Carlos', lastName: 'Perez', email: 'carlos@mail.com', phone: '3000000000' },
+      adoptionRequest: { id: 11 },
+      reviews: [],
+      followUps: [],
+    })
+    renderAt('/adoptions/1')
+
+    expect(await screen.findByRole('heading', { name: 'Luna — Perro' })).toBeInTheDocument()
+  })
+
+  it('shows the adoptions of the adopter on /adoptions/mine', () => {
+    renderAt('/adoptions/mine')
+
+    expect(screen.getByRole('heading', { name: 'Mis adopciones' })).toBeInTheDocument()
+  })
+
+  it('shows the adoption registration form on /adoptions/new', async () => {
+    renderAt('/adoptions/new')
+
+    expect(await screen.findByRole('heading', { name: 'Registrar adopción' })).toBeInTheDocument()
+    expect(getAdoptionRequests).not.toHaveBeenCalled()
+  })
+
+  it('shows the requests received by the shelter on /trial-cohabitation-requests/received', () => {
+    renderAt('/trial-cohabitation-requests/received')
+
+    expect(
+      screen.getByRole('heading', { name: 'Solicitudes de convivencia recibidas' }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows the trial cohabitation request form on /trial-cohabitation-requests/new', () => {
+    renderAt('/trial-cohabitation-requests/new')
+
+    expect(screen.getByRole('heading', { name: 'Solicitar convivencia de prueba' })).toBeInTheDocument()
   })
 
   it('shows the edit form of a medical event', async () => {

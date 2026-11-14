@@ -4,13 +4,8 @@ import ScreenState from '../../components/ScreenState/ScreenState'
 import { MEDICAL_EVENT_TYPES } from '../../constants/medicalEventOptions'
 import { getMedicalEvents } from '../../services/medicalEventService'
 import { getPets } from '../../services/petService'
-import { formatDay } from '../../utils/dates'
-import {
-  medicalEventTypeLabel,
-  petSummary,
-  sortByDateDescending,
-  veterinarianName,
-} from '../../utils/medicalEvents'
+import { formatDay, sortByDateDescending } from '../../utils/dates'
+import { medicalEventTypeLabel, petSummary, veterinarianName } from '../../utils/medicalEvents'
 import styles from './MedicalEventsPage.module.css'
 
 const NO_FILTERS = { petId: '', type: '', date: '' }

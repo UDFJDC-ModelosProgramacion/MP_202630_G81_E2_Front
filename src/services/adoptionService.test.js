@@ -1,0 +1,116 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createAdoption,
+  deleteAdoption,
+  getAdoption,
+  getAdoptions,
+  updateAdoption,
+} from './adoptionService'
+
+function mockFetch(response) {
+  const fetchMock = vi.fn().mockResolvedValue(response)
+  vi.stubGlobal('fetch', fetchMock)
+  return fetchMock
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
+describe('deleteAdoption', () => {
+  it('sends a DELETE request and resolves without content', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 204 })
+
+    const result = await deleteAdoption(5)
+
+    expect(result).toBeNull()
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adoptions/5')
+    expect(options.method).toBe('DELETE')
+  })
+})
+
+describe('updateAdoption', () => {
+  it('puts the changes on the adoption and returns the updated one', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 200, json: () => Promise.resolve({ id: 2, status: 'FINALIZED' }) })
+
+    const result = await updateAdoption(2, { status: 'FINALIZED', importantNotes: 'Cerrada' })
+
+    expect(result).toEqual({ id: 2, status: 'FINALIZED' })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adoptions/2')
+    expect(options.method).toBe('PUT')
+    expect(JSON.parse(options.body)).toEqual({ status: 'FINALIZED', importantNotes: 'Cerrada' })
+  })
+})
+
+describe('getAdoption', () => {
+  it('requests one adoption by id', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 200, json: () => Promise.resolve({ id: 4 }) })
+
+    const result = await getAdoption(4)
+
+    expect(result).toEqual({ id: 4 })
+    expect(fetchMock).toHaveBeenCalledWith('/api/adoptions/4', expect.any(Object))
+  })
+})
+
+describe('getAdoptions', () => {
+  it('requests every adoption when there are no filters', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 200, json: () => Promise.resolve([{ id: 1 }]) })
+
+    const result = await getAdoptions({ adopterId: '' })
+
+    expect(result).toEqual([{ id: 1 }])
+    expect(fetchMock).toHaveBeenCalledWith('/api/adoptions', expect.any(Object))
+  })
+
+  it('sends the shelter and the status as query parameters', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 200, json: () => Promise.resolve([]) })
+
+    await getAdoptions({ shelterId: 1, status: 'FINALIZED' })
+
+    const url = new URL(fetchMock.mock.calls[0][0], 'http://localhost')
+    expect(url.searchParams.get('shelterId')).toBe('1')
+    expect(url.searchParams.get('status')).toBe('FINALIZED')
+  })
+
+  it('sends the adopter as a query parameter and leaves out the blank filters', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 200, json: () => Promise.resolve([]) })
+
+    await getAdoptions({ adopterId: 2, petId: '', status: '  ' })
+
+    const url = new URL(fetchMock.mock.calls[0][0], 'http://localhost')
+    expect(url.pathname).toBe('/api/adoptions')
+    expect(url.searchParams.get('adopterId')).toBe('2')
+    expect(url.searchParams.has('petId')).toBe(false)
+    expect(url.searchParams.has('status')).toBe(false)
+  })
+})
+
+describe('createAdoption', () => {
+  it('posts the adoption as JSON and returns the created one', async () => {
+    const adoption = {
+      date: '2026-11-04T00:00:00-05:00',
+      status: 'IN_PROGRESS',
+      importantNotes: 'Revisar vacunas cada mes',
+      pet: { id: 1 },
+      shelter: { id: 1 },
+      adopter: { id: 2 },
+      adoptionRequest: { id: 11 },
+    }
+    const fetchMock = mockFetch({
+      ok: true,
+      status: 201,
+      json: () => Promise.resolve({ id: 7, ...adoption }),
+    })
+
+    const result = await createAdoption(adoption)
+
+    expect(result).toEqual({ id: 7, ...adoption })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adoptions')
+    expect(options.method).toBe('POST')
+    expect(JSON.parse(options.body)).toEqual(adoption)
+  })
+})

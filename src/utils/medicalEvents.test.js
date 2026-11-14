@@ -3,7 +3,6 @@ import {
   canManageMedicalEvents,
   medicalEventTypeLabel,
   petSummary,
-  sortByDateDescending,
   veterinarianName,
 } from './medicalEvents'
 
@@ -60,20 +59,5 @@ describe('canManageMedicalEvents', () => {
     expect(canManageMedicalEvents('ADOPTER')).toBe(false)
     expect(canManageMedicalEvents('VISITOR')).toBe(false)
     expect(canManageMedicalEvents(undefined)).toBe(false)
-  })
-})
-
-describe('sortByDateDescending', () => {
-  it('puts the newest event first without changing the received array', () => {
-    const events = [
-      { id: 1, date: '2026-01-09' },
-      { id: 2, date: '2026-09-12T05:00:00.000+00:00' },
-      { id: 3, date: '2026-09-10' },
-    ]
-
-    const sorted = sortByDateDescending(events)
-
-    expect(sorted.map((event) => event.id)).toEqual([2, 3, 1])
-    expect(events[0].id).toBe(1)
   })
 })

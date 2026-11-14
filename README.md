@@ -52,7 +52,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 31 test files / 319 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Quality:** 49 test files / 500 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -148,6 +148,15 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/shelters/:shelterId` | Shelter detail | Any | 🚧 Placeholder |
 | `/pets/new` | Register a pet (HU06) | Shelter admin | ✅ Implemented |
 | `/medical-events` | Medical events list with filters (HU28) | Any | ✅ Implemented |
+| `/trial-cohabitation-requests/new` | Request a trial cohabitation (HU29) | Adopter | ✅ Implemented |
+| `/trial-cohabitation-requests/received` | Trial cohabitation requests received by the shelter (HU31) | Shelter admin | ✅ Implemented |
+| `/trial-cohabitation-requests/:requestId` | Trial cohabitation request detail (HU32) | Adopter who sent it, or the shelter of its pet | ✅ Implemented |
+| `/adoptions/new` | Register an adoption from an approved adoption request (HU35) | Shelter admin | ✅ Implemented |
+| `/adoptions/mine` | Adoptions of the adopter (HU36) | Adopter | ✅ Implemented |
+| `/adoptions/:adoptionId` | Adoption detail, with reviews and follow-ups (HU37) | Adopter who takes part, or the shelter of its pet | ✅ Implemented |
+| `/adoptions/shelter` | Adoptions of the shelter, with filters (HU38) | Shelter admin | ✅ Implemented |
+| `/adoptions/:adoptionId/edit` | Edit an adoption in progress (HU39) | Shelter admin, for its pets | ✅ Implemented |
+| `/trial-cohabitation-requests` | Trial cohabitation requests of the adopter (HU30) | Adopter | ✅ Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
 | `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
 | `/medical-events/:medicalEventId` | Medical event detail (HU25) | Any | ✅ Implemented |
@@ -175,6 +184,18 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `DELETE` | `/medicalEvents/{id}` | HU27 (delete event) | `deleteMedicalEvent` |
 | `GET` | `/medicalEvents?petId=&type=&date=` | HU28 (list with filters) | `getMedicalEvents` |
 | `GET` | `/pets` | HU28 (pet filter options) | `getPets` |
+| `POST` | `/trialCohabitationRequests` | HU29 (request a trial cohabitation) | `createTrialCohabitationRequest` |
+| `GET` | `/trialCohabitationRequests?adopterId=` | HU30 (adopter's requests) | `getTrialCohabitationRequests` |
+| `GET` | `/trialCohabitationRequests?petId=&status=` | HU31 (requests of the shelter's pets) | `getTrialCohabitationRequests` |
+| `GET` | `/trialCohabitationRequests/{id}` | HU32 (request detail) | `getTrialCohabitationRequest` |
+| `PUT` | `/trialCohabitationRequests/{id}` | HU33 and HU34 (approve, reject, or cancel) | `updateTrialCohabitationRequest` |
+| `GET` | `/adoptionRequests?petId=&status=&currentUserRole=` | HU35 (approved requests for the shelter's pets) | `getAdoptionRequests` |
+| `POST` | `/adoptions` | HU35 (register an adoption) | `createAdoption` |
+| `GET` | `/adoptions?adopterId=` | HU36 (adopter's adoptions) | `getAdoptions` |
+| `GET` | `/adoptions/{id}` | HU37 (adoption detail) | `getAdoption` |
+| `GET` | `/adoptions?shelterId=&petId=&status=` | HU38 (adoptions of the shelter, with filters) | `getAdoptions` |
+| `PUT` | `/adoptions/{id}` | HU39 (edit an adoption) | `updateAdoption` |
+| `DELETE` | `/adoptions/{id}` | HU40 (delete an adoption) | `deleteAdoption` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 
 ## Simulated User and Role
@@ -185,6 +206,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 - Only the **shelter administrator** sees **Registrar refugio** and **Registrar mascota** in the navigation bar and can use `/shelters/new` and `/pets/new`. Any other role gets a message explaining that they do not have permission.
 - Veterinarian screens are not restricted by role.
 - Once real authentication exists, only the `getSession()` function needs to be replaced.
+- To test the adopter screens, start the front with `VITE_ROLE=ADOPTER` (and `VITE_USER_ID` set to the adopter's id). `src/config/roleSession.js` applies this override only to the screens that import it; `src/config/session.js` is not changed.
 
 ## User Stories
 
@@ -199,6 +221,18 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU26** | Edit a medical event | `/medical-events/:medicalEventId/edit` | ✅ Implemented |
 | **HU27** | Delete a medical event | `/medical-events/:medicalEventId` | ✅ Implemented |
 | **HU28** | View medical events with filters | `/medical-events` | ✅ Implemented |
+| **HU29** | Request a trial cohabitation | `/trial-cohabitation-requests/new` | ✅ Implemented |
+| **HU30** | View my trial cohabitation requests | `/trial-cohabitation-requests` | ✅ Implemented |
+| **HU31** | View the trial cohabitation requests received by the shelter | `/trial-cohabitation-requests/received` | ✅ Implemented |
+| **HU32** | View the detail of a trial cohabitation request | `/trial-cohabitation-requests/:requestId` | ✅ Implemented |
+| **HU33** | Approve or reject a trial cohabitation request | `/trial-cohabitation-requests/:requestId` | ✅ Implemented |
+| **HU34** | Cancel a trial cohabitation request | `/trial-cohabitation-requests/:requestId` | ✅ Implemented |
+| **HU35** | Register an adoption | `/adoptions/new` | ✅ Implemented |
+| **HU36** | View my adoptions | `/adoptions/mine` | ✅ Implemented |
+| **HU37** | View the detail of an adoption | `/adoptions/:adoptionId` | ✅ Implemented |
+| **HU38** | View the adoptions of the shelter, with filters | `/adoptions/shelter` | ✅ Implemented |
+| **HU39** | Edit an adoption | `/adoptions/:adoptionId/edit` | ✅ Implemented |
+| **HU40** | Delete an adoption | `/adoptions/:adoptionId` (action) | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
@@ -349,6 +383,236 @@ Lists the medical events of every pet, newest first, and filters them by **Masco
 5. Press **Limpiar filtros** and verify that every event is listed again.
 6. Click the title of an event and verify that its detail opens.
 
+### HU29 – Request a Trial Cohabitation
+
+**Route:** `/trial-cohabitation-requests/new` · **Role:** adopter (`ADOPTER`)
+
+An adopter asks the shelter for a trial period in which an active pet lives with them before the adoption. The form lists the active pets, the start and end dates (the start cannot be earlier than today, the end cannot be earlier than the start, and the duration in days is shown while the period is complete), and a description. The shelter of the chosen pet is sent with the request, and the adopter is the user of the session. The request is created as **PENDING**.
+
+- **Back-end:** `POST /api/trialCohabitationRequests`, with the date of the request, the period, `status: "PENDING"`, and the shelter, adopter, and pet as `{ id }` references. Dates are sent with `dayStartISO` (see HU23), as in the Postman collection.
+- **Rules checked by the back-end:** the adopter and the pet must be active; the pet must not be adopted and must not have another pending request; the adopter cannot have a second pending request for the same pet. Each error is shown next to the matching field (dates, pet) or in an error dialog.
+- **Confirmation:** the dialog shows the pet, the period, its duration, and the status "Pendiente".
+- **Role simulation:** the page reads the role through `src/config/roleSession.js`, so `VITE_ROLE` can change it for manual tests. The adopter id is `VITE_USER_ID`.
+
+**Manual testing:**
+
+1. Start the back-end, create an adopter with `POST /api/adopters`, and note its id.
+2. Start the front as that adopter, for example: `$env:VITE_ROLE='ADOPTER'; $env:VITE_USER_ID='2'; npm run dev`.
+3. Open `/trial-cohabitation-requests/new`: only the active pets should be listed.
+4. Choose a start date in the past: the form should reject it.
+5. Choose an end date before the start date: the form should reject it.
+6. Send a valid request: the confirmation should show the period, the duration, and the status "Pendiente".
+7. Send a second request for the same pet: the back-end message should be shown next to the pet field.
+
+### HU30 – View My Trial Cohabitation Requests
+
+**Route:** `/trial-cohabitation-requests` · **Role:** adopter (`ADOPTER`)
+
+The adopter sees the trial cohabitation requests they have sent, newest request first. Each card shows the pet, the status (Pendiente, Aprobada, Rechazada, or Cancelada), the period and its duration, the shelter, the description, and the date of the request. **Nueva solicitud** opens the form of HU29. Only the requests of the user of the session are listed.
+
+- **Back-end:** `GET /api/trialCohabitationRequests?adopterId=`.
+- **States:** loading, error with its cause (and a **Reintentar** button), and an empty message.
+- **Navigation:** the **Mis solicitudes** item of the navigation bar opens this screen, and it is only shown to the adopter. The navigation bar reads the role through `src/config/roleSession.js`, so `VITE_ROLE` also changes its links.
+- **Shared helpers:** the date helpers `sortByDateDescending` and `durationInDays` live in `utils/dates.js`, and the statuses in `constants/trialCohabitationOptions.js`.
+
+**Manual testing:**
+
+1. Start the front as the adopter (see HU29) and open `/trial-cohabitation-requests`: the requests sent by that adopter should be listed.
+2. Check the status, the period, and the duration of each request.
+3. Start the front as an adopter without requests and verify the empty message.
+4. Stop the back-end and verify that the error and the retry button are displayed.
+
+### HU31 – View the Trial Cohabitation Requests Received by the Shelter
+
+**Route:** `/trial-cohabitation-requests/received` · **Role:** shelter administrator (`SHELTER_ADMIN`)
+
+The shelter sees the trial cohabitation requests for its pets, newest request first. Each card shows the pet, the adopter's name, email, and phone (so the shelter can contact them), the status, the period and its duration, the description, and the date of the request. Two filters apply to the list: **Mascota** (the pets of the shelter) and **Estado**. They can be combined and are applied with **Buscar**; **Limpiar filtros** restores the list.
+
+- **Back-end:** `GET /api/trialCohabitationRequests?petId=&status=`. The controller has no filter by shelter, so the screen queries **one pet at a time**, and only for the pets whose `shelter.id` matches the shelter of the session. The requests of other shelters are never loaded.
+- **Shelter:** `shelterId` of the session, read through `src/config/roleSession.js`, so `VITE_ROLE` and `VITE_SHELTER_ID` can change it for manual tests.
+- **States:** loading, error with the back-end message, and three empty messages: the shelter has no pets, it has no requests, or no request matches the filters.
+- **Race handling:** only the answer to the latest search is shown.
+- **Navigation:** the **Solicitudes de convivencia** item of the navigation bar opens this screen, and it is only shown to the shelter administrator.
+
+**Manual testing:**
+
+1. Start the front as the shelter administrator (the default role) and open `/trial-cohabitation-requests/received`: the requests of the shelter's pets should be listed, newest first, with the adopter's contact.
+2. Filter by pet and by status: only the matching requests should be listed.
+3. Combine filters with no matches: the "no matches" message should be displayed.
+4. Start the front as an adopter (`VITE_ROLE=ADOPTER`) and open the same URL: the "only shelter staff" message should be displayed.
+
+**Note:** the Postman collection of trial cohabitation documents a `shelterId` filter, but the controller of the back-end does not implement it. That is why the screen queries by pet.
+
+### HU32 – View the Detail of a Trial Cohabitation Request
+
+**Route:** `/trial-cohabitation-requests/:requestId` · **Role:** the adopter who sent the request, or the shelter that owns its pet
+
+The detail shows the pet, the status, the adopter (name and contact), the shelter, the period and its duration, the date of the request, and the description. If the request already generated a trial cohabitation, a note says so. The back link goes to the adopter's list (HU30) or to the requests received by the shelter (HU31), depending on the role.
+
+Access is checked on the front-end: an adopter only sees the requests in which they are the adopter, and a shelter only sees the requests for its pets. Otherwise the screen says that the user has no access, without showing the details. The back-end has no authentication yet, so this check belongs to the simulated role model.
+
+- **Back-end:** `GET /api/trialCohabitationRequests/{id}`. A request that does not exist returns 404 with the back-end message.
+- **States:** loading, error with its cause (and a **Reintentar** button), and access denied.
+- **Links:** each card of the adopter's list (HU30) and of the shelter's list (HU31) has a **Ver detalle** link.
+- **Actions:** approving, rejecting, and cancelling come in HU33 and HU34.
+
+**Manual testing:**
+
+1. Start the front as the adopter who sent a request (see HU29), with `VITE_ROLE=ADOPTER` and `VITE_USER_ID` set to that adopter's id. Open the detail from the list of HU30: the details should be shown, and the back link should go to the list.
+2. Start the front as another adopter and open the same URL: the access message should be displayed.
+3. Start the front as the shelter administrator (the default role) and open the same URL: the details should be shown, with a back link to the requests received.
+4. Open `/trial-cohabitation-requests/999`: the back-end message should be displayed, with a **Reintentar** button.
+
+### HU33 – Approve or Reject a Trial Cohabitation Request
+
+**Route:** `/trial-cohabitation-requests/:requestId` (actions on the detail page) · **Role:** shelter administrator, for the requests of its pets
+
+On the detail of a **pending** request, the shelter sees two buttons: **Aprobar solicitud** and **Rechazar solicitud**. Each one asks for confirmation first. The confirmation says that the request will be approved or rejected, and that a finalized request cannot be modified afterwards. When the back-end saves the decision, a dialog confirms it and the status of the request is updated. Requests that are not pending show no decision buttons.
+
+- **Back-end:** `PUT /api/trialCohabitationRequests/{id}` with the new `status` (`APPROVED` or `REJECTED`) and the description, which the back-end requires. The adopter, the pet, and the period are not sent, so the back-end keeps them and the dates are not shifted.
+- **Rules checked by the back-end:** only a pending request can change. A finalized request returns 412 with the back-end message, which is shown in an error dialog. The screen never offers the buttons for a finalized request.
+- **Who:** the shelter that owns the pet, the same rule as the detail (HU32).
+
+**Manual testing:**
+
+1. Start the front as the shelter administrator (the default role) and open the detail of a pending request.
+2. Click **Aprobar solicitud** and cancel: the request should not change.
+3. Click **Aprobar solicitud** again and confirm: the success dialog should appear, the status should become "Aprobada", and the decision buttons should disappear.
+4. Open the same request as the adopter who sent it (`VITE_ROLE=ADOPTER` and its `VITE_USER_ID`): it should show "Aprobada" and no decision buttons.
+
+**Known gap:** the back-end does not check, when approving, that the pet is still available. A new pending request can be created for a pet that already has an approved one, and approving it would be accepted. This is a back-end rule to review, not a front-end one.
+
+### HU34 – Cancel a Trial Cohabitation Request
+
+**Route:** `/trial-cohabitation-requests/:requestId` (action on the detail page) · **Role:** the adopter who sent the request
+
+While the request is **pending**, the adopter sees **Cancelar solicitud** on its detail. The action asks for confirmation: **Cancelar solicitud** confirms it, and **Mantener solicitud** keeps the request. Once cancelled, the status becomes "Cancelada" and the button disappears. An approved, rejected, or already cancelled request cannot be cancelled.
+
+- **Back-end:** `PUT /api/trialCohabitationRequests/{id}` with `status: "CANCELLED"` and the description, the same call as HU33. The back-end accepts it only for a pending request. A finalized request returns 412 with the back-end message, which is shown in an error dialog.
+- **Who:** only the adopter who sent the request, the same ownership rule as the detail (HU32).
+
+**Manual testing:**
+
+1. Start the front as the adopter who sent a pending request (`VITE_ROLE=ADOPTER`, with `VITE_USER_ID` set to its id) and open its detail.
+2. Click **Cancelar solicitud** and choose **Mantener solicitud**: the request should not change.
+3. Click **Cancelar solicitud** again and confirm: the success dialog should appear, the status should become "Cancelada", and the button should disappear.
+4. Start the front as the shelter administrator and open the same request: it should show "Cancelada" and no decision buttons.
+5. Open an approved request as its adopter: no cancel button should be offered.
+
+### HU35 – Register an Adoption
+
+**Route:** `/adoptions/new` · **Role:** shelter administrator (`SHELTER_ADMIN`)
+
+The shelter registers the adoption of one of its pets from an **approved adoption request**. The request defines the pet and the adopter, so the form only asks for the request (listed with the pet and the adopter), the adoption date, and the important notes. The new adoption starts as **En curso** (`IN_PROGRESS`).
+
+Only the requests that can still become an adoption are offered: the pet belongs to the shelter, is active, and is not adopted (a cancelled adoption does not count); the adopter is active; and the request has no adoption yet. The pets that are already adopted are not queried at all.
+
+- **Back-end:** `POST /api/adoptions` with `date`, `status: "IN_PROGRESS"`, `importantNotes`, and the pet, shelter, adopter, and adoption request as `{ id }` references. The approved requests come from `GET /api/adoptionRequests?petId=&status=APPROVED&currentUserRole=ADMIN`. The back-end shows every request only to the `ADMIN` role, which is the shelter administrator here.
+- **Rules checked by the back-end:** the pet and the adopter are active; the pet is not adopted and has no pending trial cohabitation; the request is approved and not used yet. Each error is shown next to the request, the date, or the notes, or in an error dialog.
+- **States:** loading, error with its cause (and a **Reintentar** button), and three empty messages: the shelter has no pets, every pet is already adopted, or there is no approved request to use.
+- **Known gap:** after an adoption is created, the adoption request still shows `adoption: null`. The screen therefore checks the adoptions of the pet, so the request is not offered again.
+- **Approving adoption requests** has no screen in this block (HU35 to HU40). The approval is done through the API for now.
+
+**Manual testing:**
+
+1. Create an adoption request for an active pet of the shelter and an active adopter with `POST /api/adoptionRequests` (it starts as `PENDING`), then approve it with `PUT /api/adoptionRequests/{id}` using `status: "APPROVED"` and the description.
+2. Start the front as the shelter administrator (the default role) and open `/adoptions/new`: the approved request should be listed with the pet and the adopter.
+3. Submit the empty form: the errors should appear, and the focus should move to the request.
+4. Choose the request, a date, and notes, and register: the confirmation should show "En curso".
+5. Open the form again: the request should not be listed anymore. When every pet of the shelter is adopted, the message "No hay mascotas disponibles para adopción en tu refugio." should be displayed.
+
+### HU36 – View My Adoptions
+
+**Route:** `/adoptions/mine` · **Role:** adopter (`ADOPTER`)
+
+The adopter sees the adoptions in which they take part, newest first. Each card shows the pet, the status (En curso, Finalizada, or Cancelada), the shelter, the date of the adoption, and the important notes written by the shelter.
+
+- **Back-end:** `GET /api/adoptions?adopterId=`. The back-end filters by adopter but does not check who asks, so the screen only asks for the adopter of the session. The same check of the simulated role model applies here (see HU32).
+- **States:** loading, error with its cause (and a **Reintentar** button), and an empty message.
+- **Navigation:** the **Mis adopciones** item of the navigation bar opens this screen for the adopter.
+
+**Manual testing:**
+
+1. Start the front as an adopter who has an adoption (`VITE_ROLE=ADOPTER`, with `VITE_USER_ID` set to its id) and open `/adoptions/mine`: the adoption should be listed with its pet, status, shelter, date, and notes.
+2. Start the front as an adopter without adoptions: the empty message should be displayed.
+3. Stop the back-end: the error and the retry button should be displayed.
+
+### HU37 – View the Detail of an Adoption
+
+**Route:** `/adoptions/:adoptionId` · **Role:** the adopter who takes part in the adoption, or the shelter that owns its pet
+
+The detail shows the pet, the status (En curso, Finalizada, or Cancelada), the adopter (name and contact), the shelter, the date of the adoption, the adoption request, and the important notes. It also lists the **reviews** (rating, date, and comment) and the **follow-ups** (date and observation), newest first. When there are none, the section says so. The screen is read-only: editing and deleting are HU39 and HU40.
+
+- **Back-end:** `GET /api/adoptions/{id}`, which returns the adoption with its reviews and follow-ups. An adoption that does not exist returns 404 with the back-end message.
+- **Access:** checked on the front-end (`canViewAdoption`), as in HU32, because the back-end has no authentication yet.
+- **States:** loading, error with its cause (and a **Reintentar** button), and access denied.
+- **Links:** each card of **Mis adopciones** (HU36) has a **Ver detalle** link.
+- **Follow-ups:** the follow-up controller is not in this branch of the back-end (it is in the adopters branch), so the back-end returns no follow-ups here. The screen shows whatever the back-end returns.
+
+**Manual testing:**
+
+1. Start the front as an adopter who takes part in an adoption (`VITE_ROLE=ADOPTER`, with `VITE_USER_ID` set to its id) and open it from **Mis adopciones**: the details, the reviews, and the follow-ups should be shown.
+2. Start the front as another adopter and open the same URL: the access message should be displayed.
+3. Start the front as the shelter administrator and open the same URL: the details should be shown, with a back link to the pets.
+4. Open `/adoptions/999`: the back-end message should be displayed, with a **Reintentar** button.
+
+### HU38 – View the Adoptions of the Shelter, with Filters
+
+**Route:** `/adoptions/shelter` · **Role:** shelter administrator (`SHELTER_ADMIN`)
+
+The shelter sees the adoptions of its pets, newest first, and can filter them by **Mascota** and **Estado**. The filters can be combined and are applied with **Buscar**; **Limpiar filtros** restores the list. Each card shows the pet, the status, the adopter, the date, and the important notes, and links to the detail (HU37).
+
+- **Back-end:** `GET /api/adoptions?shelterId=&petId=&status=`. The back-end filters by shelter, so one query returns the whole list, and the adoptions of other shelters are never returned. The status is compared without regard to case.
+- **Pets:** the pet filter offers the pets of the shelter, including the adopted ones, so their history can still be consulted.
+- **States:** loading, error with its cause, and three empty messages: the shelter has no pets, it has no adoptions, or no adoption matches the filters.
+- **Race handling:** only the answer to the latest search is shown.
+- **Navigation:** the **Adopciones del refugio** item of the navigation bar opens this screen.
+
+**Manual testing:**
+
+1. Start the front as the shelter administrator (the default role) and open `/adoptions/shelter`: the adoptions of the shelter's pets should be listed, newest first.
+2. Filter by pet and by status: only the matching adoptions should be listed.
+3. Combine filters with no matches: the "no matches" message should be displayed.
+4. Press **Limpiar filtros**: every adoption should be listed again.
+5. Open the detail of an adoption with **Ver detalle**: it should show the adoption (HU37).
+
+### HU39 – Edit an Adoption
+
+**Route:** `/adoptions/:adoptionId/edit` · **Role:** shelter administrator, for an adoption of one of its pets that is still in progress
+
+The shelter changes the status, the date, or the important notes of an adoption. The pet and the adopter cannot be changed: they are shown as fixed information. The status can be En curso, Finalizada, or Cancelada. A finalized or cancelled adoption cannot be modified, so the screen does not offer the form for it and explains why. The **Editar adopción** link appears on the detail (HU37) only for the shelter, and only while the adoption is in progress.
+
+- **Back-end:** `PUT /api/adoptions/{id}` with `status`, `importantNotes`, and `date`. The pet and the adopter are not sent, so the back-end keeps them. If the date is not sent, the back-end keeps the current one.
+- **Rules checked by the back-end:** a finalized or cancelled adoption cannot be modified (412), and the notes are required (412). Each error is shown in a dialog and, when it belongs to the status, the date, or the notes, next to that field.
+- **States:** loading, error with its cause (and a **Reintentar** button), access denied, and a closed adoption.
+- **Changes in HU37:** the back link of the detail for the shelter now goes to **Volver a las adopciones del refugio** (HU38).
+- **Known gap:** the back-end does not check the order of the status changes. The form offers the three statuses, so the shelter can move an adoption from one to another.
+
+**Manual testing:**
+
+1. Start the front as the shelter administrator, open an adoption in progress from **Adopciones del refugio**, and click **Editar adopción**.
+2. Verify that the pet and the adopter are shown as fixed information, and that the form has the current status, date, and notes.
+3. Change the notes and save: the confirmation should appear with the new status and date.
+4. Open the same adoption: the new notes should be shown on the detail.
+5. Change the status to **Finalizada** and save: the adoption should no longer show the edit link, and its edit URL should say that it cannot be modified.
+
+### HU40 – Delete an Adoption
+
+**Route:** the **Eliminar adopción** action on the detail (`/adoptions/:adoptionId`) · **Role:** shelter administrator, for an adoption of one of its pets
+
+The shelter deletes an adoption that is **not in progress** and has **no reviews or follow-ups**. The button only appears when those rules allow it. It asks for confirmation first: **Eliminar adopción** confirms it, and **Mantener adopción** keeps it. After the deletion, the shelter goes to **Adopciones del refugio** with the message "Se eliminó la adopción de …".
+
+- **Back-end:** `DELETE /api/adoptions/{id}` (204 with no content). The back-end refuses an adoption in progress, one with reviews, or one with follow-ups (412, with its message). An adoption that does not exist returns 404, and an invalid id returns 412.
+- **Rules in the screen:** the button is not offered for an adoption in progress or one with reviews or follow-ups, and only to the shelter that owns the pet. The back-end still checks them: a refused deletion shows its message in an error dialog, and the adoption stays on screen.
+- **Note:** the screen uses the `reviews` and `followUps` of the detail (HU37). In this branch of the back-end the follow-ups cannot be created, so here only the reviews block the deletion.
+
+**Manual testing:**
+
+1. Start the front as the shelter administrator and open a cancelled or finalized adoption with no reviews from **Adopciones del refugio**.
+2. Click **Eliminar adopción** and choose **Mantener adopción**: the adoption should not change.
+3. Click **Eliminar adopción** again and confirm: the shelter list should open with the message "Se eliminó la adopción de …", and the adoption should not be listed.
+4. Open an adoption in progress: no delete button should be offered.
+
 ### HU06 – Register a Pet
 
 **Route:** `/pets/new` · **Role:** shelter administrator
@@ -424,9 +688,18 @@ npx vitest src/pages/MedicalEventDetailPage   # HU25
 npx vitest src/pages/MedicalEventEditPage     # HU26
 npx vitest src/components/ConfirmDialog       # HU27 (shared dialog)
 npx vitest src/pages/MedicalEventsPage        # HU28
+npx vitest src/pages/TrialCohabitationRequestPage # HU29
+npx vitest src/pages/TrialCohabitationListPage   # HU30
+npx vitest src/pages/TrialCohabitationReceivedPage # HU31
+npx vitest src/pages/TrialCohabitationDetailPage   # HU32
+npx vitest src/pages/AdoptionRegisterPage         # HU35
+npx vitest src/pages/MyAdoptionsPage              # HU36
+npx vitest src/pages/AdoptionDetailPage            # HU37
+npx vitest src/pages/ShelterAdoptionsPage         # HU38
+npx vitest src/pages/AdoptionEditPage              # HU39
 ```
 
-Current state: **31 test files, 319 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **49 test files, 500 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
 Tests live next to the module they cover:
 
@@ -442,6 +715,18 @@ Tests live next to the module they cover:
 | **HU26** | `MedicalEventEditPage.test.jsx` (and the `statusLabel` case in `SuccessDialog.test.jsx`) |
 | **HU27** | `ConfirmDialog.test.jsx`, `MedicalEventDetailPage.test.jsx` (delete and roles), `MedicalEventHistoryPage.test.jsx` (notice), `medicalEvents.test.js` (role rule) |
 | **HU28** | `MedicalEventsPage.test.jsx`, `medicalEventService.test.js` (filters and query string) |
+| **HU29** | `TrialCohabitationRequestPage.test.jsx`, `trialCohabitationForm.test.js`, `trialCohabitationService.test.js`, `roleSession.test.js` (role override) |
+| **HU30** | `TrialCohabitationListPage.test.jsx`, `trialCohabitation.test.js`, `trialCohabitationService.test.js` (query string), `Navbar.test.jsx` (adopter link) |
+| **HU31** | `TrialCohabitationReceivedPage.test.jsx` (scoping to the shelter's pets, filters, race handling), `Navbar.test.jsx` (shelter link) |
+| **HU32** | `TrialCohabitationDetailPage.test.jsx` (roles, access, errors), `trialCohabitation.test.js` (visibility rule), `trialCohabitationService.test.js` (by id), and the detail links of the HU30 and HU31 lists |
+| **HU33** | `TrialCohabitationDetailPage.test.jsx` (decisions by role and status, confirmation, refusals), `trialCohabitation.test.js` (pending rule and payload), `trialCohabitationService.test.js` (PUT) |
+| **HU34** | `TrialCohabitationDetailPage.test.jsx` (cancellation by role and status, dismissal, refusals), `trialCohabitation.test.js` (cancellation rule) |
+| **HU35** | `AdoptionRegisterPage.test.jsx` (offered requests, payload, errors, reload), `adoptionForm.test.js`, `adoptionService.test.js`, `adoptionRequestService.test.js` (query with the admin role), `adoptions.test.js` (adopted pets), `Navbar.test.jsx` (admin link) |
+| **HU36** | `MyAdoptionsPage.test.jsx` (adopter's adoptions, order, states, role), `adoptionService.test.js` (query string), `Navbar.test.jsx` (adopter link) |
+| **HU37** | `AdoptionDetailPage.test.jsx` (roles, access, reviews and follow-ups order, empty states, errors), `adoptions.test.js` (visibility rule), `adoptionService.test.js` (by id), and the detail links of the HU36 list (`MyAdoptionsPage.test.jsx`) |
+| **HU38** | `ShelterAdoptionsPage.test.jsx` (shelter scope, filters, combinations, empty states, race handling, role), `adoptionService.test.js` (shelter and status query), `Navbar.test.jsx` (shelter link) |
+| **HU39** | `AdoptionEditPage.test.jsx` (fixed pet and adopter, closed adoptions, validation, refusals, cancel), `adoptionEditForm.test.js` (payload and field mapping), `adoptions.test.js` (edit rule), `adoptionService.test.js` (PUT), `AdoptionDetailPage.test.jsx` (edit link) |
+| **HU40** | `AdoptionDetailPage.test.jsx` (delete action by role and state, confirmation, dismissal, refusals), `ShelterAdoptionsPage.test.jsx` (notice after deleting), `adoptions.test.js` (delete rule), `adoptionService.test.js` (DELETE) |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube

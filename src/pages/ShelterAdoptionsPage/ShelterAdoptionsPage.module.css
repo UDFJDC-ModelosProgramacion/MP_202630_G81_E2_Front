@@ -1,0 +1,160 @@
+.panel {
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: #e4e6e9;
+}
+
+.title {
+  margin: 0;
+  text-align: center;
+  font-size: 2rem;
+}
+
+.subtitle {
+  margin: 0.25rem 0 1.25rem;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+.notice {
+  margin: 0 0 1rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  background: #e3f1ec;
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1 1 13rem;
+  font-weight: 700;
+}
+
+.field select {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font: inherit;
+  font-weight: 400;
+}
+
+.search,
+.clear {
+  padding: 0.6rem 1.5rem;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.search {
+  border: 0;
+  background: #4b4f55;
+  color: #ffffff;
+}
+
+.search:hover {
+  background: #2f3237;
+}
+
+.clear {
+  border: 1px solid #4b4f55;
+  background: var(--color-surface);
+  color: #4b4f55;
+}
+
+.clear:hover {
+  background: #d5d8dc;
+}
+
+.search:focus-visible,
+.clear:focus-visible,
+.detailLink:focus-visible {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.pet {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.status {
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: #eef0f2;
+  color: #2f3237;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.status[data-status='IN_PROGRESS'] {
+  background: #fff4d6;
+  color: #7a5a00;
+}
+
+.status[data-status='FINALIZED'] {
+  background: #e3f1ec;
+  color: var(--color-primary-dark);
+}
+
+.status[data-status='CANCELLED'] {
+  background: #e4e6e9;
+  color: #4b4f55;
+}
+
+.date {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.notes {
+  margin: 0;
+}
+
+.detailLink {
+  align-self: flex-start;
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}

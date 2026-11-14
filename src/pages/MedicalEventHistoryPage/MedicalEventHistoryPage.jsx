@@ -3,12 +3,8 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { getMedicalEvents } from '../../services/medicalEventService'
 import { getPet } from '../../services/petService'
-import { formatDay } from '../../utils/dates'
-import {
-  medicalEventTypeLabel,
-  sortByDateDescending,
-  veterinarianName,
-} from '../../utils/medicalEvents'
+import { formatDay, sortByDateDescending } from '../../utils/dates'
+import { medicalEventTypeLabel, veterinarianName } from '../../utils/medicalEvents'
 import styles from './MedicalEventHistoryPage.module.css'
 
 export default function MedicalEventHistoryPage() {
