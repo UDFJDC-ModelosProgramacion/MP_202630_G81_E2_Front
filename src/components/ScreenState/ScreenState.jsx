@@ -2,7 +2,7 @@ import styles from './ScreenState.module.css'
 
 const MESSAGES = {
   loading: 'Cargando...',
-  error: 'Ocurrió un error. Inténtalo de nuevo.',
+  error: 'Ocurrió un error. Inténtelo de nuevo.',
   empty: 'No hay resultados.',
 }
 

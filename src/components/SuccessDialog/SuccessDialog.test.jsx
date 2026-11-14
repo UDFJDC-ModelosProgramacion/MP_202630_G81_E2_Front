@@ -23,12 +23,22 @@ function renderDialog(props = {}) {
 }
 
 describe('SuccessDialog', () => {
-  it('confirms the creation with its title, message and HTTP 201 label', () => {
+  it('confirms the creation with its title, message and success label', () => {
     renderDialog()
 
     const dialog = screen.getByRole('dialog', { name: '¡Refugio registrado con éxito!' })
     expect(dialog).toHaveAccessibleDescription('El refugio "Patitas Felices" ha sido creado.')
-    expect(dialog).toHaveTextContent('Código HTTP 201 • Creado con éxito')
+    expect(dialog).toHaveTextContent('Registro exitoso')
+  })
+
+  it('can describe an update with its own HTTP label', () => {
+    renderDialog({
+      title: '¡Evento médico actualizado con éxito!',
+      statusLabel: 'Código HTTP 200 • Actualizado con éxito',
+    })
+
+    expect(screen.getByRole('dialog')).toHaveTextContent('Código HTTP 200 • Actualizado con éxito')
+    expect(screen.queryByText('Código HTTP 201 • Creado con éxito')).not.toBeInTheDocument()
   })
 
   it('summarizes what was created', () => {

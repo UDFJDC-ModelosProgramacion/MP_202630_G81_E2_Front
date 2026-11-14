@@ -1,0 +1,162 @@
+.panel {
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: #e4e6e9;
+}
+
+.title {
+  margin: 0;
+  text-align: center;
+  font-size: 2rem;
+}
+
+.subtitle {
+  margin: 0.25rem 0 1.25rem;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.register {
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  background: #4b4f55;
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.register:hover {
+  background: #2f3237;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1 1 13rem;
+  font-weight: 700;
+}
+
+.field select,
+.field input {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font: inherit;
+  font-weight: 400;
+}
+
+.search,
+.clear {
+  padding: 0.6rem 1.5rem;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.search {
+  border: 0;
+  background: #4b4f55;
+  color: #ffffff;
+}
+
+.search:hover {
+  background: #2f3237;
+}
+
+.clear {
+  border: 1px solid #4b4f55;
+  background: var(--color-surface);
+  color: #4b4f55;
+}
+
+.clear:hover {
+  background: #d5d8dc;
+}
+
+.search:focus-visible,
+.clear:focus-visible,
+.register:focus-visible {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+}
+
+.type {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.type a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.type a:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+.date {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.pet {
+  margin: 0;
+  font-weight: 600;
+}
+
+.description,
+.veterinarian {
+  margin: 0;
+}
+
+.veterinarian {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}

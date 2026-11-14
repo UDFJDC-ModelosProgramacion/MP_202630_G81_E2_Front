@@ -13,8 +13,9 @@ const LINKS = [
 ]
 
 const ADMIN_LINKS = [
-  { path: '/shelters/new', label: 'Registrar refugio' },
-  { path: '/pets/new', label: 'Registrar mascota' },
+  { path: '/shelters/new', label: 'Registrar refugio', end: true },
+  { path: '/pets/new', label: 'Registrar mascota', end: true },
+  { path: '/medical-events/new', label: 'Registrar evento médico', end: true },
 ]
 
 // "AdminUser" -> "AU", "Ana Gómez" -> "AG", "luna" -> "LU"

@@ -122,7 +122,7 @@ function ShelterRegisterForm({ session }) {
         <FormActions
           submitLabel="Registrar"
           submitting={submitting}
-          onCancel={() => navigate('/')}
+          onCancel={() => navigate('/shelters')}
         />
       </form>
 
@@ -134,7 +134,7 @@ function ShelterRegisterForm({ session }) {
           hint={ERROR_HINT}
           actionLabel="Modificar datos"
           onClose={closeErrorDialog}
-          onCancel={() => navigate('/')}
+          onCancel={() => navigate('/shelters')}
         />
       )}
 
