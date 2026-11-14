@@ -190,6 +190,8 @@ The back-end does not implement authentication yet, so the user and role are sim
 
 | User Story | Description | Route | Status |
 |---|---|---|---|
+| **HU73** | Register a new user | `/register` | Implemented |
+| **HU74** | View and update user profile | `/profile` | Implemented |
 | **HU70** | Veterinarian list with filters | `/veterinarians` | Implemented |
 | **HU01** | Register a shelter | `/shelters/new` | Implemented |
 | **HU06** | Register a pet | `/pets/new` | Implemented |
@@ -206,6 +208,42 @@ The back-end does not implement authentication yet, so the user and role are sim
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
+
+### HU73 – Register a New User
+
+**Route:** `/register` · **Role:** Any visitor.
+
+Allows new users to create an account on the pet adoption platform. The form collects **first name, last name, email, phone, password, and password confirmation**.
+
+- **Back-end:** `POST /api/users`.
+- **Validation:** Required fields are validated on the client side before submitting. The password must contain at least 8 characters and match the confirmation field.
+- **Errors:** Unique email enforcement is validated both locally and by the server (`The email address must be unique in the system`). Server errors display an informative dialog while keeping the user's input.
+- **Automated tests:** `UserRegisterPage.test.jsx`, `userForm.test.js`, and `userService.test.js`.
+
+**Manual Testing:**
+
+1. Open `/register` and submit the empty form: validation errors should appear for all required fields.
+2. Enter mismatched passwords or a password with fewer than 8 characters: error messages should guide the user.
+3. Fill in valid data and submit: a confirmation modal should appear, and upon acceptance, redirect to the platform.
+4. Try registering again with the same email address: the server error dialog will inform that the email is already in use.
+
+### HU74 – View and Update User Profile
+
+**Route:** `/profile` · **Role:** Any authenticated user.
+
+Displays the current user's profile information (**name, email, phone, and role**). Allows editing contact information in-place.
+
+- **Back-end:** `GET /api/users/{id}` and `PUT /api/users/{id}`.
+- **Editing:** Clicking "Editar Perfil" enables input fields for first name, last name, email, and phone. The user can save updates or cancel to discard unsaved changes.
+- **Errors:** If the email address is updated to one that already belongs to another user, an error notification is displayed without overwriting existing data.
+- **Automated tests:** `UserProfilePage.test.jsx`, `profileForm.test.js`, and `userService.test.js`.
+
+**Manual Testing:**
+
+1. Navigate to `/profile` by clicking on the user card in the navigation bar.
+2. Verify that your name, email, phone, and assigned role are displayed.
+3. Click "Editar Perfil", modify contact details, and click "Cancelar": changes are safely discarded.
+4. Click "Editar Perfil", make valid updates, and click "Guardar Cambios": a confirmation modal verifies that changes were saved successfully.
 
 ### HU70 – Veterinarian List with Filters
 
@@ -453,7 +491,12 @@ npx vitest src/pages/MedicalEventsPage        # HU28
 
 Current state: **31 test files, 319 tests, all passing**, with `npm run lint` and `npm run build` clean.
 
+- **HU73:** `UserRegisterPage.test.jsx`, `userForm.test.js`, and `userService.test.js`.
+- **HU74:** `UserProfilePage.test.jsx`, `profileForm.test.js`, and `userService.test.js`.
 - **HU70:** `VeterinariansPage.test.jsx`, `VeterinarianProfilePage.test.jsx`, and `veterinarianService.test.js`.
+- **HU01:** `ShelterRegisterPage.test.jsx`, `shelterForm.test.js`, and `shelterService.test.js`.
+- **HU02:** `ShleterListPage.test.jsx` and `shelterService.test.js`.
+- **HU06:** `PetRegisterPage.test.jsx`, `petForm.test.js`, and `petService.test.js`.
 - **HU72:** `UpdateVeterinarianPage.test.jsx` (full screen), `updateVeterinarianForm.test.js` (validation, payload, and error mapping), `VeterinarianProfilePage.test.jsx` (edit link and confirmation), and `veterinarianService.test.js` (`updateVeterinarian`).
 - **HU01:** `ShelterRegisterPage.test.jsx` (full screen), `shelterForm.test.js` (validation and request body), and `shelterService.test.js`.
 - **HU06:** `PetRegisterPage.test.jsx` (full screen), `petForm.test.js` (validation and request body), and `petService.test.js`.
