@@ -14,6 +14,7 @@ import MedicalEventEditPage from './pages/MedicalEventEditPage/MedicalEventEditP
 import MedicalEventHistoryPage from './pages/MedicalEventHistoryPage/MedicalEventHistoryPage'
 import MedicalEventRegisterPage from './pages/MedicalEventRegisterPage/MedicalEventRegisterPage'
 import MedicalEventsPage from './pages/MedicalEventsPage/MedicalEventsPage'
+import NotificationsPage from './pages/NotificationsPage/NotificationsPage'
 import PetDetailPage from './pages/PetDetailPage/PetDetailPage'
 import PetsPage from './pages/PetsPage/PetsPage'
 import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
@@ -80,7 +81,7 @@ export default function App() {
         />
 
         {/* Otros */}
-        <Route path="/notifications" element={<PendingPage title="Notificaciones" />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
       </Route>
     </Routes>
   )
