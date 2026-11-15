@@ -145,6 +145,7 @@ function UpdateVeterinarianForm({ veterinarian }) {
 
 function UpdateVeterinarianLoader({ veterinarianId }) {
     const [result, setResult] = useState({ status: 'loading', veterinarian: null, message: '' })
+    const [attempt, setAttempt] = useState(0)
 
     useEffect(() => {
         let cancelled = false
@@ -158,14 +159,18 @@ function UpdateVeterinarianLoader({ veterinarianId }) {
         return () => {
             cancelled = true
         }
-    }, [veterinarianId])
+    }, [veterinarianId, attempt])
 
     const { status, veterinarian, message } = result
     if (status === 'loading') return <ScreenState state="loading" />
     if (status === 'error') {
         return (
             <>
-                <ScreenState state="error" message={message} />
+                <ScreenState
+                    state="error"
+                    message={message}
+                    onRetry={() => setAttempt((value) => value + 1)}
+                />
                 <Link to="/veterinarians">Volver al listado</Link>
             </>
         )

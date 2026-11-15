@@ -6,14 +6,16 @@ const MESSAGES = {
   empty: 'No hay resultados.',
 }
 
-export default function ScreenState({ state, message }) {
+export default function ScreenState({ state, message, onRetry, retryLabel = 'Reintentar' }) {
   const text = message ?? MESSAGES[state]
   return (
-    <p
-      className={`${styles.state} ${styles[state]}`}
-      role={state === 'error' ? 'alert' : 'status'}
-    >
-      {text}
-    </p>
+    <div className={`${styles.state} ${styles[state]}`} role={state === 'error' ? 'alert' : 'status'}>
+      <span>{text}</span>
+      {state === 'error' && onRetry && (
+        <button type="button" className={styles.retry} onClick={onRetry}>
+          {retryLabel}
+        </button>
+      )}
+    </div>
   )
 }

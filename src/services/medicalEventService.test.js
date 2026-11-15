@@ -49,6 +49,14 @@ describe('getMedicalEvents', () => {
     expect(url.searchParams.has('type')).toBe(false)
     expect(url.searchParams.get('date')).toBe('2026-09-10')
   })
+
+  it('rejects a successful HTTP response with a non-list body', async () => {
+    mockFetch(okResponse({ status: 'OK', message: 'REST API for pets is running' }))
+
+    await expect(getMedicalEvents()).rejects.toThrow(
+      'La respuesta del servidor para la lista de eventos médicos no tiene un formato válido.',
+    )
+  })
 })
 
 describe('deleteMedicalEvent', () => {

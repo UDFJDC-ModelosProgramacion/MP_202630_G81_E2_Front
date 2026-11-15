@@ -193,4 +193,16 @@ describe('apiClient', () => {
 
     await expect(api.get('/veterinarians/1')).resolves.toBeNull()
   })
+
+  it('reports a readable error for invalid JSON from a successful response', async () => {
+    mockFetch({
+      ok: true,
+      status: 200,
+      json: () => Promise.reject(new SyntaxError('Unexpected token')),
+    })
+
+    await expect(api.get('/veterinarians')).rejects.toThrow(
+      'El servidor devolvió una respuesta inválida.',
+    )
+  })
 })

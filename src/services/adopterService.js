@@ -1,4 +1,4 @@
-import { api } from './apiClient'
+import { api, expectArray } from './apiClient'
 
 // Creates a new adopter. The backend rejects duplicated emails and national ids (412).
 export function createAdopter(adopter) {
@@ -13,7 +13,9 @@ export function getAdopters({ nationalId = '', housingType = '', occupation = ''
   if (housingType.trim()) params.set('housingType', housingType.trim())
   if (occupation.trim()) params.set('occupation', occupation.trim())
   const query = params.toString()
-  return api.get(query ? `/adopters?${query}` : '/adopters')
+  return api.get(query ? `/adopters?${query}` : '/adopters').then((data) =>
+    expectArray(data, 'la lista de adoptantes'),
+  )
 }
 
 // Returns one adopter with its personal data and trial cohabitation history.

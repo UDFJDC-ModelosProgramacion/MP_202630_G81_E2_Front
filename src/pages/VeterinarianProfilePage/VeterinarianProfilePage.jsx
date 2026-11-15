@@ -10,6 +10,7 @@ export default function VeterinarianProfilePage() {
   const { veterinarianId } = useParams()
   const { state } = useLocation()
   const canEdit = getSession().role === ROLES.SHELTER_ADMIN
+  const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState({ status: 'loading', veterinarian: null, message: '' })
 
   useEffect(() => {
@@ -24,7 +25,7 @@ export default function VeterinarianProfilePage() {
     return () => {
       cancelled = true
     }
-  }, [veterinarianId])
+  }, [veterinarianId, attempt])
 
   const { status, veterinarian, message } = result
   const backLink = <Link to="/veterinarians">Volver al listado</Link>
@@ -35,7 +36,11 @@ export default function VeterinarianProfilePage() {
   if (status === 'error') {
     return (
       <>
-        <ScreenState state="error" message={message} />
+        <ScreenState
+          state="error"
+          message={message}
+          onRetry={() => setAttempt((value) => value + 1)}
+        />
         {backLink}
       </>
     )

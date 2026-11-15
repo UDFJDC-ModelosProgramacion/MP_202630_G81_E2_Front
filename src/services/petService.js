@@ -1,7 +1,7 @@
-import { api } from './apiClient'
+import { api, expectArray } from './apiClient'
 
 export function getPets() {
-  return api.get('/pets')
+  return api.get('/pets').then((data) => expectArray(data, 'el catálogo de mascotas'))
 }
 
 export function getPet(petId) {

@@ -112,11 +112,18 @@ describe('AdoptersPage', () => {
     expect(await screen.findByText('Ana Gómez')).toBeInTheDocument()
   })
 
-  it('shows the backend message when the query fails', async () => {
-    vi.mocked(getAdopters).mockRejectedValue(new Error('Search filters cannot be empty'))
+  it('shows the backend message and retries after a query failure', async () => {
+    const user = userEvent.setup()
+    vi.mocked(getAdopters)
+      .mockRejectedValueOnce(new Error('Search filters cannot be empty'))
+      .mockResolvedValue(adopters)
     renderPage()
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Search filters cannot be empty')
+    await user.click(screen.getByRole('button', { name: 'Reintentar' }))
+
+    expect(await screen.findByRole('heading', { name: 'Ana Gómez' })).toBeInTheDocument()
+    expect(getAdopters).toHaveBeenCalledTimes(2)
   })
 
   it('blocks roles other than the shelter administrator', async () => {

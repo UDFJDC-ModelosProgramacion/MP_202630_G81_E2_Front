@@ -87,14 +87,21 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Registre su Refugio' })).toBeInTheDocument()
   })
 
-  it('keeps the pages of other stories as unavailable, with a way out', () => {
+  it('shows the searchable pet catalog', async () => {
     renderAt('/pets')
 
-    expect(screen.getByRole('heading', { name: 'Mascotas' })).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('todavía no está disponible')
-    expect(screen.getByRole('link', { name: 'Ir a la lista de refugios' })).toHaveAttribute(
+    expect(screen.getByRole('heading', { name: 'Mascotas que buscan un hogar' })).toBeInTheDocument()
+    expect(screen.getByRole('form', { name: 'Filtros de mascotas' })).toBeInTheDocument()
+    expect(await screen.findByText('Aún no hay mascotas registradas')).toBeInTheDocument()
+  })
+
+  it('shows the pet profile and its medical history link', async () => {
+    renderAt('/pets/1')
+
+    expect(await screen.findByRole('heading', { name: 'Luna' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver historia médica' })).toHaveAttribute(
       'href',
-      '/shelters',
+      '/pets/1/medical-events',
     )
   })
 

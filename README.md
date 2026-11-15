@@ -156,8 +156,8 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
 | `/medical-events/:medicalEventId` | Medical event detail (HU25) | Any | ✅ Implemented |
 | `/medical-events/:medicalEventId/edit` | Edit a medical event (HU26) | Shelter staff | ✅ Implemented |
-| `/pets` | Pet search (HU07) | Any | 🚧 Placeholder |
-| `/pets/:petId` | Pet profile (HU08) | Any | 🚧 Placeholder |
+| `/pets` | Pet catalog with text and attribute filters (HU07) | Any | ✅ Implemented |
+| `/pets/:petId` | Pet profile and links to shelter/medical history (HU08) | Any | ✅ Implemented |
 
 ## Back-end API Used
 
@@ -171,8 +171,8 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `POST` | `/shelters` | HU01 | `createShelter` |
 | `POST` | `/pets` | HU06 | `createPet` |
 | `POST` | `/pets/{petId}/photos` | HU06 (pet photos) | `addPetPhoto` |
-| `GET` | `/pets` | HU23 (pet list) | `getPets` |
-| `GET` | `/pets/{id}` | HU24 (pet header) | `getPet` |
+| `GET` | `/pets` | HU07 (pet catalog), HU28 (filter options) | `getPets` |
+| `GET` | `/pets/{id}` | HU08 (profile), HU24 (pet header) | `getPet` |
 | `GET` | `/medicalEvents?petId=` | HU24 (medical history) | `getMedicalEvents` |
 | `GET` | `/medicalEvents/{id}` | HU25 (event detail) | `getMedicalEvent` |
 | `PUT` | `/medicalEvents/{id}` | HU26 (edit event) | `updateMedicalEvent` |
@@ -210,8 +210,25 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU27** | Delete a medical event | `/medical-events/:medicalEventId` | ✅ Implemented |
 | **HU28** | View medical events with filters | `/medical-events` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
-| **HU07** | Pet search | `/pets` | 🚧 Pending |
-| **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
+| **HU07** | Search and browse pets | `/pets` | ✅ Implemented |
+| **HU08** | View a pet profile | `/pets/:petId` | ✅ Implemented |
+
+### UX consistency and usability
+
+The shared interface follows Nielsen's usability heuristics through the following patterns:
+
+| Heuristic | Interface support |
+|---|---|
+| Visibility of system status | Loading, success, empty, result-count, and error states use clear text and accessible status roles. |
+| Match with the real world | Spanish labels use familiar adoption, shelter, and veterinary terms. |
+| User control and freedom | Forms provide cancel actions; lists provide clear-filters actions; details provide return links and breadcrumbs. |
+| Consistency and standards | Shared color, spacing, focus, surface, and border tokens are used across page and component styles. |
+| Error prevention | Required fields, input constraints, client validation, and confirmation dialogs prevent common mistakes. |
+| Recognition rather than recall | Fields have visible labels, select options are explicit, and related actions are presented in context. |
+| Flexibility and efficiency | Search/filter controls and role-based shortcuts reduce navigation for frequent tasks. |
+| Aesthetic and minimalist design | Cards, headings, and actions prioritize task-relevant information and adapt to mobile widths. |
+| Help users recover from errors | Backend messages are shown with retry, correction, or return actions where appropriate. |
+| Help and documentation | Forms provide inline hints; user stories include routes, behavior, and manual verification steps. |
 
 ### HU73 – Register a New User
 
@@ -433,6 +450,39 @@ The administrator registers a pet under their shelter, including at least one **
 4. Register a pet with all required data. A confirmation should appear, and the app should navigate to `/pets/{id}`.
 5. Check `GET /api/pets` to verify the pet was saved with its shelter and arrival event.
 6. Register the same pet again. A duplicate error should be displayed.
+
+### HU07 – Search and Browse Pets
+
+**Route:** `/pets` · **Role:** any user
+
+Visitors can browse the pets returned by the back-end and narrow the catalog by name or breed, species, sex, and size. Filters update as the user types or chooses an option; the result count, no-match state, and clear-filters action make the current search easy to understand. Shelter administrators also have a shortcut to register a pet. Each card opens the pet's profile (HU08) and uses the pet photo when available.
+
+- **Back-end:** `GET /api/pets`; filtering is performed in the browser because this endpoint returns the catalog without filter parameters.
+- **Errors:** loading and API errors are visible; a failed catalog request can be retried.
+
+**Manual testing:**
+
+1. Open `/pets` and verify the loading state resolves into pet cards with profile links.
+2. Search by a pet name and by a breed, then combine the text search with species, sex, or size.
+3. Use criteria that match no pets and verify the empty result message and clear-filters action.
+4. Clear filters and verify the full list returns. Confirm the registration shortcut appears only for the shelter administrator.
+5. Stop the back-end and verify the error message and retry action.
+
+### HU08 – View a Pet Profile
+
+**Route:** `/pets/:petId` · **Role:** any user
+
+The profile displays the pet's photo (or a visual fallback), description, health, admission date, physical and behavioral details, and compatibility information. From the profile, visitors can open the medical history (HU24), return to the catalog (HU07), or visit the associated shelter when that relationship is available.
+
+- **Back-end:** `GET /api/pets/{id}`.
+- **Errors:** loading and API errors are visible; the error state offers a retry and a return to the catalog.
+
+**Manual testing:**
+
+1. Open a pet card from `/pets` and verify its available profile details and photo.
+2. Verify true/false compatibility values render as **Sí**/**No**, and optional details can be absent without breaking the profile.
+3. Follow the medical history and shelter links, then return to the catalog.
+4. Open an unknown pet ID and verify the API error and the link back to `/pets`.
 
 ### HU01 – Register a Shelter
 

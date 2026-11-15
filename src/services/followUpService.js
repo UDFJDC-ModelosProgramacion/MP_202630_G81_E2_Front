@@ -1,4 +1,4 @@
-import { api } from './apiClient'
+import { api, expectArray } from './apiClient'
 
 // The backend expects the administrator role as "ADMIN" when it checks access.
 const ROLE_ALIASES = { SHELTER_ADMIN: 'ADMIN' }
@@ -7,7 +7,7 @@ const basePath = (adoptionId) => `/adoptions/${adoptionId}/followUps`
 
 // Lists the follow-ups of an adoption. Pages sort them by date.
 export function getFollowUps(adoptionId) {
-  return api.get(basePath(adoptionId))
+  return api.get(basePath(adoptionId)).then((data) => expectArray(data, 'los seguimientos'))
 }
 
 // Returns one follow-up. requesterId/role let the backend decide who may read it.

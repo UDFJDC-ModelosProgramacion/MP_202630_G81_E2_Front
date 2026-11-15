@@ -116,7 +116,7 @@
 }
 
 .deleteButton:hover {
-  background: #fef3f2;
+  background: var(--color-error-soft);
 }
 
 .deleteButton:focus-visible {
