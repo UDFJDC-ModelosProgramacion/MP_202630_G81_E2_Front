@@ -158,7 +158,8 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/medical-events/:medicalEventId/edit` | Edit a medical event (HU26) | Shelter staff | ✅ Implemented |
 | `/pets` | Pet search (HU07) | Any | 🚧 Placeholder |
 | `/pets/:petId` | Pet profile (HU08) | Any | 🚧 Placeholder |
-| /pets/:petId/reviews | Reviews of a pet (HU64) | Any (adopter sees "Mis reseñas") | ✅ Implemented |
+| `/pets/:petId/reviews` | Reviews of a pet (HU64) | Any (adopter sees "Mis reseñas") | ✅ Implemented |
+| `/pets/:petId/reviews/new` | Submit a review (HU65) | Adopter | ✅ Implemented |
 
 ## Back-end API Used
 
@@ -181,7 +182,8 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `GET` | `/medicalEvents?petId=&type=&date=` | HU28 (list with filters) | `getMedicalEvents` |
 | `GET` | `/pets` | HU28 (pet filter options) | `getPets` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
-| GET | /reviews?petId=&adopterId= | HU64 (list, "Mis reseñas") | getReviews | | GET | /pets/{id} | HU64 (pet header) | getPet |
+| `GET` | /reviews?petId=&adopterId= | HU64 (list, "Mis reseñas") | getReviews | | GET | /pets/{id} | HU64 (pet header) | getPet |
+| `POST` | /pets/{petId}/reviews | HU65 (submit review) | createReview |
 
 ## Simulated User and Role
 
@@ -214,7 +216,8 @@ The back-end does not implement authentication yet, so the user and role are sim
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
-| HU64 | View reviews for a pet | /pets/:petId/reviews | ✅ Implemented |
+| **HU64**  | View reviews for a pet | /pets/:petId/reviews | ✅ Implemented |
+| **HU65** | Submit a review for an adopted pet | /pets/:petId/reviews/new | ✅ Implemented |
 
 ### HU73 – Register a New User
 
@@ -485,6 +488,22 @@ Shows the reviews of a pet (newest first) with the average rating, the number of
 3. Open a pet without reviews and verify the empty message.
 4. Stop the back-end and verify the error message.
 
+### HU65 – Submit a Review for an Adopted Pet
+
+**Route:** /pets/:petId/reviews/new (adopter only)
+
+The adopter chooses a rating (1–5), a date and writes a comment. The review is linked to the finalized adoption of the pet; if there is none, the page explains that the pet cannot be reviewed yet. Errors from the back-end open a dialog and put the focus on the wrong field. The date is sent with the user's time zone offset (dayStartISO) so the back-end does not move the day.
+
+Back-end: POST /api/pets/{petId}/reviews with { rating, comment, date, time, adoption: { id } }.
+Validation: rating required (1–5), a real date, non-empty comment.
+
+**Manual testing:**
+
+1. With VITE_ROLE=ADOPTER, open /pets/1/reviews/new, fill the form and publish.
+2. Send it empty and verify the message of each field.
+3. Open a pet without a finalized adoption and verify the notice.
+4. With another role, verify the access message.
+
 ### HU03 – View the Detail of a Shelter
 
 **Route:** `/shelters/:shelterId` · **Role:** any (the actions are only for the shelter administrator)
@@ -522,7 +541,8 @@ Once the back-end publishes a shelter photo endpoint, the feature can be added b
 | `ScreenState` | Loading, error, and empty states |
 | `ModalDialog` | Base accessible modal |
 | `SuccessDialog`, `ErrorDialog` | Confirmation and error dialogs built on `ModalDialog` |
-| StarRating, Stars | Star rating input (radiogroup) and read-only stars |
+| `StarRating, Stars` | Star rating input (radiogroup) and read-only stars |
+| `ReviewForm` | Review form shared by HU65 and HU66 (validation, delete confirmation) |
 
 ## Testing
 

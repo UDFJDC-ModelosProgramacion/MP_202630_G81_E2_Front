@@ -25,6 +25,7 @@ import UserProfilePage from './pages/UserProfilePage/UserProfilePage'
 import UserRegisterPage from './pages/UserRegisterPage/UserRegisterPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
 import VeterinariansPage from './pages/VeterinariansPage/VeterinariansPage'
+import WriteReviewPage from './pages/WriteReviewPage/WriteReviewPage'
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/pets/:petId" element={<PendingPage title="Perfil de mascota" />} />
         <Route path="/pets/:petId/medical-events" element={<MedicalEventHistoryPage />} />
         <Route path="/pets/:petId/reviews" element={<PetReviewsPage />} />
+        <Route path="/pets/:petId/reviews/new" element={<WriteReviewPage />} />
 
         {/* Refugios y eventos */}
         <Route path="/shelters" element={<ShelterListPage />} />
