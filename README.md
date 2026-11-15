@@ -158,6 +158,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/medical-events/:medicalEventId/edit` | Edit a medical event (HU26) | Shelter staff | ✅ Implemented |
 | `/pets` | Pet search (HU07) | Any | 🚧 Placeholder |
 | `/pets/:petId` | Pet profile (HU08) | Any | 🚧 Placeholder |
+| /pets/:petId/reviews | Reviews of a pet (HU64) | Any (adopter sees "Mis reseñas") | ✅ Implemented |
 
 ## Back-end API Used
 
@@ -180,6 +181,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `GET` | `/medicalEvents?petId=&type=&date=` | HU28 (list with filters) | `getMedicalEvents` |
 | `GET` | `/pets` | HU28 (pet filter options) | `getPets` |
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
+| GET | /reviews?petId=&adopterId= | HU64 (list, "Mis reseñas") | getReviews | | GET | /pets/{id} | HU64 (pet header) | getPet |
 
 ## Simulated User and Role
 
@@ -212,6 +214,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
+| HU64 | View reviews for a pet | /pets/:petId/reviews | ✅ Implemented |
 
 ### HU73 – Register a New User
 
@@ -465,6 +468,23 @@ Cards with the name, city, address and NIT of every shelter, filtered by **city*
 2. Filter by city and by address, alone and together, and verify the results.
 3. Use a filter with no matches and verify the explanatory message.
 
+### HU64 – View Reviews for a Pet
+
+**Route:** /pets/:petId/reviews
+
+Shows the reviews of a pet (newest first) with the average rating, the number of reviews, stars, date and comment. An adopter also gets a Mis reseñas filter, and the list can be filtered by author. The back-end does not always send the author of a review, so "Adoptante" is shown when it is missing.
+
+-Back-end: GET /api/pets/{id} and GET /api/reviews?petId=&adopterId=.
+-States: loading, error with its cause, and empty list.
+-Shared helpers: src/utils/reviews.js (average, order, author) and src/utils/dateFields.js (dates as dd/mm/yyyy).
+
+**Manual testing:**
+
+1. Open /pets/1/reviews and verify the average, the count and the list.
+2. With VITE_ROLE=ADOPTER, choose Mis reseñas and verify that only yours appear.
+3. Open a pet without reviews and verify the empty message.
+4. Stop the back-end and verify the error message.
+
 ### HU03 – View the Detail of a Shelter
 
 **Route:** `/shelters/:shelterId` · **Role:** any (the actions are only for the shelter administrator)
@@ -502,6 +522,7 @@ Once the back-end publishes a shelter photo endpoint, the feature can be added b
 | `ScreenState` | Loading, error, and empty states |
 | `ModalDialog` | Base accessible modal |
 | `SuccessDialog`, `ErrorDialog` | Confirmation and error dialogs built on `ModalDialog` |
+| StarRating, Stars | Star rating input (radiogroup) and read-only stars |
 
 ## Testing
 
