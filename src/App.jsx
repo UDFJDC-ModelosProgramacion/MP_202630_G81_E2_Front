@@ -5,6 +5,7 @@ import AdopterDetailPage from './pages/AdopterDetailPage/AdopterDetailPage'
 import AdopterEditPage from './pages/AdopterEditPage/AdopterEditPage'
 import AdopterRegisterPage from './pages/AdopterRegisterPage/AdopterRegisterPage'
 import AdoptersPage from './pages/AdoptersPage/AdoptersPage'
+import EditReviewPage from './pages/EditReviewPage/EditReviewPage'
 import FollowUpEditPage from './pages/FollowUpEditPage/FollowUpEditPage'
 import FollowUpRegisterPage from './pages/FollowUpRegisterPage/FollowUpRegisterPage'
 import FollowUpsIndexPage from './pages/FollowUpsIndexPage/FollowUpsIndexPage'
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="/pets/:petId/medical-events" element={<MedicalEventHistoryPage />} />
         <Route path="/pets/:petId/reviews" element={<PetReviewsPage />} />
         <Route path="/pets/:petId/reviews/new" element={<WriteReviewPage />} />
+        <Route path="/pets/:petId/reviews/:reviewId/edit" element={<EditReviewPage />} />
 
         {/* Refugios y eventos */}
         <Route path="/shelters" element={<ShelterListPage />} />
