@@ -5,6 +5,7 @@ import AdopterDetailPage from './pages/AdopterDetailPage/AdopterDetailPage'
 import AdopterEditPage from './pages/AdopterEditPage/AdopterEditPage'
 import AdopterRegisterPage from './pages/AdopterRegisterPage/AdopterRegisterPage'
 import AdoptersPage from './pages/AdoptersPage/AdoptersPage'
+import EditNotificationPage from './pages/EditNotificationPage/EditNotificationPage'
 import FollowUpEditPage from './pages/FollowUpEditPage/FollowUpEditPage'
 import FollowUpRegisterPage from './pages/FollowUpRegisterPage/FollowUpRegisterPage'
 import FollowUpsIndexPage from './pages/FollowUpsIndexPage/FollowUpsIndexPage'
@@ -82,6 +83,7 @@ export default function App() {
         {/* Otros */}
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/notifications/new" element={<ScheduleNotificationPage />} />
+        <Route path="/notifications/:notificationId/edit" element={<EditNotificationPage />} />
       </Route>
     </Routes>
   )

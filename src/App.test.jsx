@@ -180,4 +180,10 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: 'Programar notificación' })).toBeInTheDocument()
   })
+
+  it('shows the edit form on /notifications/:id/edit', async () => {
+    renderAt('/notifications/1/edit')
+
+    expect(await screen.findByRole('heading', { name: 'Editar notificación' })).toBeInTheDocument()
+  })
 })
