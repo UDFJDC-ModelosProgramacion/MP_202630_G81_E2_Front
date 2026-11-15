@@ -16,6 +16,7 @@ import EditReviewPage from './pages/EditReviewPage/EditReviewPage'
 import MedicalEventsPage from './pages/MedicalEventsPage/MedicalEventsPage'
 import MedicalEventRegisterPage from './pages/MedicalEventRegisterPage/MedicalEventRegisterPage'
 import PetReviewsPage from './pages/PetReviewsPage/PetReviewsPage'
+import PetVaccinationRecordPage from './pages/PetVaccinationRecordPage/PetVaccinationRecordPage'
 import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
 import ShelterListPage from './pages/ShelterListPage/ShelterListPage'
 import ShelterRegisterPage from './pages/ShelterRegisterPage/ShelterRegisterPage'
@@ -50,6 +51,7 @@ export default function App() {
         <Route path="/pets/:petId/reviews" element={<PetReviewsPage />} />
         <Route path="/pets/:petId/reviews/new" element={<WriteReviewPage />} />
         <Route path="/pets/:petId/reviews/:reviewId/edit" element={<EditReviewPage />} />
+        <Route path="/pets/:petId/vaccination-record" element={<PetVaccinationRecordPage />} />
         <Route path="/medical-events" element={<MedicalEventsPage />} />
         <Route path="/medical-events/new" element={<MedicalEventRegisterPage />} />
         <Route path="/medical-events/:medicalEventId" element={<MedicalEventDetailPage />} />
