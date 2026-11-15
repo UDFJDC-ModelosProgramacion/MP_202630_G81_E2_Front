@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import { getMedicalEvent, getMedicalEvents } from './services/medicalEventService'
 import { getPet, getPets } from './services/petService'
+import { getReviews } from './services/reviewService'
 import { getShelter, getShelters } from './services/shelterService'
 import { getVeterinarian, getVeterinarians } from './services/veterinarianService'
 
@@ -35,6 +36,14 @@ vi.mock('./services/medicalEventService', () => ({
   deleteMedicalEvent: vi.fn(),
 }))
 
+vi.mock('./services/reviewService', () => ({
+  getReviews: vi.fn(),
+  getReview: vi.fn(),
+  createReview: vi.fn(),
+  updateReview: vi.fn(),
+  deleteReview: vi.fn(),
+}))
+
 function renderAt(path) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -58,6 +67,7 @@ describe('App', () => {
       veterinarian: null,
     })
     getShelters.mockResolvedValue([])
+    getReviews.mockResolvedValue([])
   })
 
   it('shows the navbar and the veterinarians page', async () => {
@@ -156,5 +166,11 @@ describe('App', () => {
     renderAt('/veterinarians/3/edit')
 
     expect(await screen.findByRole('heading', { name: 'Actualizar veterinario' })).toBeInTheDocument()
+  })
+
+  it('shows the reviews of a pet', async () => {
+    renderAt('/pets/1/reviews')
+
+    expect(await screen.findByRole('heading', { name: 'Reseñas de Luna' })).toBeInTheDocument()
   })
 })
