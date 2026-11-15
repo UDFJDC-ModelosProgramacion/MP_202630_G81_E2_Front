@@ -17,6 +17,7 @@ import MedicalEventRegisterPage from './pages/MedicalEventRegisterPage/MedicalEv
 import MedicalEventsPage from './pages/MedicalEventsPage/MedicalEventsPage'
 import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
 import PetReviewsPage from './pages/PetReviewsPage/PetReviewsPage'
+import PetVaccinationRecordPage from './pages/PetVaccinationRecordPage/PetVaccinationRecordPage'
 import RegisterVeterinarianPage from './pages/RegisterVeterinarianPage/RegisterVeterinarianPage'
 import ShelterDetailPage from './pages/ShelterDetailPage/ShelterDetailPage'
 import ShelterListPage from './pages/ShelterListPage/ShelterListPage'
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="/pets/:petId/reviews" element={<PetReviewsPage />} />
         <Route path="/pets/:petId/reviews/new" element={<WriteReviewPage />} />
         <Route path="/pets/:petId/reviews/:reviewId/edit" element={<EditReviewPage />} />
+        <Route path="/pets/:petId/vaccination-record" element={<PetVaccinationRecordPage />} />
 
         {/* Refugios y eventos */}
         <Route path="/shelters" element={<ShelterListPage />} />

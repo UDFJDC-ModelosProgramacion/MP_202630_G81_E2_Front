@@ -161,6 +161,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/pets/:petId/reviews` | Reviews of a pet (HU64) | Any (adopter sees "Mis reseñas") | ✅ Implemented |
 | `/pets/:petId/reviews/new` | Submit a review (HU65) | Adopter | ✅ Implemented |
 | `/pets/:petId/reviews/:reviewId/edit` | Edit or delete my review (HU66) | Adopter (author) | ✅ Implemented |
+| `/pets/:petId/vaccination-record` | Vaccination record of a pet (HU67, HU69) | Any (delete: shelter admin) | ✅ Implemented |
 
 ## Back-end API Used
 
@@ -186,6 +187,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `GET` | /reviews?petId=&adopterId= | HU64 (list, "Mis reseñas") | getReviews | | GET | /pets/{id} | HU64 (pet header) | getPet |
 | `POST` | /pets/{petId}/reviews | HU65 (submit review) | createReview |
 | `GET` | /pets/{petId}/reviews/{id} | HU66 (load my review) | getReview | | PUT | /pets/{petId}/reviews/{id}?adopterId= | HU66 (edit review) | updateReview | | DELETE | /pets/{petId}/reviews/{id}?adopterId= | HU66 (delete review) | deleteReview |
+| `GET` | /vaccinationRecords/pet/{petId} | HU67 (view record) | getVaccinationRecordByPet | | DELETE | /vaccinationRecords/{id} | HU69 (delete record) | deleteVaccinationRecord |
 
 ## Simulated User and Role
 
@@ -221,6 +223,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU64**  | View reviews for a pet | /pets/:petId/reviews | ✅ Implemented |
 | **HU65** | Submit a review for an adopted pet | /pets/:petId/reviews/new | ✅ Implemented |
 | **HU66** | Edit or delete my review | /pets/:petId/reviews/:reviewId/edit | ✅ Implemented |
+| **HU67** | View a pet's vaccination record | /pets/:petId/vaccination-record | ✅ Implemented | | HU69 | Delete a pet's vaccination record | /pets/:petId/vaccination-record | ✅ Implemented |
 
 ### HU73 – Register a New User
 
@@ -520,6 +523,30 @@ Back-end: GET, PUT and DELETE /api/pets/{petId}/reviews/{id}?adopterId=. Only th
 1. Edit the comment, save, and verify the change in the list.
 2. Click Eliminar, cancel, then confirm, and verify it disappears.
 3. Try to edit a review of another adopter and verify the back-end error is shown
+
+### HU67 – View a Pet's Vaccination Record
+
+**Route:** /pets/:petId/vaccination-record
+
+Table with every vaccine, its status (Aplicada / Pendiente), application date and next dose. Applied vaccines come first. A pet without a record shows a message and, for the shelter admin, a link to create it.
+
+Back-end: GET /api/vaccinationRecords/pet/{petId}.
+States: loading, error with its cause, and "no record" (404).
+
+### HU69 – Delete a Pet's Vaccination Record
+
+**Route:** /pets/:petId/vaccination-record (shelter admin only)
+
+Eliminar opens a confirmation dialog. The back-end only allows the deletion when the pet was already adopted; otherwise its message is shown in an error dialog.
+
+Back-end: DELETE /api/vaccinationRecords/{id}.
+
+**Manual testing (HU67 and HU69):**
+
+1. Open /pets/1/vaccination-record and verify the table and the statuses.
+2. Open a pet without a record and verify the message.
+3. As shelter admin, click Eliminar, cancel, then confirm, and verify the empty state.
+4. Try to delete the record of a pet that is not adopted and verify the error dialog.
 
 ### HU03 – View the Detail of a Shelter
 

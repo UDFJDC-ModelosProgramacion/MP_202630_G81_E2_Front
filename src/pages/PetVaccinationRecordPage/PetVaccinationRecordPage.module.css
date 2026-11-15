@@ -1,0 +1,97 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.title {
+    margin: 0;
+    font-size: 1.9rem;
+    letter-spacing: -0.02em;
+}
+
+.success {
+    margin: 0;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--color-primary);
+    border-radius: 8px;
+    background: var(--color-primary-soft);
+    color: var(--color-primary-dark);
+}
+
+.pet {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.pill {
+    padding: 0.15rem 1rem;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+}
+
+.number {
+    color: var(--color-muted);
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+}
+
+.table th,
+.table td {
+    padding: 0.7rem 1rem;
+    text-align: left;
+}
+
+.table thead th {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.table thead th:first-child {
+    border-radius: 10px 0 0 10px;
+}
+
+.table thead th:last-child {
+    border-radius: 0 10px 10px 0;
+}
+
+.status {
+    padding: 0.1rem 0.9rem;
+    border: 1px solid var(--color-muted);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.applied {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.delete {
+    align-self: flex-start;
+    padding: 0.6rem 1.6rem;
+    border: 2px solid var(--color-primary);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-primary);
+    font: inherit;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.delete:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
