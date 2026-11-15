@@ -187,4 +187,12 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Carnet de vacunación' })).toBeInTheDocument()
   })
+
+  it('shows the form to create a vaccination record', async () => {
+    renderAt('/vaccination-records/new')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Crear carnet de vacunación' }),
+    ).toBeInTheDocument()
+  })
 })

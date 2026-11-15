@@ -5,6 +5,7 @@ import AdopterDetailPage from './pages/AdopterDetailPage/AdopterDetailPage'
 import AdopterEditPage from './pages/AdopterEditPage/AdopterEditPage'
 import AdopterRegisterPage from './pages/AdopterRegisterPage/AdopterRegisterPage'
 import AdoptersPage from './pages/AdoptersPage/AdoptersPage'
+import CreateVaccinationRecordPage from './pages/CreateVaccinationRecordPage/CreateVaccinationRecordPage'
 import EditReviewPage from './pages/EditReviewPage/EditReviewPage'
 import FollowUpEditPage from './pages/FollowUpEditPage/FollowUpEditPage'
 import FollowUpRegisterPage from './pages/FollowUpRegisterPage/FollowUpRegisterPage'
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/pets/:petId/reviews/new" element={<WriteReviewPage />} />
         <Route path="/pets/:petId/reviews/:reviewId/edit" element={<EditReviewPage />} />
         <Route path="/pets/:petId/vaccination-record" element={<PetVaccinationRecordPage />} />
+        <Route path="/vaccination-records/new" element={<CreateVaccinationRecordPage />} />
 
         {/* Refugios y eventos */}
         <Route path="/shelters" element={<ShelterListPage />} />

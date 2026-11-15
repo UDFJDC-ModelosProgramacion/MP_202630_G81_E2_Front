@@ -162,6 +162,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/pets/:petId/reviews/new` | Submit a review (HU65) | Adopter | ✅ Implemented |
 | `/pets/:petId/reviews/:reviewId/edit` | Edit or delete my review (HU66) | Adopter (author) | ✅ Implemented |
 | `/pets/:petId/vaccination-record` | Vaccination record of a pet (HU67, HU69) | Any (delete: shelter admin) | ✅ Implemented |
+| `/vaccination-records/new` | Create a vaccination record (HU68) | Shelter admin | ✅ Implemented |
 
 ## Back-end API Used
 
@@ -188,6 +189,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `POST` | /pets/{petId}/reviews | HU65 (submit review) | createReview |
 | `GET` | /pets/{petId}/reviews/{id} | HU66 (load my review) | getReview | | PUT | /pets/{petId}/reviews/{id}?adopterId= | HU66 (edit review) | updateReview | | DELETE | /pets/{petId}/reviews/{id}?adopterId= | HU66 (delete review) | deleteReview |
 | `GET` | /vaccinationRecords/pet/{petId} | HU67 (view record) | getVaccinationRecordByPet | | DELETE | /vaccinationRecords/{id} | HU69 (delete record) | deleteVaccinationRecord |
+| `POST` | /vaccinationRecords | HU68 (create record) | createVaccinationRecord | | GET | /pets | HU68 (pets without record) | getPets |
 
 ## Simulated User and Role
 
@@ -223,7 +225,10 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU64**  | View reviews for a pet | /pets/:petId/reviews | ✅ Implemented |
 | **HU65** | Submit a review for an adopted pet | /pets/:petId/reviews/new | ✅ Implemented |
 | **HU66** | Edit or delete my review | /pets/:petId/reviews/:reviewId/edit | ✅ Implemented |
-| **HU67** | View a pet's vaccination record | /pets/:petId/vaccination-record | ✅ Implemented | | HU69 | Delete a pet's vaccination record | /pets/:petId/vaccination-record | ✅ Implemented |
+| **HU67** | View a pet's vaccination record | /pets/:petId/vaccination-record | ✅ Implemented | 
+| **HU68** | Create a pet's vaccination record | /vaccination-records/new | ✅ Implemented |
+| **HU69** | Delete a pet's vaccination record | /pets/:petId/vaccination-record | ✅ Implemented |
+
 
 ### HU73 – Register a New User
 
@@ -547,6 +552,22 @@ Back-end: DELETE /api/vaccinationRecords/{id}.
 2. Open a pet without a record and verify the message.
 3. As shelter admin, click Eliminar, cancel, then confirm, and verify the empty state.
 4. Try to delete the record of a pet that is not adopted and verify the error dialog.
+
+### HU68 – Create a Pet's Vaccination Record
+
+**Route:** /vaccination-records/new?petId= (shelter admin only)
+
+The admin selects a pet without a record (a pet has at most one) and creates it. Pets with the same name show their number to tell them apart, and ?petId= can preselect one. After saving, the user goes to the record with a confirmation message.
+
+Back-end: POST /api/vaccinationRecords with { pet: { id } }.
+Errors: back-end messages (pet not found, pet already has a record) open a dialog and focus the pet field.
+
+**Manual testing:**
+
+1. Open /vaccination-records/new, pick a pet and create the record.
+2. Send the form without a pet and verify the message.
+3. Try a pet that already has a record and verify the error.
+4. With another role, verify the access message.
 
 ### HU03 – View the Detail of a Shelter
 
