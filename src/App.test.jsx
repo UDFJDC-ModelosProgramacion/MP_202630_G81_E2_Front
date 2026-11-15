@@ -5,26 +5,13 @@ import App from './App'
 import { getMedicalEvent, getMedicalEvents } from './services/medicalEventService'
 import { getPet, getPets } from './services/petService'
 import { getReviews } from './services/reviewService'
-import { getShelters } from './services/shelterService'
+import { getShelter, getShelters } from './services/shelterService'
 import { getVaccinationRecordByPet } from './services/vaccinationRecordService'
 import { getVeterinarian, getVeterinarians } from './services/veterinarianService'
 
-vi.mock('./services/reviewService', () => ({
-  getReviews: vi.fn(),
-  getReview: vi.fn(),
-  createReview: vi.fn(),
-  updateReview: vi.fn(),
-  deleteReview: vi.fn(),
-}))
-
-vi.mock('./services/vaccinationRecordService', () => ({
-  getVaccinationRecordByPet: vi.fn(),
-  createVaccinationRecord: vi.fn(),
-  deleteVaccinationRecord: vi.fn(),
-}))
-
 vi.mock('./services/shelterService', () => ({
   createShelter: vi.fn(),
+  getShelter: vi.fn(),
   getShelters: vi.fn(),
 }))
 
@@ -48,6 +35,20 @@ vi.mock('./services/medicalEventService', () => ({
   createMedicalEvent: vi.fn(),
   updateMedicalEvent: vi.fn(),
   deleteMedicalEvent: vi.fn(),
+}))
+
+vi.mock('./services/reviewService', () => ({
+  getReviews: vi.fn(),
+  getReview: vi.fn(),
+  createReview: vi.fn(),
+  updateReview: vi.fn(),
+  deleteReview: vi.fn(),
+}))
+
+vi.mock('./services/vaccinationRecordService', () => ({
+  getVaccinationRecordByPet: vi.fn(),
+  createVaccinationRecord: vi.fn(),
+  deleteVaccinationRecord: vi.fn(),
 }))
 
 function renderAt(path) {
@@ -122,16 +123,24 @@ describe('App', () => {
     expect(await screen.findByText('Aún no hay refugios registrados')).toBeInTheDocument()
   })
 
-  it('shows the medical event registration form on /medical-events/new', () => {
-    renderAt('/medical-events/new')
+  it('shows the shelter detail', async () => {
+    getShelter.mockResolvedValue({ id: 1, name: 'Patitas Felices', pets: [], events: [] })
 
-    expect(screen.getByRole('heading', { name: 'Registrar evento médico' })).toBeInTheDocument()
+    renderAt('/shelters/1')
+
+    expect(await screen.findByRole('heading', { name: 'Patitas Felices' })).toBeInTheDocument()
   })
 
-  it('shows the medical history of a pet', () => {
+  it('shows the medical event registration form on /medical-events/new', async () => {
+    renderAt('/medical-events/new')
+
+    expect(await screen.findByRole('heading', { name: 'Registrar evento médico' })).toBeInTheDocument()
+  })
+
+  it('shows the medical history of a pet', async () => {
     renderAt('/pets/1/medical-events')
 
-    expect(screen.getByRole('heading', { name: 'Historia médica' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Historia médica' })).toBeInTheDocument()
   })
 
   it('shows the detail of a medical event', async () => {
