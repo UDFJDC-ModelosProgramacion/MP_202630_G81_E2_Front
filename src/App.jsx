@@ -12,6 +12,7 @@ import FollowUpsPage from './pages/FollowUpsPage/FollowUpsPage'
 import MedicalEventDetailPage from './pages/MedicalEventDetailPage/MedicalEventDetailPage'
 import MedicalEventEditPage from './pages/MedicalEventEditPage/MedicalEventEditPage'
 import MedicalEventHistoryPage from './pages/MedicalEventHistoryPage/MedicalEventHistoryPage'
+import EditReviewPage from './pages/EditReviewPage/EditReviewPage'
 import MedicalEventsPage from './pages/MedicalEventsPage/MedicalEventsPage'
 import MedicalEventRegisterPage from './pages/MedicalEventRegisterPage/MedicalEventRegisterPage'
 import PetReviewsPage from './pages/PetReviewsPage/PetReviewsPage'
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/pets/:petId" element={<PendingPage title="Perfil de mascota" />} />
         <Route path="/pets/:petId/reviews" element={<PetReviewsPage />} />
         <Route path="/pets/:petId/reviews/new" element={<WriteReviewPage />} />
+        <Route path="/pets/:petId/reviews/:reviewId/edit" element={<EditReviewPage />} />
         <Route path="/medical-events" element={<MedicalEventsPage />} />
         <Route path="/medical-events/new" element={<MedicalEventRegisterPage />} />
         <Route path="/medical-events/:medicalEventId" element={<MedicalEventDetailPage />} />

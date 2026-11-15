@@ -160,6 +160,7 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/pets/:petId` | Pet profile (HU08) | Any | 🚧 Placeholder |
 | `/pets/:petId/reviews` | Reviews of a pet (HU64) | Any (adopter sees "Mis reseñas") | ✅ Implemented |
 | `/pets/:petId/reviews/new` | Submit a review (HU65) | Adopter | ✅ Implemented |
+| `/pets/:petId/reviews/:reviewId/edit` | Edit or delete my review (HU66) | Adopter (author) | ✅ Implemented |
 
 ## Back-end API Used
 
@@ -184,6 +185,7 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
 | `GET` | /reviews?petId=&adopterId= | HU64 (list, "Mis reseñas") | getReviews | | GET | /pets/{id} | HU64 (pet header) | getPet |
 | `POST` | /pets/{petId}/reviews | HU65 (submit review) | createReview |
+| `GET` | /pets/{petId}/reviews/{id} | HU66 (load my review) | getReview | | PUT | /pets/{petId}/reviews/{id}?adopterId= | HU66 (edit review) | updateReview | | DELETE | /pets/{petId}/reviews/{id}?adopterId= | HU66 (delete review) | deleteReview |
 
 ## Simulated User and Role
 
@@ -218,6 +220,7 @@ The back-end does not implement authentication yet, so the user and role are sim
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
 | **HU64**  | View reviews for a pet | /pets/:petId/reviews | ✅ Implemented |
 | **HU65** | Submit a review for an adopted pet | /pets/:petId/reviews/new | ✅ Implemented |
+| **HU66** | Edit or delete my review | /pets/:petId/reviews/:reviewId/edit | ✅ Implemented |
 
 ### HU73 – Register a New User
 
@@ -503,6 +506,20 @@ Validation: rating required (1–5), a real date, non-empty comment.
 2. Send it empty and verify the message of each field.
 3. Open a pet without a finalized adoption and verify the notice.
 4. With another role, verify the access message.
+
+### HU66 – Edit or Delete My Review
+
+**Route:** /pets/:petId/reviews/:reviewId/edit (adopter, author only)
+
+Loads the review in the same form as HU65. Guardar updates it and Eliminar asks for confirmation (ConfirmDialog) before deleting. After either action the user goes back to the reviews of the pet with a confirmation message.
+
+Back-end: GET, PUT and DELETE /api/pets/{petId}/reviews/{id}?adopterId=. Only the author can change or delete a review.
+
+**Manual testing:**
+
+1. Edit the comment, save, and verify the change in the list.
+2. Click Eliminar, cancel, then confirm, and verify it disappears.
+3. Try to edit a review of another adopter and verify the back-end error is shown
 
 ### HU03 – View the Detail of a Shelter
 
