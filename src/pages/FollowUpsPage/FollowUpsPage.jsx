@@ -44,6 +44,7 @@ export default function FollowUpsPage() {
   const isAdopter = role === ROLES.ADOPTER
   const canRegister = role === ROLES.VETERINARIAN
   const [result, setResult] = useState({ status: 'loading', followUps: [], message: '' })
+  const [attempt, setAttempt] = useState(0)
   const [confirming, setConfirming] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const [deleted, setDeleted] = useState(null)
@@ -63,7 +64,7 @@ export default function FollowUpsPage() {
     return () => {
       active = false
     }
-  }, [canRead, adoptionId])
+  }, [canRead, adoptionId, attempt])
 
   async function handleDelete() {
     setDeleting(true)
@@ -132,7 +133,13 @@ export default function FollowUpsPage() {
       ) : (
         <>
           {status === 'loading' && <ScreenState state="loading" />}
-          {status === 'error' && <ScreenState state="error" message={message} />}
+          {status === 'error' && (
+            <ScreenState
+              state="error"
+              message={message}
+              onRetry={() => setAttempt((value) => value + 1)}
+            />
+          )}
           {status === 'ready' && followUps.length === 0 && (
             <ScreenState
               state="empty"

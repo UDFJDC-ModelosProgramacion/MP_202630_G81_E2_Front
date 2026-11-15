@@ -1,13 +1,46 @@
 .state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   margin: 1rem 0;
   padding: 0.75rem 1rem;
-  border-radius: 8px;
-  background: var(--color-surface);
   border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
   color: var(--color-muted);
 }
 
 .error {
   border-color: var(--color-error);
   color: var(--color-error);
+}
+
+.retry {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--color-primary-dark);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-dark);
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.retry:hover {
+  background: var(--color-primary-deep);
+}
+
+.retry:focus-visible {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .state {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }

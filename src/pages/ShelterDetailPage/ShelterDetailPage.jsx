@@ -13,7 +13,7 @@ const ERROR_TITLES = {
 }
 const GENERIC_ERROR_TITLE = 'No se pudo cargar el refugio'
 
-function ShelterError({ error }) {
+function ShelterError({ error, onRetry }) {
   const title = ERROR_TITLES[error.status] ?? GENERIC_ERROR_TITLE
   // The message of the back-end goes under the title unless it adds nothing to it.
   const showMessage = error.message && error.message !== title && error.message !== `Error ${error.status}`
@@ -21,9 +21,14 @@ function ShelterError({ error }) {
     <section className={styles.errorBox} role="alert">
       <h1 className={styles.errorTitle}>{title}</h1>
       {showMessage && <p className={styles.errorMessage}>{error.message}</p>}
-      <Link to="/shelters" className={styles.back}>
-        Volver a la lista de refugios
-      </Link>
+      <div className={styles.errorActions}>
+        <button type="button" className={styles.retry} onClick={onRetry}>
+          Reintentar
+        </button>
+        <Link to="/shelters" className={styles.back}>
+          Volver a la lista de refugios
+        </Link>
+      </div>
     </section>
   )
 }
@@ -131,6 +136,7 @@ function EventsPanel({ events, canManage, shelterId }) {
 
 function ShelterDetail({ shelterId }) {
   const [result, setResult] = useState({ status: 'loading', shelter: null, error: null })
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -146,11 +152,13 @@ function ShelterDetail({ shelterId }) {
     return () => {
       cancelled = true
     }
-  }, [shelterId])
+  }, [shelterId, attempt])
 
   const { status, shelter, error } = result
   if (status === 'loading') return <ScreenState state="loading" message="Cargando refugio..." />
-  if (status === 'error') return <ShelterError error={error} />
+  if (status === 'error') {
+    return <ShelterError error={error} onRetry={() => setAttempt((value) => value + 1)} />
+  }
 
   const canManage = canManageShelter(getSession(), shelter, ROLES.SHELTER_ADMIN)
 

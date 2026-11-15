@@ -107,11 +107,11 @@
 }
 
 .error .primary {
-  background: #1f2933;
+  background: var(--color-error-dark);
 }
 
 .error .primary:hover {
-  background: #0f1419;
+  background: var(--color-error);
 }
 
 .success .primary {

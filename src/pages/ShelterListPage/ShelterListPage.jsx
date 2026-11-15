@@ -125,6 +125,11 @@ export default function ShelterListPage() {
     void search(NO_FILTERS)
   }
 
+  function retry() {
+    setResult((current) => ({ ...current, status: 'loading' }))
+    void search(filters)
+  }
+
   const { status, shelters, filtered, message } = result
 
   return (
@@ -188,7 +193,7 @@ export default function ShelterListPage() {
       </form>
 
       {status === 'loading' && <ScreenState state="loading" />}
-      {status === 'error' && <ScreenState state="error" message={message} />}
+      {status === 'error' && <ScreenState state="error" message={message} onRetry={retry} />}
       {status === 'ready' && shelters.length === 0 && (
         <EmptyResult filtered={filtered} onClear={clearFilters} />
       )}

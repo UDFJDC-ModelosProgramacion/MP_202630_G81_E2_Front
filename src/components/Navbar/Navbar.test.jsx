@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import Navbar from './Navbar'
 import { getSession } from '../../config/session'
@@ -30,6 +31,21 @@ describe('Navbar', () => {
       '/veterinarians',
     )
     expect(screen.getByRole('link', { name: 'Huellitas Seguras' })).toBeInTheDocument()
+  })
+
+  it('opens the compact navigation and closes it after choosing a destination', async () => {
+    const user = userEvent.setup()
+    renderNavbar()
+
+    const toggle = screen.getByRole('button', { name: 'Abrir menú' })
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+
+    await user.click(screen.getByRole('link', { name: 'Refugios' }))
+    expect(screen.getByRole('button', { name: 'Abrir menú' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
   })
 
   it('links to the medical events list for every role', () => {

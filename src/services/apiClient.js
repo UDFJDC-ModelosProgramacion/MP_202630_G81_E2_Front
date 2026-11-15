@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '')
 
 const CONNECTION_ERROR = 'No se pudo conectar con el servidor. Inténtelo de nuevo.'
 
@@ -8,6 +8,11 @@ export class ApiError extends Error {
     this.name = 'ApiError'
     this.status = status
   }
+}
+
+export function expectArray(data, resource) {
+  if (Array.isArray(data)) return data
+  throw new ApiError(`La respuesta del servidor para ${resource} no tiene un formato válido.`, 502)
 }
 
 async function readErrorMessage(response) {
@@ -33,7 +38,14 @@ export async function request(path, options = {}) {
     throw new ApiError(await readErrorMessage(response), response.status)
   }
   if (response.status === 204) return null
-  return response.json()
+  try {
+    return await response.json()
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new ApiError('El servidor devolvió una respuesta inválida.', 502)
+    }
+    throw error
+  }
 }
 
 export const api = {

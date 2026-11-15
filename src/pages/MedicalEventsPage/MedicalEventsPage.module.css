@@ -1,106 +1,117 @@
 .panel {
-  padding: 1.5rem;
-  border-radius: 12px;
-  background: #e4e6e9;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .title {
   margin: 0;
-  text-align: center;
-  font-size: 2rem;
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  letter-spacing: -0.02em;
 }
 
 .subtitle {
-  margin: 0.25rem 0 1.25rem;
-  text-align: center;
+  margin: -1rem 0 0;
   color: var(--color-muted);
 }
 
 .toolbar {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 1rem;
 }
 
-.register {
-  padding: 0.5rem 1.25rem;
-  border-radius: 999px;
-  background: #4b4f55;
-  color: #ffffff;
+.register,
+.search {
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--color-primary-dark);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-dark);
+  color: #fff;
+  font: inherit;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
 }
 
-.register:hover {
-  background: #2f3237;
+.register:hover,
+.search:hover {
+  background: var(--color-primary-deep);
 }
 
 .filters {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.9rem;
+  padding: 1.15rem;
+  border: 1px solid var(--color-border);
+  border-top: 0.3rem solid var(--color-primary-bright);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .field {
   display: flex;
+  flex: 1 1 12rem;
   flex-direction: column;
-  gap: 0.25rem;
-  flex: 1 1 13rem;
+  gap: 0.35rem;
+  min-width: 0;
   font-weight: 700;
 }
 
 .field select,
 .field input {
-  padding: 0.55rem 0.9rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
   background: var(--color-surface);
+  color: var(--color-text);
   font: inherit;
   font-weight: 400;
 }
 
+.field select:focus-visible,
+.field input:focus-visible {
+  border-color: var(--color-primary);
+  outline: 3px solid var(--color-primary-ring);
+}
+
 .search,
 .clear {
-  padding: 0.6rem 1.5rem;
-  border-radius: 999px;
+  min-height: 2.7rem;
+  padding: 0.6rem 1rem;
+}
+
+.clear {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
   font: inherit;
   font-weight: 700;
-  text-transform: uppercase;
   cursor: pointer;
 }
 
-.search {
-  border: 0;
-  background: #4b4f55;
-  color: #ffffff;
-}
-
-.search:hover {
-  background: #2f3237;
-}
-
-.clear {
-  border: 1px solid #4b4f55;
-  background: var(--color-surface);
-  color: #4b4f55;
-}
-
 .clear:hover {
-  background: #d5d8dc;
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
 }
 
 .search:focus-visible,
 .clear:focus-visible,
-.register:focus-visible {
+.register:focus-visible,
+.type a:focus-visible {
   outline: 3px solid var(--color-primary-ring);
   outline-offset: 2px;
 }
 
 .list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
   gap: 1rem;
   margin: 0;
   padding: 0;
@@ -110,11 +121,19 @@
 .card {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 1rem;
+  gap: 0.45rem;
+  padding: 1.15rem;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary-bright);
+  box-shadow: 0 8px 20px -8px rgb(16 185 129 / 35%);
 }
 
 .cardHeader {
@@ -148,7 +167,7 @@
 
 .pet {
   margin: 0;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .description,
@@ -159,4 +178,11 @@
 .veterinarian {
   color: var(--color-muted);
   font-size: 0.85rem;
+}
+
+@media (max-width: 520px) {
+  .toolbar,
+  .register {
+    width: 100%;
+  }
 }

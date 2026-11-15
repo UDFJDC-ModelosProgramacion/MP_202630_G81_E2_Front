@@ -208,10 +208,17 @@ describe('MedicalEventsPage', () => {
     )
   })
 
-  it('shows the backend message when the list cannot be loaded', async () => {
-    getMedicalEvents.mockRejectedValue(new ApiError('Date is not valid', 412))
+  it('shows the backend message and retries the failed request', async () => {
+    const user = userEvent.setup()
+    getMedicalEvents
+      .mockRejectedValueOnce(new ApiError('Date is not valid', 412))
+      .mockResolvedValue(EVENTS)
     renderPage()
 
-    expect(await screen.findByText('Date is not valid')).toBeInTheDocument()
+    expect(await screen.findByRole('alert')).toHaveTextContent('Date is not valid')
+    await user.click(screen.getByRole('button', { name: 'Reintentar' }))
+
+    await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(3))
+    expect(getMedicalEvents).toHaveBeenCalledTimes(2)
   })
 })

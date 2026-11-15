@@ -25,6 +25,7 @@ const text = (value) => (value == null || value === '' ? '—' : value)
 export default function AdopterDetailPage() {
   const { adopterId } = useParams()
   const isAdmin = getSession().role === ROLES.SHELTER_ADMIN
+  const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState({ status: 'loading', adopter: null, message: '' })
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function AdopterDetailPage() {
     return () => {
       cancelled = true
     }
-  }, [adopterId, isAdmin])
+  }, [adopterId, isAdmin, attempt])
 
   const backLink = (
     <Link to="/adopters" className={styles.back}>
@@ -69,7 +70,11 @@ export default function AdopterDetailPage() {
   if (status === 'error') {
     return (
       <>
-        <ScreenState state="error" message={message} />
+        <ScreenState
+          state="error"
+          message={message}
+          onRetry={() => setAttempt((value) => value + 1)}
+        />
         {backLink}
       </>
     )
