@@ -31,14 +31,14 @@ describe('SuccessDialog', () => {
     expect(dialog).toHaveTextContent('Registro exitoso')
   })
 
-  it('can describe an update with its own HTTP label', () => {
+  it('can describe an update with its own label', () => {
     renderDialog({
       title: '¡Evento médico actualizado con éxito!',
-      statusLabel: 'Código HTTP 200 • Actualizado con éxito',
+      pillLabel: 'Actualización exitosa',
     })
 
-    expect(screen.getByRole('dialog')).toHaveTextContent('Código HTTP 200 • Actualizado con éxito')
-    expect(screen.queryByText('Código HTTP 201 • Creado con éxito')).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toHaveTextContent('Actualización exitosa')
+    expect(screen.queryByText('Registro exitoso')).not.toBeInTheDocument()
   })
 
   it('summarizes what was created', () => {

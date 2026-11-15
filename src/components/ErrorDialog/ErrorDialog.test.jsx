@@ -25,15 +25,15 @@ describe('ErrorDialog', () => {
 
     const dialog = screen.getByRole('alertdialog', { name: 'Error al registrar' })
     expect(dialog).toHaveAccessibleDescription('Ya existe un refugio igual.')
-    expect(dialog).toHaveTextContent('Error 412 • Conflicto de registro')
+    expect(dialog).toHaveTextContent('Conflicto de registro')
     expect(dialog).toHaveTextContent('Verifique los datos.')
   })
 
-  it('shows only the number for a status without a name', () => {
+  it('shows a generic label, never the number, for a status without a name', () => {
     renderDialog({ status: 500 })
 
-    expect(screen.getByRole('alertdialog')).toHaveTextContent('Error 500')
-    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('•')
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('No se pudo completar la solicitud')
+    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('500')
   })
 
   it('does not show a status when there is none (connection errors)', () => {

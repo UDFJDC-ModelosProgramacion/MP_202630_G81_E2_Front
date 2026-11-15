@@ -88,7 +88,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('shows one message per missing field and does not call the backend', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         renderPage()
 
         await submit(user)
@@ -105,7 +105,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('reports only the field that is missing', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         renderPage()
 
         await fillForm(user, { lastName: '' })
@@ -118,7 +118,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('rejects an invalid e-mail and an invalid phone', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         renderPage()
 
         await fillForm(user, { email: 'camila-sin-arroba', phone: '123' })
@@ -130,7 +130,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('clears the message of a field as soon as the user edits it', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         renderPage()
         await submit(user)
         expect(screen.getByText('El nombre es obligatorio.')).toBeInTheDocument()
@@ -142,7 +142,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('registers the veterinarian and goes back to the list with a confirmation', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         createVeterinarian.mockResolvedValue({ id: 5 })
         renderPage()
 
@@ -164,7 +164,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('disables the button while the veterinarian is being registered', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         let finish
         createVeterinarian.mockReturnValue(
             new Promise((resolve) => {
@@ -184,7 +184,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('shows the backend message and keeps what the user typed when the e-mail is taken', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         createVeterinarian.mockRejectedValue(
             new Error('Two veterinarians cannot be associated with the same user; this user already exists'),
         )
@@ -203,7 +203,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('shows the shelter error sent by the backend', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         createVeterinarian.mockRejectedValue(new Error('The shelter must be an existing shelter'))
         renderPage()
 
@@ -214,7 +214,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('removes the previous backend error when the form is sent again', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         createVeterinarian
             .mockRejectedValueOnce(new Error('No se pudo conectar con el servidor.'))
             .mockResolvedValueOnce({ id: 5 })

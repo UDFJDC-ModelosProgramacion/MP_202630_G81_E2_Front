@@ -157,7 +157,7 @@ describe('MedicalEventRegisterPage', () => {
       name: 'Error al registrar el evento médico',
     })
     expect(within(dialog).getByText('The pet is not active in the system')).toBeInTheDocument()
-    expect(within(dialog).getByText('Error 412 • Conflicto de registro')).toBeInTheDocument()
+    expect(within(dialog).getByText('Conflicto de registro')).toBeInTheDocument()
 
     await user.click(within(dialog).getByRole('button', { name: 'Modificar datos' }))
 

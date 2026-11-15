@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from './apiClient'
-import { createShelter, getShelters } from './shelterService'
+import { createShelter, getShelter, getShelters } from './shelterService'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -102,5 +102,41 @@ describe('getShelters', () => {
 
     expect(error).toBeInstanceOf(ApiError)
     expect(error.message).toBe('Error interno')
+  })
+})
+
+describe('getShelter', () => {
+  it('requests the shelter by its id', async () => {
+    const fetchMock = stubFetchWith({ id: 7, name: 'Patitas Felices' })
+
+    const result = await getShelter(7)
+
+    expect(result).toEqual({ id: 7, name: 'Patitas Felices' })
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/shelters/7')
+  })
+
+  it('encodes the id so it cannot change the address', async () => {
+    const fetchMock = stubFetchWith({})
+
+    await getShelter('1/../2')
+
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/shelters/1%2F..%2F2')
+  })
+
+  it('fails with the status and message of the back-end when the shelter does not exist', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve({ apierror: { message: 'Shelter not found' } }),
+      }),
+    )
+
+    const error = await getShelter(99).catch((e) => e)
+
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.status).toBe(404)
+    expect(error.message).toBe('Shelter not found')
   })
 })

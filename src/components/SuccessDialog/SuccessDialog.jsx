@@ -14,7 +14,7 @@ export default function SuccessDialog({
   warning,
   actionLabel,
   closeLabel,
-  statusLabel = 'Código HTTP 201 • Creado con éxito',
+  pillLabel = 'Registro exitoso',
   onAction,
   onClose,
 }) {
@@ -29,7 +29,7 @@ export default function SuccessDialog({
       describedBy={messageId}
       onClose={onClose}
     >
-      <DialogPill>Registro exitoso</DialogPill>
+      <DialogPill>{pillLabel}</DialogPill>
       <DialogTitle id={titleId}>{title}</DialogTitle>
       <p id={messageId} className={styles.message}>
         {message}

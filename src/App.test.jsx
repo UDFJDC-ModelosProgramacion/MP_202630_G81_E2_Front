@@ -2,16 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
-import { getVeterinarian, getVeterinarians } from './services/veterinarianService'
 import { getMedicalEvent, getMedicalEvents } from './services/medicalEventService'
-import { getPets } from './services/petService'
-import { getMedicalEvents } from './services/medicalEventService'
 import { getPet, getPets } from './services/petService'
-import { getShelters } from './services/shelterService'
-import { getVeterinarians } from './services/veterinarianService'
+import { getShelter, getShelters } from './services/shelterService'
+import { getVeterinarian, getVeterinarians } from './services/veterinarianService'
 
 vi.mock('./services/shelterService', () => ({
   createShelter: vi.fn(),
+  getShelter: vi.fn(),
   getShelters: vi.fn(),
 }))
 
@@ -35,12 +33,6 @@ vi.mock('./services/medicalEventService', () => ({
   createMedicalEvent: vi.fn(),
   updateMedicalEvent: vi.fn(),
   deleteMedicalEvent: vi.fn(),
-}))
-
-vi.mock('./services/petService', () => ({
-  getPets: vi.fn(),
-  createPet: vi.fn(),
-  addPetPhoto: vi.fn(),
 }))
 
 function renderAt(path) {
@@ -113,12 +105,13 @@ describe('App', () => {
     expect(await screen.findByText('Aún no hay refugios registrados')).toBeInTheDocument()
   })
 
-  it('shows the medical event registration form on /medical-events/new', () => {
-    renderAt('/medical-events/new')
+  it('shows the shelter detail', async () => {
+    getShelter.mockResolvedValue({ id: 1, name: 'Patitas Felices', pets: [], events: [] })
 
-    expect(screen.getByRole('heading', { name: 'Registrar evento médico' })).toBeInTheDocument()
+    renderAt('/shelters/1')
+
+    expect(await screen.findByRole('heading', { name: 'Patitas Felices' })).toBeInTheDocument()
   })
-})
 
   it('shows the medical event registration form on /medical-events/new', () => {
     renderAt('/medical-events/new')
@@ -164,6 +157,4 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Actualizar veterinario' })).toBeInTheDocument()
   })
-})
-
 })

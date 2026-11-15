@@ -205,7 +205,7 @@ describe('UpdateVeterinarianPage', () => {
 
         const dialog = await screen.findByRole('alertdialog')
         expect(dialog).toHaveTextContent('Availability cannot be null or empty')
-        expect(dialog).toHaveTextContent('Error 412')
+        expect(dialog).toHaveTextContent('Conflicto de registro')
         expect(availability()).toHaveAttribute('aria-invalid', 'true')
 
         await user.click(screen.getByRole('button', { name: 'Modificar datos' }))
@@ -234,7 +234,7 @@ describe('UpdateVeterinarianPage', () => {
 
         await save(user)
 
-        expect(await screen.findByRole('alertdialog')).toHaveTextContent('Error 404')
+        expect(await screen.findByRole('alertdialog')).toHaveTextContent('No encontrado')
         expect(specialization()).not.toHaveAttribute('aria-invalid', 'true')
         await user.click(screen.getByRole('button', { name: 'Modificar datos' }))
 

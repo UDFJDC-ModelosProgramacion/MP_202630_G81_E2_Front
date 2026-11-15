@@ -101,7 +101,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('validates on the client, focuses the first error and does not call the backend', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
 
     await submit(user)
@@ -115,7 +115,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('focuses the first invalid field of the arrival event when the pet is complete', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
     await fillRequiredFields(user)
 
@@ -126,7 +126,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('rejects a future admission date', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
     await fillRequiredFields(user)
     await fillArrivalEvent(user)
@@ -141,7 +141,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('clears the error of a field as soon as it is corrected', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
     await submit(user)
 
@@ -151,7 +151,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('registers the pet in the administrator shelter', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockResolvedValue({ id: 12 })
     renderPage()
     await fillRequiredFields(user)
@@ -177,7 +177,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('sends the optional fields when they are filled', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockResolvedValue({ id: 1 })
     renderPage()
     await fillRequiredFields(user)
@@ -197,7 +197,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('shows a loading state and blocks the button while the pet is being created', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockReturnValue(new Promise(() => {}))
     renderPage()
     await fillRequiredFields(user)
@@ -210,7 +210,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('lets the user add and remove arrival events, keeping at least one', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
 
     expect(screen.queryByRole('button', { name: /^Quitar evento/ })).not.toBeInTheDocument()
@@ -224,7 +224,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('sends every arrival event', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockResolvedValue({ id: 5 })
     renderPage()
     await fillRequiredFields(user)
@@ -239,7 +239,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('confirms the registration with a summary of the pet', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockResolvedValue({ id: 12 })
     renderPage()
     await fillRequiredFields(user)
@@ -256,7 +256,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('opens the profile of the new pet from the confirmation', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockResolvedValue({ id: 12 })
     renderPage()
     await fillRequiredFields(user)
@@ -269,7 +269,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('lets the user register another pet with an empty form', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockResolvedValue({ id: 12 })
     renderPage()
     await fillRequiredFields(user)
@@ -286,7 +286,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('shows the backend message next to its field and keeps what the user typed', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockRejectedValue(new Error('La fecha de ingreso no puede ser una fecha futura'))
     renderPage()
     await fillRequiredFields(user)
@@ -313,7 +313,7 @@ describe('PetRegisterPage', () => {
     'No se encontró el refugio con el id indicado',
     'Ya existe una mascota con el mismo refugio, nombre, especie y fecha de ingreso',
   ])('shows "%s" in the error dialog and keeps the form', async (message) => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockRejectedValue(new ApiError(message, 412))
     renderPage()
     await fillRequiredFields(user)
@@ -328,7 +328,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('lets the user close the error dialog and fix the data', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockRejectedValue(new ApiError('La mascota debe estar asociada a un refugio existente', 412))
     renderPage()
     await fillRequiredFields(user)
@@ -342,7 +342,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('lets the user leave from the error dialog', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockRejectedValue(new Error('La mascota debe estar asociada a un refugio existente'))
     renderPage()
     await fillRequiredFields(user)
@@ -355,7 +355,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('shows the message of the arrival events in their own section', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     const message =
       'La mascota debe registrarse con al menos un evento de llegada que describa su ingreso al refugio'
     createPet.mockRejectedValue(new Error(message))
@@ -382,7 +382,7 @@ describe('PetRegisterPage', () => {
     }
 
     it('is optional: a pet without photo does not call the photos endpoint', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
       createPet.mockResolvedValue({ id: 7 })
       renderPage()
       expect(photoUrlField()).toHaveAttribute('aria-required', 'false')
@@ -396,7 +396,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('previews the photo and picks its format from the link', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
       renderPage()
 
       await user.type(photoUrlField(), PHOTO_URL)
@@ -409,7 +409,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('says so when the preview cannot be loaded', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
       renderPage()
       await user.type(photoUrlField(), PHOTO_URL)
 
@@ -420,7 +420,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('saves the photo of the created pet', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
       createPet.mockResolvedValue({ id: 12 })
       addPetPhoto.mockResolvedValue({ id: 1 })
 
@@ -436,7 +436,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('does not create the pet when the link is not valid and focuses it', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
 
       await registerWithPhoto(user, 'luna.png')
 
@@ -448,7 +448,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('asks for the format when it cannot be read from the link', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
 
       await registerWithPhoto(user, 'https://fotos.example.com/luna')
 
@@ -457,7 +457,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('keeps the registered pet when only the photo fails and tells the user', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
       createPet.mockResolvedValue({ id: 12 })
       addPetPhoto.mockRejectedValue(new Error('Photo format is not valid'))
 
@@ -472,7 +472,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('lets the user cancel and go back to the pets', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
 
     await user.click(screen.getByRole('button', { name: 'Cancelar' }))

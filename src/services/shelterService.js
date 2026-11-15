@@ -11,3 +11,7 @@ export function getShelters({ city = '', location = '' } = {}) {
   const query = params.toString()
   return api.get(query ? `/shelters?${query}` : '/shelters')
 }
+
+export function getShelter(shelterId) {
+  return api.get(`/shelters/${encodeURIComponent(shelterId)}`)
+}

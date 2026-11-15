@@ -144,8 +144,12 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 | `/veterinarians` | Veterinarian list with filters (HU70) | Any | ✅ Implemented |
 | `/veterinarians/new` | Register a veterinarian | Any | ✅ Implemented |
 | `/veterinarians/:veterinarianId` | Veterinarian profile (HU70) | Any | ✅ Implemented |
+| `/shelters` | Shelter list with city and address filters (HU02) | Any | ✅ Implemented |
 | `/shelters/new` | Register a shelter (HU01) | Shelter admin | ✅ Implemented |
-| `/shelters/:shelterId` | Shelter detail | Any | 🚧 Placeholder |
+| `/shelters/:shelterId` | Shelter detail with its pets and events (HU03) | Any (actions: shelter admin) | ✅ Implemented |
+| `/shelters/:shelterId/edit` | Edit a shelter (HU04) | Shelter admin | 🚧 Placeholder |
+| `/shelters/:shelterId/events/new` | Create an event (HU12) | Shelter admin | 🚧 Placeholder |
+| `/events/:eventId` | Event detail (HU15) | Any | 🚧 Placeholder |
 | `/pets/new` | Register a pet (HU06) | Shelter admin | ✅ Implemented |
 | `/medical-events` | Medical events list with filters (HU28) | Any | ✅ Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
@@ -184,18 +188,20 @@ The back-end does not implement authentication yet, so the user and role are sim
 - Available roles: `SHELTER_ADMIN`, `VETERINARIAN`, `ADOPTER`, `VISITOR`.
 - Only the **shelter administrator** sees **Registrar refugio** and **Registrar mascota** in the navigation bar and can use `/shelters/new` and `/pets/new`. Any other role gets a message explaining that they do not have permission.
 - Veterinarian screens are not restricted by role.
+- To try another role by hand, set `VITE_ROLE` (for example `VITE_ROLE=ADOPTER`); the navigation bar and every page read the same session.
 - Once real authentication exists, only the `getSession()` function needs to be replaced.
 
 ## User Stories
 
 | User Story | Description | Route | Status |
 |---|---|---|---|
-| **HU70** | Veterinarian list with filters | `/veterinarians` | Implemented |
-| **HU01** | Register a shelter | `/shelters/new` | Implemented |
-| **HU06** | Register a pet | `/pets/new` | Implemented |
+| **HU73** | Register a new user | `/register` | Implemented |
+| **HU74** | View and update user profile | `/profile` | Implemented |
 | **HU72** | Update a veterinarian's specialization and availability | `/veterinarians/:veterinarianId/edit` | Implemented |
 | **HU70** | Veterinarian list with filters and profile | `/veterinarians` | ✅ Implemented |
 | **HU01** | Register a shelter | `/shelters/new` | ✅ Implemented |
+| **HU02** | View the list of shelters with filters | `/shelters` | ✅ Implemented |
+| **HU03** | View the detail of a shelter | `/shelters/:shelterId` | ✅ Implemented |
 | **HU06** | Register a pet | `/pets/new` | ✅ Implemented |
 | **HU23** | Register a medical event | `/medical-events/new` | ✅ Implemented |
 | **HU24** | View the medical history of a pet | `/pets/:petId/medical-events` | ✅ Implemented |
@@ -206,6 +212,42 @@ The back-end does not implement authentication yet, so the user and role are sim
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
 | **HU07** | Pet search | `/pets` | 🚧 Pending |
 | **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
+
+### HU73 – Register a New User
+
+**Route:** `/register` · **Role:** Any visitor.
+
+Allows new users to create an account on the pet adoption platform. The form collects **first name, last name, email, phone, password, and password confirmation**.
+
+- **Back-end:** `POST /api/users`.
+- **Validation:** Required fields are validated on the client side before submitting. The password must contain at least 8 characters and match the confirmation field.
+- **Errors:** Unique email enforcement is validated both locally and by the server (`The email address must be unique in the system`). Server errors display an informative dialog while keeping the user's input.
+- **Automated tests:** `UserRegisterPage.test.jsx`, `userForm.test.js`, and `userService.test.js`.
+
+**Manual Testing:**
+
+1. Open `/register` and submit the empty form: validation errors should appear for all required fields.
+2. Enter mismatched passwords or a password with fewer than 8 characters: error messages should guide the user.
+3. Fill in valid data and submit: a confirmation modal should appear, and upon acceptance, redirect to the platform.
+4. Try registering again with the same email address: the server error dialog will inform that the email is already in use.
+
+### HU74 – View and Update User Profile
+
+**Route:** `/profile` · **Role:** Any authenticated user.
+
+Displays the current user's profile information (**name, email, phone, and role**). Allows editing contact information in-place.
+
+- **Back-end:** `GET /api/users/{id}` and `PUT /api/users/{id}`.
+- **Editing:** Clicking "Editar Perfil" enables input fields for first name, last name, email, and phone. The user can save updates or cancel to discard unsaved changes.
+- **Errors:** If the email address is updated to one that already belongs to another user, an error notification is displayed without overwriting existing data.
+- **Automated tests:** `UserProfilePage.test.jsx`, `profileForm.test.js`, and `userService.test.js`.
+
+**Manual Testing:**
+
+1. Navigate to `/profile` by clicking on the user card in the navigation bar.
+2. Verify that your name, email, phone, and assigned role are displayed.
+3. Click "Editar Perfil", modify contact details, and click "Cancelar": changes are safely discarded.
+4. Click "Editar Perfil", make valid updates, and click "Guardar Cambios": a confirmation modal verifies that changes were saved successfully.
 
 ### HU70 – Veterinarian List with Filters
 
@@ -246,7 +288,6 @@ A shelter administrator can change only the **specialization** and the **availab
 5. Open `/veterinarians/999999/edit` and verify that the "not found" error is displayed with a link back to the list.
 6. Click **Cancelar** and verify that you return to the profile without changes.
 
-### HU06 ÔÇô Register a Pet
 ### Register a Veterinarian
 
 **Route:** `/veterinarians/new` (reachable from the **Registrar veterinario** button on the list)
@@ -382,7 +423,7 @@ The administrator registers a pet under their shelter, including at least one **
 
 - **Back-end:** `POST /api/pets`, with the shelter sent as `shelter.id` and arrival events included in `medicalEvents`; photos through `POST /api/pets/{petId}/photos`.
 - **Validation:** first on the client (errors next to each field, focus moved to the first invalid field), then by the back-end. Back-end errors appear next to the matching field or in an alert, and the form keeps the entered data.
-- **Result:** confirmation message and redirect to `/pets/{id}` (profile pending, HU08).
+- **Result:** confirmation message and redirect to `/pets/{id}` (the profile, HU08, still shows the "not available" screen).
 
 **Manual testing:**
 
@@ -397,7 +438,7 @@ The administrator registers a pet under their shelter, including at least one **
 
 **Route:** `/shelters/new` · **Role:** shelter administrator
 
-The administrator registers a shelter with its **name, city, NIT, and address**. All fields are required. They are validated on the client first and then by the back-end (for example, an NIT already registered is reported next to the NIT field). On success, the user is redirected to `/shelters/{id}` (detail page pending). The creator is sent as `users: [{ id }]` and becomes the shelter's administrator.
+The administrator registers a shelter with its **name, city, NIT, and address**. All fields are required. They are validated on the client first and then by the back-end (for example, an NIT already registered is reported next to the NIT field). On success, the user is redirected to the shelter detail `/shelters/{id}` (HU03). The creator is sent as `users: [{ id }]` and becomes the shelter's administrator.
 
 - **Back-end:** `POST /api/shelters`.
 - **Errors:** field-related back-end errors (missing city, duplicated NIT) are shown next to the field, with focus moved to it. Any other error (same name, city, and location, or a connection failure) is shown in an error dialog. In both cases the form keeps the entered data.
@@ -409,6 +450,35 @@ The administrator registers a shelter with its **name, city, NIT, and address**.
 3. Check `GET /api/shelters` to verify the shelter was saved with its responsible user.
 4. Register the same shelter again. The back-end error should be displayed.
 5. Stop the back-end and submit. A connection error dialog should be displayed.
+
+### HU02 – View the List of Shelters
+
+**Route:** `/shelters` · **Role:** any
+
+Cards with the name, city, address and NIT of every shelter, filtered by **city** and **address** (the back-end compares them exactly, ignoring case). While loading it shows a progress message; with no results it explains why (CT2).
+
+- **Back-end:** `GET /api/shelters?city=&location=` (answers `200` with an empty list when nothing matches).
+
+**Manual testing:**
+
+1. Open `/shelters` and verify that every registered shelter is listed.
+2. Filter by city and by address, alone and together, and verify the results.
+3. Use a filter with no matches and verify the explanatory message.
+
+### HU03 – View the Detail of a Shelter
+
+**Route:** `/shelters/:shelterId` · **Role:** any (the actions are only for the shelter administrator)
+
+Shows name, NIT, address and city, with the shelter's **pets** and **events**. The administrator of that shelter also sees **Editar**, **Eliminar** (disabled until HU05), **+ Registrar mascota** and **+ Crear evento**. Adoptions, adopters, veterinarians and requests that the back-end also sends are ignored on purpose.
+
+- **Back-end:** `GET /api/shelters/{id}` (`ShelterDetailDTO`). `users` is write-only in the back-end, so the administrator is recognized by `VITE_SHELTER_ID`.
+- **Errors:** 404 and 412 show an alert with a link back to the list; a connection failure shows a generic message.
+
+**Manual testing:**
+
+1. Open `/shelters/1` and verify the data, pets and events.
+2. Open `/shelters/999999` and verify the error with the link back.
+3. Register a pet (HU06) and verify that it appears in the shelter detail.
 
 #### Known limitation – no shelter photos
 
@@ -442,6 +512,8 @@ npm test                                      # Run all tests
 npm run test:coverage                         # Run tests with coverage
 npx vitest src/pages/PetRegisterPage          # A specific folder, e.g. HU06
 npx vitest src/pages/ShelterRegisterPage      # HU01
+npx vitest src/pages/ShelterListPage          # HU02
+npx vitest src/pages/ShelterDetailPage        # HU03
 npx vitest src/pages/VeterinariansPage        # HU70
 npx vitest src/pages/MedicalEventRegisterPage # HU23
 npx vitest src/pages/MedicalEventHistoryPage  # HU24
@@ -451,9 +523,15 @@ npx vitest src/components/ConfirmDialog       # HU27 (shared dialog)
 npx vitest src/pages/MedicalEventsPage        # HU28
 ```
 
-Current state: **31 test files, 319 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **56 test files, 555 tests, all passing** (about 93% statement coverage), with `npm run lint` and `npm run build` clean.
 
+- **HU73:** `UserRegisterPage.test.jsx`, `userForm.test.js`, and `userService.test.js`.
+- **HU74:** `UserProfilePage.test.jsx`, `profileForm.test.js`, and `userService.test.js`.
 - **HU70:** `VeterinariansPage.test.jsx`, `VeterinarianProfilePage.test.jsx`, and `veterinarianService.test.js`.
+- **HU01:** `ShelterRegisterPage.test.jsx`, `shelterForm.test.js`, and `shelterService.test.js`.
+- **HU02:** `ShelterListPage.test.jsx` and `shelterService.test.js`.
+- **HU03:** `ShelterDetailPage.test.jsx`, `shelterDetail.test.js` and `shelterService.test.js`.
+- **HU06:** `PetRegisterPage.test.jsx`, `petForm.test.js`, and `petService.test.js`.
 - **HU72:** `UpdateVeterinarianPage.test.jsx` (full screen), `updateVeterinarianForm.test.js` (validation, payload, and error mapping), `VeterinarianProfilePage.test.jsx` (edit link and confirmation), and `veterinarianService.test.js` (`updateVeterinarian`).
 - **HU01:** `ShelterRegisterPage.test.jsx` (full screen), `shelterForm.test.js` (validation and request body), and `shelterService.test.js`.
 - **HU06:** `PetRegisterPage.test.jsx` (full screen), `petForm.test.js` (validation and request body), and `petService.test.js`.
@@ -469,7 +547,7 @@ Tests live next to the module they cover:
 | **HU23** | `MedicalEventRegisterPage.test.jsx`, `medicalEventForm.test.js` |
 | **HU24** | `MedicalEventHistoryPage.test.jsx` |
 | **HU25** | `MedicalEventDetailPage.test.jsx`, `medicalEvents.test.js` |
-| **HU26** | `MedicalEventEditPage.test.jsx` (and the `statusLabel` case in `SuccessDialog.test.jsx`) |
+| **HU26** | `MedicalEventEditPage.test.jsx` (and the `pillLabel` case in `SuccessDialog.test.jsx`) |
 | **HU27** | `ConfirmDialog.test.jsx`, `MedicalEventDetailPage.test.jsx` (delete and roles), `MedicalEventHistoryPage.test.jsx` (notice), `medicalEvents.test.js` (role rule) |
 | **HU28** | `MedicalEventsPage.test.jsx`, `medicalEventService.test.js` (filters and query string) |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
@@ -498,5 +576,3 @@ The workspace is deleted at the end of every run (`deleteDir()`).
 
 ### Important Note:
 The specifications of state of Jenkis and Sonar of each History User are specified on the Wiki of this repository.
-
-```

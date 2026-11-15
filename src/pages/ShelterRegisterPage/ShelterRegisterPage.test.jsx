@@ -76,7 +76,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('validates on the client, focuses the first error and does not call the backend', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
 
     await submit(user)
@@ -88,7 +88,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it.each(['p', '123', '900-069-803'])('does not accept "%s" as a NIT', async (nit) => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
     await fillForm(user)
     await user.clear(textbox('NIT'))
@@ -104,7 +104,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('clears the error of a field as soon as it is corrected', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
     await submit(user)
 
@@ -114,7 +114,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('creates the shelter with the logged user as responsible', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockResolvedValue({ id: 5 })
     renderPage()
     await fillForm(user)
@@ -132,7 +132,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('confirms the registration with a summary of the shelter', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockResolvedValue({ id: 5 })
     renderPage()
     await fillForm(user)
@@ -148,7 +148,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('opens the detail of the new shelter from the confirmation (HU03)', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockResolvedValue({ id: 5 })
     renderPage()
     await fillForm(user)
@@ -160,7 +160,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('lets the user register another shelter with an empty form', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockResolvedValue({ id: 5 })
     renderPage()
     await fillForm(user)
@@ -175,7 +175,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('shows a loading state and blocks the button while the shelter is being created', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockReturnValue(new Promise(() => {}))
     renderPage()
     await fillForm(user)
@@ -192,7 +192,7 @@ describe('ShelterRegisterPage', () => {
     ['El NIT no puede ser nulo ni estar vacío', 'NIT'],
     ['El NIT ya está registrado para otro refugio', 'NIT'],
   ])('shows "%s" in the dialog and next to the field "%s"', async (message, label) => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockRejectedValue(backendError(message))
     renderPage()
     await fillForm(user)
@@ -211,7 +211,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('shows the missing city next to the city field', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockRejectedValue(backendError('La ciudad no puede ser nula ni estar vacía'))
     renderPage()
     await fillForm(user)
@@ -223,7 +223,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('shows a shelter with the same name, city and location in the error dialog', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     const message = 'Ya existe un refugio con el mismo nombre, ciudad y dirección'
     createShelter.mockRejectedValue(backendError(message))
     renderPage()
@@ -239,7 +239,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('lets the user leave from the error dialog', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockRejectedValue(
       backendError('Ya existe un refugio con el mismo nombre, ciudad y dirección'),
     )
@@ -253,7 +253,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('lets the user close the dialog and fix the data', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockRejectedValue(backendError('Ya existe un refugio con el mismo nombre, ciudad y dirección'))
     renderPage()
     await fillForm(user)
@@ -266,7 +266,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('reports a connection failure in the dialog without a status code', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockRejectedValue(new ApiError('No se pudo conectar con el servidor.', 0))
     renderPage()
     await fillForm(user)
@@ -279,7 +279,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('lets the user cancel', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
 
     await user.click(screen.getByRole('button', { name: 'Cancelar' }))

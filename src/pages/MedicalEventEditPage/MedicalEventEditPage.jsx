@@ -285,7 +285,7 @@ function MedicalEventForm() {
             { label: 'Fecha', value: formatDay(updated.date) },
             { label: 'Tipo', value: updated.type },
           ]}
-          statusLabel="Código HTTP 200 • Actualizado con éxito"
+          pillLabel="Actualización exitosa"
           actionLabel="Ver detalle"
           closeLabel="Volver a la historia"
           onAction={() => navigate(detailPath)}

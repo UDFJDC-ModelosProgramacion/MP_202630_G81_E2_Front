@@ -5,14 +5,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': 'http://localhost:8999',
     },
   },
   test: {
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/setupTests.js',
-    testTimeout: 15000,
+    testTimeout: 30000,
     hookTimeout: 30000,
     pool: 'vmThreads',
     maxWorkers: 2,

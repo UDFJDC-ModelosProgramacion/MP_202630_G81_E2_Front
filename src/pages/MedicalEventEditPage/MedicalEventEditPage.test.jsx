@@ -100,7 +100,7 @@ describe('MedicalEventEditPage', () => {
     )
 
     expect(await screen.findByText('¡Evento médico actualizado con éxito!')).toBeInTheDocument()
-    expect(screen.getByText('Código HTTP 200 • Actualizado con éxito')).toBeInTheDocument()
+    expect(screen.getByText('Actualización exitosa')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Ver detalle' }))
     expect(await screen.findByText('Detalle del evento')).toBeInTheDocument()
