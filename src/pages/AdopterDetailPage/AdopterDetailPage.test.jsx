@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import AdopterDetailPage from './AdopterDetailPage'
-import { getSession } from '../../config/roleSession'
+import { getSession } from '../../config/session'
 import { getAdopter } from '../../services/adopterService'
 
 vi.mock('../../services/adopterService', () => ({ getAdopter: vi.fn() }))
-vi.mock('../../config/roleSession', () => ({
+vi.mock('../../config/session', () => ({
   ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
 }))

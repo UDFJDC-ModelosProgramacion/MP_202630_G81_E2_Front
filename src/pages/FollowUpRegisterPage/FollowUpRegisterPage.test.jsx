@@ -4,11 +4,11 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import FollowUpRegisterPage from './FollowUpRegisterPage'
 import { ApiError } from '../../services/apiClient'
-import { getSession } from '../../config/roleSession'
+import { getSession } from '../../config/session'
 import { createFollowUp } from '../../services/followUpService'
 
 vi.mock('../../services/followUpService', () => ({ createFollowUp: vi.fn() }))
-vi.mock('../../config/roleSession', () => ({
+vi.mock('../../config/session', () => ({
   ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', VETERINARIAN: 'VETERINARIAN' },
   getSession: vi.fn(),
 }))

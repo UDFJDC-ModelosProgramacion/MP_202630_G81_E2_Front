@@ -9,7 +9,7 @@ import ModalDialog, {
   DialogTitle,
 } from '../../components/ModalDialog/ModalDialog'
 import ScreenState from '../../components/ScreenState/ScreenState'
-import { getSession, ROLES } from '../../config/roleSession'
+import { getSession, ROLES } from '../../config/session'
 import { deleteFollowUp, getFollowUps } from '../../services/followUpService'
 import { formatDay } from '../../utils/dates'
 import { dayOf, isFutureDay, sortByDateDesc, statusOfDay } from '../../utils/followUpDates'

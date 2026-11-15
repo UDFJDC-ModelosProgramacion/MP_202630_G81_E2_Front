@@ -211,5 +211,6 @@ function ShelterDetail({ shelterId }) {
 
 export default function ShelterDetailPage() {
   const { shelterId } = useParams()
+  // The key restarts the loading state when the id in the address changes.
   return <ShelterDetail key={shelterId} shelterId={shelterId} />
 }

@@ -3,11 +3,11 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import FollowUpsIndexPage from './FollowUpsIndexPage'
 import { ApiError } from '../../services/apiClient'
-import { getSession } from '../../config/roleSession'
+import { getSession } from '../../config/session'
 import { getVeterinarian } from '../../services/veterinarianService'
 
 vi.mock('../../services/veterinarianService', () => ({ getVeterinarian: vi.fn() }))
-vi.mock('../../config/roleSession', () => ({
+vi.mock('../../config/session', () => ({
   ROLES: {
     SHELTER_ADMIN: 'SHELTER_ADMIN',
     VETERINARIAN: 'VETERINARIAN',

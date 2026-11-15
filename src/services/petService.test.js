@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from './apiClient'
-import { addPetPhoto, createPet } from './petService'
+import { addPetPhoto, createPet, getPet, getPets} from './petService'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -63,5 +63,25 @@ describe('addPetPhoto', () => {
     expect(url).toBe('/api/pets/12/photos')
     expect(options.method).toBe('POST')
     expect(JSON.parse(options.body)).toEqual(photo)
+  })
+})
+
+describe('getPets and getPet', () => {
+  const okJson = (body) => ({ ok: true, status: 200, json: () => Promise.resolve(body) })
+
+  it('requests the list of pets', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okJson([{ id: 1 }]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    expect(await getPets()).toEqual([{ id: 1 }])
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/pets')
+  })
+
+  it('requests one pet and encodes its id', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okJson({ id: 7 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    expect(await getPet('7/../x')).toEqual({ id: 7 })
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/pets/7%2F..%2Fx')
   })
 })

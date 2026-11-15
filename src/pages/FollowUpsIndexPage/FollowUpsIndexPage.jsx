@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import FollowUpCard from '../../components/FollowUpCard/FollowUpCard'
 import ScreenState from '../../components/ScreenState/ScreenState'
-import { getSession, ROLES } from '../../config/roleSession'
+import { getSession, ROLES } from '../../config/session'
 import { getVeterinarian } from '../../services/veterinarianService'
 import { sortByDateDesc } from '../../utils/followUpDates'
 import styles from './FollowUpsIndexPage.module.css'

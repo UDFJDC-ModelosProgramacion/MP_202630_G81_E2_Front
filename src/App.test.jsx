@@ -113,16 +113,16 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'Patitas Felices' })).toBeInTheDocument()
   })
 
-  it('shows the medical event registration form on /medical-events/new', () => {
+  it('shows the medical event registration form on /medical-events/new', async () => {
     renderAt('/medical-events/new')
 
-    expect(screen.getByRole('heading', { name: 'Registrar evento médico' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Registrar evento médico' })).toBeInTheDocument()
   })
 
-  it('shows the medical history of a pet', () => {
+  it('shows the medical history of a pet', async () => {
     renderAt('/pets/1/medical-events')
 
-    expect(screen.getByRole('heading', { name: 'Historia médica' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Historia médica' })).toBeInTheDocument()
   })
 
   it('shows the detail of a medical event', async () => {

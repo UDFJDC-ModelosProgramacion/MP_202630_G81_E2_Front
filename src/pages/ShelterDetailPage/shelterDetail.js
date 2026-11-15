@@ -43,6 +43,9 @@ function toEvent(event) {
   }
 }
 
+// Only what HU03 shows is taken from the response (explicit list of fields). Adoptions, adopters,
+// veterinarians, returns and requests belong to other modules and roles, so they are dropped even
+// when the back-end sends them.
 export function toShelterDetail(response) {
   return {
     id: response.id,

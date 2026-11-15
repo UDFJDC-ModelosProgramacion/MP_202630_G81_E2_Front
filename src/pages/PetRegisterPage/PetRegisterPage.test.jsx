@@ -35,15 +35,19 @@ const combobox = (name) => screen.getByRole('combobox', { name })
 const arrivalEvent = (number = 1) =>
   within(screen.getByRole('group', { name: `Evento de llegada ${number}` }))
 
+// Los campos se llenan con fireEvent.change (un solo render por campo) en vez de user.type
+// (un render por tecla): el formulario es grande y en Jenkins/Windows cada tecla costaba mucho.
+const setValue = (element, value) => fireEvent.change(element, { target: { value } })
+
 async function fillRequiredFields(user, { name = 'Luna' } = {}) {
-  await user.type(textbox('Nombre'), name)
+  setValue(screen.getByLabelText(/^Nombre/), name)
   await user.selectOptions(combobox('Especie'), 'Perro')
-  await user.type(textbox('Raza'), 'Criollo')
-  await user.type(screen.getByRole('spinbutton', { name: 'Edad' }), '3')
+  setValue(screen.getByLabelText(/^Raza/), 'Criollo')
+  setValue(screen.getByLabelText(/^Edad/), '3')
   await user.selectOptions(combobox('Sexo'), 'Hembra')
   await user.selectOptions(combobox('Tamaño'), 'Mediano')
-  await user.type(textbox('Estado de salud'), 'Saludable')
-  fireEvent.change(screen.getByLabelText(/^Fecha de ingreso/), { target: { value: '2026-10-01' } })
+  setValue(screen.getByLabelText(/^Estado de salud/), 'Saludable')
+  setValue(screen.getByLabelText(/^Fecha de ingreso/), '2026-10-01')
   await user.selectOptions(combobox('Nivel de actividad'), 'Alto')
   await user.selectOptions(combobox('Espacio requerido'), 'Apartamento')
   await user.selectOptions(combobox('Compatible con niños'), 'Sí')
@@ -52,9 +56,9 @@ async function fillRequiredFields(user, { name = 'Luna' } = {}) {
 
 async function fillArrivalEvent(user, number = 1) {
   const event = arrivalEvent(number)
-  fireEvent.change(event.getByLabelText(/^Fecha/), { target: { value: '2026-10-01' } })
+  setValue(event.getByLabelText(/^Fecha/), '2026-10-01')
   await user.selectOptions(event.getByRole('combobox', { name: 'Tipo' }), 'Rescate')
-  await user.type(event.getByRole('textbox', { name: 'Descripción' }), 'Rescatada en la calle')
+  setValue(event.getByLabelText(/^Descripción/), 'Rescatada en la calle')
 }
 
 const submit = (user) => user.click(screen.getByRole('button', { name: 'Registrar' }))

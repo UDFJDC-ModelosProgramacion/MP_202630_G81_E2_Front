@@ -4,14 +4,14 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import FollowUpsPage from './FollowUpsPage'
 import { ApiError } from '../../services/apiClient'
-import { getSession } from '../../config/roleSession'
+import { getSession } from '../../config/session'
 import { deleteFollowUp, getFollowUps } from '../../services/followUpService'
 
 vi.mock('../../services/followUpService', () => ({
   getFollowUps: vi.fn(),
   deleteFollowUp: vi.fn(),
 }))
-vi.mock('../../config/roleSession', () => ({
+vi.mock('../../config/session', () => ({
   ROLES: {
     SHELTER_ADMIN: 'SHELTER_ADMIN',
     VETERINARIAN: 'VETERINARIAN',
@@ -57,11 +57,11 @@ describe('FollowUpsPage', () => {
     expect(getFollowUps).toHaveBeenCalledWith('1')
   })
 
-  it('offers the registration action to the veterinarian', () => {
+  it('offers the registration action to the veterinarian', async () => {
     vi.mocked(getFollowUps).mockResolvedValue([])
     renderPage()
 
-    expect(screen.getByRole('link', { name: 'Registrar seguimiento' })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: 'Registrar seguimiento' })).toHaveAttribute(
       'href',
       '/adoptions/1/followUps/new',
     )
