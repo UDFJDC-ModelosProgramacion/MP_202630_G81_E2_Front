@@ -17,6 +17,7 @@ import MedicalEventsPage from './pages/MedicalEventsPage/MedicalEventsPage'
 import NotificationsPage from './pages/NotificationsPage/NotificationsPage'
 import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
 import RegisterVeterinarianPage from './pages/RegisterVeterinarianPage/RegisterVeterinarianPage'
+import ScheduleNotificationPage from './pages/ScheduleNotificationPage/ScheduleNotificationPage'
 import ShelterDetailPage from './pages/ShelterDetailPage/ShelterDetailPage'
 import ShelterListPage from './pages/ShelterListPage/ShelterListPage'
 import ShelterRegisterPage from './pages/ShelterRegisterPage/ShelterRegisterPage'
@@ -80,6 +81,7 @@ export default function App() {
 
         {/* Otros */}
         <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/notifications/new" element={<ScheduleNotificationPage />} />
       </Route>
     </Routes>
   )

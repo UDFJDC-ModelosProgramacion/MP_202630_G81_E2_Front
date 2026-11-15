@@ -174,4 +174,10 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Mis notificaciones' })).toBeInTheDocument()
   })
+
+  it('shows the schedule form on /notifications/new', () => {
+    renderAt('/notifications/new')
+
+    expect(screen.getByRole('heading', { name: 'Programar notificación' })).toBeInTheDocument()
+  })
 })
