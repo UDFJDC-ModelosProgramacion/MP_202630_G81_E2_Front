@@ -5,7 +5,6 @@ import AdopterDetailPage from './pages/AdopterDetailPage/AdopterDetailPage'
 import AdopterEditPage from './pages/AdopterEditPage/AdopterEditPage'
 import AdopterRegisterPage from './pages/AdopterRegisterPage/AdopterRegisterPage'
 import AdoptersPage from './pages/AdoptersPage/AdoptersPage'
-import EditReviewPage from './pages/EditReviewPage/EditReviewPage'
 import FollowUpEditPage from './pages/FollowUpEditPage/FollowUpEditPage'
 import FollowUpRegisterPage from './pages/FollowUpRegisterPage/FollowUpRegisterPage'
 import FollowUpsIndexPage from './pages/FollowUpsIndexPage/FollowUpsIndexPage'
@@ -15,9 +14,8 @@ import MedicalEventEditPage from './pages/MedicalEventEditPage/MedicalEventEditP
 import MedicalEventHistoryPage from './pages/MedicalEventHistoryPage/MedicalEventHistoryPage'
 import MedicalEventRegisterPage from './pages/MedicalEventRegisterPage/MedicalEventRegisterPage'
 import MedicalEventsPage from './pages/MedicalEventsPage/MedicalEventsPage'
+import NotificationsPage from './pages/NotificationsPage/NotificationsPage'
 import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
-import PetReviewsPage from './pages/PetReviewsPage/PetReviewsPage'
-import PetVaccinationRecordPage from './pages/PetVaccinationRecordPage/PetVaccinationRecordPage'
 import RegisterVeterinarianPage from './pages/RegisterVeterinarianPage/RegisterVeterinarianPage'
 import ShelterDetailPage from './pages/ShelterDetailPage/ShelterDetailPage'
 import ShelterListPage from './pages/ShelterListPage/ShelterListPage'
@@ -27,7 +25,6 @@ import UserProfilePage from './pages/UserProfilePage/UserProfilePage'
 import UserRegisterPage from './pages/UserRegisterPage/UserRegisterPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
 import VeterinariansPage from './pages/VeterinariansPage/VeterinariansPage'
-import WriteReviewPage from './pages/WriteReviewPage/WriteReviewPage'
 
 export default function App() {
   return (
@@ -44,10 +41,6 @@ export default function App() {
         <Route path="/pets/new" element={<PetRegisterPage />} />
         <Route path="/pets/:petId" element={<PendingPage title="Perfil de mascota" />} />
         <Route path="/pets/:petId/medical-events" element={<MedicalEventHistoryPage />} />
-        <Route path="/pets/:petId/reviews" element={<PetReviewsPage />} />
-        <Route path="/pets/:petId/reviews/new" element={<WriteReviewPage />} />
-        <Route path="/pets/:petId/reviews/:reviewId/edit" element={<EditReviewPage />} />
-        <Route path="/pets/:petId/vaccination-record" element={<PetVaccinationRecordPage />} />
 
         {/* Refugios y eventos */}
         <Route path="/shelters" element={<ShelterListPage />} />
@@ -86,7 +79,7 @@ export default function App() {
         />
 
         {/* Otros */}
-        <Route path="/notifications" element={<PendingPage title="Notificaciones" />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
       </Route>
     </Routes>
   )
