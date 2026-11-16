@@ -193,5 +193,16 @@ export default function PetRegisterPage() {
       </section>
     )
   }
+  if (session.shelterId == null) {
+    return (
+      <section className={styles.page}>
+        <h1 className={styles.title}>Registre su Mascota</h1>
+        <ScreenState
+          state="error"
+          message="La sesión no incluye el refugio asociado. Solicite al administrador que actualice los datos de su cuenta."
+        />
+      </section>
+    )
+  }
   return <PetRegisterForm shelterId={session.shelterId} />
 }

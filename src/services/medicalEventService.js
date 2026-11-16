@@ -1,4 +1,4 @@
-import { api } from './apiClient'
+import { api, expectArray } from './apiClient'
 
 export function getMedicalEvents({ petId, type, date } = {}) {
   const params = new URLSearchParams()
@@ -6,7 +6,9 @@ export function getMedicalEvents({ petId, type, date } = {}) {
   if (type?.trim()) params.set('type', type.trim())
   if (date?.trim()) params.set('date', date.trim())
   const query = params.toString()
-  return api.get(query ? `/medicalEvents?${query}` : '/medicalEvents')
+  return api.get(query ? `/medicalEvents?${query}` : '/medicalEvents').then((data) =>
+    expectArray(data, 'la lista de eventos médicos'),
+  )
 }
 
 export function getMedicalEvent(medicalEventId) {

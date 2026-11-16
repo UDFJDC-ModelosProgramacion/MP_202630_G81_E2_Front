@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createAdopter, deleteAdopter, getAdopter, getAdopters, updateAdopter } from './adopterService'
+import { stubApiFetch } from '../test/mockApiFetch'
 
 const createdResponse = (body) => ({
   ok: true,
@@ -14,7 +15,7 @@ afterEach(() => {
 describe('createAdopter', () => {
   it('posts the adopter to /api/adopters and returns the created record', async () => {
     const fetchMock = vi.fn().mockResolvedValue(createdResponse({ id: 9 }))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     const adopter = await createAdopter({ firstName: 'María', nationalId: '1020304050' })
 
@@ -50,7 +51,7 @@ describe('createAdopter', () => {
 describe('getAdopters', () => {
   it('requests /api/adopters without query params when filters are blank', async () => {
     const fetchMock = vi.fn().mockResolvedValue(createdResponse([]))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     const adopters = await getAdopters({ nationalId: '  ', housingType: '', occupation: '' })
 
@@ -62,7 +63,7 @@ describe('getAdopters', () => {
 
   it('sends only the filters the backend accepts', async () => {
     const fetchMock = vi.fn().mockResolvedValue(createdResponse([]))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     await getAdopters({ nationalId: '1001', housingType: 'Casa', occupation: '' })
 
@@ -74,7 +75,7 @@ describe('getAdopters', () => {
 describe('getAdopter', () => {
   it('requests the detail of one adopter', async () => {
     const fetchMock = vi.fn().mockResolvedValue(createdResponse({ id: 7 }))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     const adopter = await getAdopter(7)
 
@@ -88,7 +89,7 @@ describe('getAdopter', () => {
 describe('updateAdopter', () => {
   it('sends a PUT with only the updatable fields', async () => {
     const fetchMock = vi.fn().mockResolvedValue(createdResponse({ id: 7, occupation: 'Arquitecta' }))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     const updated = await updateAdopter(7, { occupation: 'Arquitecta' })
 
@@ -116,7 +117,7 @@ describe('updateAdopter', () => {
 describe('deleteAdopter', () => {
   it('sends a DELETE and returns null on 204', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 })
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     const result = await deleteAdopter(7)
 

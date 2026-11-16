@@ -29,6 +29,28 @@ function toPet(pet) {
   }
 }
 
+function toInventoryPet(pet) {
+  return {
+    ...toPet(pet),
+    summary: [
+      text(pet.species),
+      text(pet.breed),
+      formatAge(pet.age),
+      text(pet.sex),
+      text(pet.size),
+    ].filter(Boolean).join(' · '),
+  }
+}
+
+export function toShelterInventory(response) {
+  return {
+    id: response.id,
+    name: text(response.name),
+    city: text(response.city),
+    pets: (response.pets ?? []).map(toInventoryPet),
+  }
+}
+
 function toEvent(event) {
   const [day, month = ''] = formatDay(event.date).split(' ')
   const when = [event.date ? formatDay(event.date) : '', eventTime(event)].filter(Boolean)

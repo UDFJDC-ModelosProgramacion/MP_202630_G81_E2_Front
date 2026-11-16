@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import ShelterDetailPage from './ShelterDetailPage'
 import { getSession } from '../../config/session'
@@ -183,6 +184,21 @@ describe('ShelterDetailPage', () => {
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('No se pudo cargar el refugio')
     expect(alert).toHaveTextContent('No se pudo conectar con el servidor')
+  })
+
+  it('retries a failed request and displays the shelter when it succeeds', async () => {
+    const user = userEvent.setup()
+    getShelter
+      .mockRejectedValueOnce(apiError('Servicio no disponible', 0))
+      .mockResolvedValueOnce(SHELTER)
+
+    renderAt()
+
+    const alert = await screen.findByRole('alert')
+    await user.click(within(alert).getByRole('button', { name: 'Reintentar' }))
+
+    expect(await screen.findByRole('heading', { level: 1, name: SHELTER.name })).toBeInTheDocument()
+    expect(getShelter).toHaveBeenCalledTimes(2)
   })
 
   it('shows the administrator of the shelter the actions to edit, delete, register a pet and create an event', async () => {

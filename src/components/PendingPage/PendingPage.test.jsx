@@ -4,16 +4,17 @@ import { MemoryRouter } from 'react-router-dom'
 import PendingPage from './PendingPage'
 
 describe('PendingPage', () => {
-  it('names the section, says it is not available and offers a way out', () => {
+  it('explains that the section is pending and offers useful destinations', () => {
     render(
       <MemoryRouter>
-        <PendingPage title="Perfil de mascota" />
+        <PendingPage title="Notificaciones" />
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('heading', { name: 'Perfil de mascota' })).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('todavía no está disponible')
-    expect(screen.getByRole('link', { name: 'Ir a la lista de refugios' })).toHaveAttribute(
+    expect(screen.getByRole('heading', { name: 'Notificaciones' })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Esta función aún no está disponible')
+    expect(screen.getByRole('link', { name: 'Explorar mascotas' })).toHaveAttribute('href', '/pets')
+    expect(screen.getByRole('link', { name: 'Explorar refugios' })).toHaveAttribute(
       'href',
       '/shelters',
     )

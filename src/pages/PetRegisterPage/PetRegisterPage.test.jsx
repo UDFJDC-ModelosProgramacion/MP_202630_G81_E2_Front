@@ -104,6 +104,17 @@ describe('PetRegisterPage', () => {
     expect(screen.queryByRole('button', { name: 'Registrar' })).not.toBeInTheDocument()
   })
 
+  it('does not submit a pet without the shelter attached to the authenticated session', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', shelterId: null })
+
+    renderPage()
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'La sesión no incluye el refugio asociado.',
+    )
+    expect(screen.queryByRole('button', { name: 'Registrar' })).not.toBeInTheDocument()
+  })
+
   it('validates on the client, focuses the first error and does not call the backend', async () => {
     const user = userEvent.setup({ delay: null })
     renderPage()

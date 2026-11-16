@@ -32,6 +32,7 @@ async function fillForm(user, overrides = {}) {
         firstName: 'Camila',
         lastName: 'Rojas',
         email: 'camila@refugio.com',
+        password: 'password123',
         phone: '300 123 4567',
         specialization: 'Cirugía',
         availability: 'Lunes a viernes',
@@ -40,6 +41,7 @@ async function fillForm(user, overrides = {}) {
     if (values.firstName) await user.type(screen.getByLabelText(/^Nombre/), values.firstName)
     if (values.lastName) await user.type(screen.getByLabelText(/^Apellido/), values.lastName)
     if (values.email) await user.type(screen.getByLabelText(/^Correo/), values.email)
+    if (values.password) await user.type(screen.getByLabelText(/^Contraseña/), values.password)
     if (values.phone) await user.type(screen.getByLabelText(/^Teléfono/), values.phone)
     if (values.specialization) {
         await user.selectOptions(screen.getByLabelText(/^Especialización/), values.specialization)
@@ -60,10 +62,11 @@ describe('RegisterVeterinarianPage', () => {
         renderPage()
 
         expect(screen.getByRole('heading', { name: 'Registre un veterinario' })).toBeInTheDocument()
-        for (const label of [/^Nombre/, /^Apellido/, /^Correo/, /^Teléfono/, /^Especialización/, /^Disponibilidad/]) {
+        for (const label of [/^Nombre/, /^Apellido/, /^Correo/, /^Contraseña/, /^Teléfono/, /^Especialización/, /^Disponibilidad/]) {
             expect(screen.getByLabelText(label)).toBeInTheDocument()
         }
-        expect(screen.getAllByText('*')).toHaveLength(6)
+        expect(screen.getAllByText('*')).toHaveLength(7)
+        expect(screen.getByLabelText(/^Contraseña/)).toHaveAttribute('type', 'password')
         expect(screen.getByText('*Campos obligatorios')).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Registrar' })).toBeEnabled()
         expect(screen.getByRole('link', { name: 'Cancelar' })).toHaveAttribute('href', '/veterinarians')
@@ -96,11 +99,23 @@ describe('RegisterVeterinarianPage', () => {
         expect(screen.getByText('El nombre es obligatorio.')).toBeInTheDocument()
         expect(screen.getByText('El apellido es obligatorio.')).toBeInTheDocument()
         expect(screen.getByText('El correo es obligatorio.')).toBeInTheDocument()
+        expect(screen.getByText('La contraseña es obligatoria.')).toBeInTheDocument()
         expect(screen.getByText('El teléfono es obligatorio.')).toBeInTheDocument()
         expect(screen.getByText('Selecciona una especialización.')).toBeInTheDocument()
         expect(screen.getByText('Selecciona una disponibilidad.')).toBeInTheDocument()
         expect(screen.getByLabelText(/^Nombre/)).toHaveAttribute('aria-invalid', 'true')
         expect(screen.getByLabelText(/^Nombre/)).toHaveAccessibleDescription('El nombre es obligatorio.')
+        expect(createVeterinarian).not.toHaveBeenCalled()
+    })
+
+    it('requires a password with at least eight characters', async () => {
+        const user = userEvent.setup({ delay: null })
+        renderPage()
+
+        await fillForm(user, { password: 'abc1234' })
+        await submit(user)
+
+        expect(screen.getByText('La contraseña debe tener al menos 8 caracteres.')).toBeInTheDocument()
         expect(createVeterinarian).not.toHaveBeenCalled()
     })
 
@@ -146,7 +161,11 @@ describe('RegisterVeterinarianPage', () => {
         createVeterinarian.mockResolvedValue({ id: 5 })
         renderPage()
 
-        await fillForm(user, { firstName: '  Camila ', phone: '300 123 4567 ' })
+        await fillForm(user, {
+            firstName: '  Camila ',
+            password: ' password123 ',
+            phone: '300 123 4567 ',
+        })
         await submit(user)
 
         expect(
@@ -157,6 +176,7 @@ describe('RegisterVeterinarianPage', () => {
             firstName: 'Camila',
             lastName: 'Rojas',
             email: 'camila@refugio.com',
+            password: ' password123 ',
             phone: '300 123 4567',
             specialization: 'Cirugía',
             availability: 'Lunes a viernes',

@@ -78,6 +78,11 @@ export default function AdoptersPage() {
     search(NO_FILTERS)
   }
 
+  function retry() {
+    setResult((current) => ({ ...current, status: 'loading' }))
+    search(filters)
+  }
+
   const { status, adopters, filtered, message } = result
 
   return (
@@ -137,7 +142,7 @@ export default function AdoptersPage() {
           </form>
 
           {status === 'loading' && <ScreenState state="loading" />}
-          {status === 'error' && <ScreenState state="error" message={message} />}
+          {status === 'error' && <ScreenState state="error" message={message} onRetry={retry} />}
           {status === 'ready' && adopters.length === 0 && (
             <>
               <ScreenState

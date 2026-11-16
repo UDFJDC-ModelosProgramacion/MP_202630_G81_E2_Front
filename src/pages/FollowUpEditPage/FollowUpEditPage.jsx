@@ -161,6 +161,7 @@ export default function FollowUpEditPage() {
   const { adoptionId, followUpId } = useParams()
   const session = getSession()
   const isVeterinarian = session.role === ROLES.VETERINARIAN
+  const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState({ status: 'loading', followUp: null, message: '' })
 
   useEffect(() => {
@@ -176,7 +177,7 @@ export default function FollowUpEditPage() {
     return () => {
       cancelled = true
     }
-  }, [adoptionId, followUpId, isVeterinarian, session.role, session.userId])
+  }, [adoptionId, followUpId, isVeterinarian, session.role, session.userId, attempt])
 
   if (!isVeterinarian) {
     return (
@@ -205,7 +206,11 @@ export default function FollowUpEditPage() {
     return (
       <section className={styles.page}>
         <h1 className={styles.title}>Editar seguimiento</h1>
-        <ScreenState state="error" message={message} />
+        <ScreenState
+          state="error"
+          message={message}
+          onRetry={() => setAttempt((value) => value + 1)}
+        />
       </section>
     )
   }

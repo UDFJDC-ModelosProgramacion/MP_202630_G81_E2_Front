@@ -1,17 +1,39 @@
-// The backend has no login yet, so the user and their role are simulated here
 export const ROLES = {
+  ADMIN: 'ADMIN',
   SHELTER_ADMIN: 'SHELTER_ADMIN',
   VETERINARIAN: 'VETERINARIAN',
   ADOPTER: 'ADOPTER',
   VISITOR: 'VISITOR',
 }
 
+const SIGNED_OUT_SESSION = Object.freeze({
+  userId: null,
+  email: '',
+  name: '',
+  role: ROLES.VISITOR,
+  shelterId: null,
+})
+
+let currentSession = SIGNED_OUT_SESSION
+
 export function getSession() {
-  return {
-    userId: Number(import.meta.env.VITE_USER_ID) || 1,
-    name: 'AdminUser',
-    // VITE_ROLE permite probar a mano otros roles (ADOPTER, VETERINARIAN, VISITOR)
-    role: import.meta.env.VITE_ROLE || ROLES.SHELTER_ADMIN,
-    shelterId: Number(import.meta.env.VITE_SHELTER_ID) || 1,
+  return currentSession
+}
+
+export function setSession(user) {
+  if (!user) {
+    currentSession = SIGNED_OUT_SESSION
+    return currentSession
   }
+
+  const email = user.email ?? ''
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name || email
+  currentSession = {
+    userId: user.id ?? user.userId ?? null,
+    email,
+    name,
+    role: user.role ?? ROLES.VISITOR,
+    shelterId: user.shelterId ?? user.shelter?.id ?? null,
+  }
+  return currentSession
 }

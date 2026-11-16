@@ -4,10 +4,11 @@ import {
     deleteVaccinationRecord,
     getVaccinationRecordByPet,
 } from './vaccinationRecordService'
+import { stubApiFetch } from '../test/mockApiFetch'
 
 function mockFetch(response) {
     const fetchMock = vi.fn().mockResolvedValue(response)
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
     return fetchMock
 }
 
