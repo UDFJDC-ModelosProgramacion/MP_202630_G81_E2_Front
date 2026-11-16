@@ -113,8 +113,8 @@ function ShelterRegisterForm({ session }) {
             <TextField {...field('location', 'Dirección')} placeholder="Carrera 15 # 85 - 32" />
           </div>
           <p className={styles.notice}>
-            <strong>Aviso importante:</strong> al registrar el refugio, usted ({session.name}) queda
-            como su administrador.
+            <strong>Aviso importante:</strong> usted ({session.name}) quedará asociado como usuario
+            responsable del refugio.
           </p>
         </FormSection>
 
@@ -122,7 +122,7 @@ function ShelterRegisterForm({ session }) {
         <FormActions
           submitLabel="Registrar"
           submitting={submitting}
-          onCancel={() => navigate('/')}
+          onCancel={() => navigate('/shelters')}
         />
       </form>
 
@@ -134,7 +134,7 @@ function ShelterRegisterForm({ session }) {
           hint={ERROR_HINT}
           actionLabel="Modificar datos"
           onClose={closeErrorDialog}
-          onCancel={() => navigate('/')}
+          onCancel={() => navigate('/shelters')}
         />
       )}
 
@@ -145,7 +145,7 @@ function ShelterRegisterForm({ session }) {
           details={[
             { label: 'NIT', value: created.nit },
             { label: 'Ciudad', value: created.city },
-            { label: 'Administrador asignado', value: session.name },
+            { label: 'Usuario responsable', value: session.name },
           ]}
           actionLabel="Ir al detalle del refugio"
           closeLabel="Registrar otro refugio"
@@ -159,13 +159,13 @@ function ShelterRegisterForm({ session }) {
 
 export default function ShelterRegisterPage() {
   const session = getSession()
-  if (session.role !== ROLES.SHELTER_ADMIN) {
+  if (session.role !== ROLES.ADMIN) {
     return (
       <section className={styles.page}>
         <h1 className={styles.title}>Registre su Refugio</h1>
         <ScreenState
           state="error"
-          message="Solo el administrador de un refugio puede registrar refugios."
+          message="Solo un administrador general puede registrar refugios."
         />
       </section>
     )

@@ -6,11 +6,13 @@ import PetRegisterPage from './PetRegisterPage'
 import { getSession } from '../../config/session'
 import { ApiError } from '../../services/apiClient'
 import { addPetPhoto, createPet } from '../../services/petService'
+import { getShelters } from '../../services/shelterService'
 import { todayISO } from '../../utils/dates'
 
 vi.mock('../../services/petService', () => ({ createPet: vi.fn(), addPetPhoto: vi.fn() }))
+vi.mock('../../services/shelterService', () => ({ getShelters: vi.fn() }))
 vi.mock('../../config/session', () => ({
-  ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
+  ROLES: { ADMIN: 'ADMIN', SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
 }))
 
@@ -35,15 +37,19 @@ const combobox = (name) => screen.getByRole('combobox', { name })
 const arrivalEvent = (number = 1) =>
   within(screen.getByRole('group', { name: `Evento de llegada ${number}` }))
 
+// Los campos se llenan con fireEvent.change (un solo render por campo) en vez de user.type
+// (un render por tecla): el formulario es grande y en Jenkins/Windows cada tecla costaba mucho.
+const setValue = (element, value) => fireEvent.change(element, { target: { value } })
+
 async function fillRequiredFields(user, { name = 'Luna' } = {}) {
-  await user.type(textbox('Nombre'), name)
+  setValue(screen.getByLabelText(/^Nombre/), name)
   await user.selectOptions(combobox('Especie'), 'Perro')
-  await user.type(textbox('Raza'), 'Criollo')
-  await user.type(screen.getByRole('spinbutton', { name: 'Edad' }), '3')
+  setValue(screen.getByLabelText(/^Raza/), 'Criollo')
+  setValue(screen.getByLabelText(/^Edad/), '3')
   await user.selectOptions(combobox('Sexo'), 'Hembra')
   await user.selectOptions(combobox('Tamaño'), 'Mediano')
-  await user.type(textbox('Estado de salud'), 'Saludable')
-  fireEvent.change(screen.getByLabelText(/^Fecha de ingreso/), { target: { value: '2026-10-01' } })
+  setValue(screen.getByLabelText(/^Estado de salud/), 'Saludable')
+  setValue(screen.getByLabelText(/^Fecha de ingreso/), '2026-10-01')
   await user.selectOptions(combobox('Nivel de actividad'), 'Alto')
   await user.selectOptions(combobox('Espacio requerido'), 'Apartamento')
   await user.selectOptions(combobox('Compatible con niños'), 'Sí')
@@ -52,9 +58,9 @@ async function fillRequiredFields(user, { name = 'Luna' } = {}) {
 
 async function fillArrivalEvent(user, number = 1) {
   const event = arrivalEvent(number)
-  fireEvent.change(event.getByLabelText(/^Fecha/), { target: { value: '2026-10-01' } })
+  setValue(event.getByLabelText(/^Fecha/), '2026-10-01')
   await user.selectOptions(event.getByRole('combobox', { name: 'Tipo' }), 'Rescate')
-  await user.type(event.getByRole('textbox', { name: 'Descripción' }), 'Rescatada en la calle')
+  setValue(event.getByLabelText(/^Descripción/), 'Rescatada en la calle')
 }
 
 const submit = (user) => user.click(screen.getByRole('button', { name: 'Registrar' }))
@@ -62,7 +68,8 @@ const submit = (user) => user.click(screen.getByRole('button', { name: 'Registra
 describe('PetRegisterPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', shelterId: 3 })
+    getSession.mockReturnValue({ role: 'ADMIN', shelterId: 3 })
+    getShelters.mockResolvedValue([{ id: 3, name: 'Patitas', city: 'Bogotá' }])
   })
 
   it('shows the form with its mandatory fields marked', () => {
@@ -89,19 +96,36 @@ describe('PetRegisterPage', () => {
     expect(screen.getByLabelText(/^Fecha de ingreso/)).toHaveAttribute('max', todayISO())
   })
 
-  it('explains that only the shelter administrator can register pets', () => {
-    getSession.mockReturnValue({ role: 'ADOPTER', shelterId: null })
+  it('explains that only a global administrator can register pets', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', shelterId: 3 })
 
     renderPage()
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Solo el administrador de un refugio puede registrar mascotas.',
+      'Solo un administrador general puede registrar mascotas.',
     )
     expect(screen.queryByRole('button', { name: 'Registrar' })).not.toBeInTheDocument()
   })
 
+  it('requires an administrator to select a shelter when none is associated with the session', async () => {
+    const user = userEvent.setup({ delay: null })
+    getSession.mockReturnValue({ role: 'ADMIN', shelterId: null })
+
+    renderPage()
+    await screen.findByRole('combobox', { name: 'Refugio' })
+    await fillRequiredFields(user)
+    await fillArrivalEvent(user)
+    await submit(user)
+
+    expect(createPet).not.toHaveBeenCalled()
+    expect(screen.getByRole('combobox', { name: 'Refugio' })).toHaveAccessibleDescription(
+      'Seleccione el refugio donde quedará registrada la mascota.',
+    )
+    expect(screen.getByRole('combobox', { name: 'Refugio' })).toHaveFocus()
+  })
+
   it('validates on the client, focuses the first error and does not call the backend', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
 
     await submit(user)
@@ -115,7 +139,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('focuses the first invalid field of the arrival event when the pet is complete', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
     await fillRequiredFields(user)
 
@@ -126,7 +150,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('rejects a future admission date', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
     await fillRequiredFields(user)
     await fillArrivalEvent(user)
@@ -141,7 +165,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('clears the error of a field as soon as it is corrected', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
     await submit(user)
 
@@ -150,10 +174,12 @@ describe('PetRegisterPage', () => {
     expect(textbox('Nombre')).not.toHaveAccessibleDescription()
   })
 
-  it('registers the pet in the administrator shelter', async () => {
-    const user = userEvent.setup()
+  it('registers the pet in the selected shelter', async () => {
+    const user = userEvent.setup({ delay: null })
+    getSession.mockReturnValue({ role: 'ADMIN', shelterId: null })
     createPet.mockResolvedValue({ id: 12 })
     renderPage()
+    await user.selectOptions(await screen.findByRole('combobox', { name: 'Refugio' }), '3')
     await fillRequiredFields(user)
     await fillArrivalEvent(user)
 
@@ -177,7 +203,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('sends the optional fields when they are filled', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockResolvedValue({ id: 1 })
     renderPage()
     await fillRequiredFields(user)
@@ -197,7 +223,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('shows a loading state and blocks the button while the pet is being created', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockReturnValue(new Promise(() => {}))
     renderPage()
     await fillRequiredFields(user)
@@ -210,7 +236,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('lets the user add and remove arrival events, keeping at least one', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
 
     expect(screen.queryByRole('button', { name: /^Quitar evento/ })).not.toBeInTheDocument()
@@ -224,7 +250,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('sends every arrival event', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockResolvedValue({ id: 5 })
     renderPage()
     await fillRequiredFields(user)
@@ -239,7 +265,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('confirms the registration with a summary of the pet', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockResolvedValue({ id: 12 })
     renderPage()
     await fillRequiredFields(user)
@@ -249,14 +275,14 @@ describe('PetRegisterPage', () => {
 
     const dialog = await screen.findByRole('dialog', { name: '¡Mascota registrada con éxito!' })
     expect(dialog).toHaveTextContent('"Luna" ha sido registrada satisfactoriamente')
-    expect(dialog).toHaveTextContent('Código HTTP 201')
+    expect(dialog).toHaveTextContent('Registro exitoso')
     expect(dialog).toHaveTextContent('Perro')
     expect(dialog).toHaveTextContent('Criollo')
     expect(dialog).not.toHaveTextContent('la foto no se pudo guardar')
   })
 
   it('opens the profile of the new pet from the confirmation', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockResolvedValue({ id: 12 })
     renderPage()
     await fillRequiredFields(user)
@@ -269,7 +295,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('lets the user register another pet with an empty form', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockResolvedValue({ id: 12 })
     renderPage()
     await fillRequiredFields(user)
@@ -286,7 +312,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('shows the backend message next to its field and keeps what the user typed', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockRejectedValue(new Error('La fecha de ingreso no puede ser una fecha futura'))
     renderPage()
     await fillRequiredFields(user)
@@ -313,7 +339,7 @@ describe('PetRegisterPage', () => {
     'No se encontró el refugio con el id indicado',
     'Ya existe una mascota con el mismo refugio, nombre, especie y fecha de ingreso',
   ])('shows "%s" in the error dialog and keeps the form', async (message) => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockRejectedValue(new ApiError(message, 412))
     renderPage()
     await fillRequiredFields(user)
@@ -323,12 +349,12 @@ describe('PetRegisterPage', () => {
 
     const dialog = await screen.findByRole('alertdialog', { name: 'Error al registrar la mascota' })
     expect(dialog).toHaveTextContent(message)
-    expect(dialog).toHaveTextContent('Error 412')
+    expect(dialog).toHaveTextContent('Conflicto de registro')
     expect(textbox('Nombre')).toHaveValue('Luna')
   })
 
   it('lets the user close the error dialog and fix the data', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockRejectedValue(new ApiError('La mascota debe estar asociada a un refugio existente', 412))
     renderPage()
     await fillRequiredFields(user)
@@ -342,7 +368,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('lets the user leave from the error dialog', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createPet.mockRejectedValue(new Error('La mascota debe estar asociada a un refugio existente'))
     renderPage()
     await fillRequiredFields(user)
@@ -355,7 +381,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('shows the message of the arrival events in their own section', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     const message =
       'La mascota debe registrarse con al menos un evento de llegada que describa su ingreso al refugio'
     createPet.mockRejectedValue(new Error(message))
@@ -382,7 +408,7 @@ describe('PetRegisterPage', () => {
     }
 
     it('is optional: a pet without photo does not call the photos endpoint', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
       createPet.mockResolvedValue({ id: 7 })
       renderPage()
       expect(photoUrlField()).toHaveAttribute('aria-required', 'false')
@@ -396,7 +422,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('previews the photo and picks its format from the link', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
       renderPage()
 
       await user.type(photoUrlField(), PHOTO_URL)
@@ -409,7 +435,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('says so when the preview cannot be loaded', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
       renderPage()
       await user.type(photoUrlField(), PHOTO_URL)
 
@@ -420,7 +446,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('saves the photo of the created pet', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
       createPet.mockResolvedValue({ id: 12 })
       addPetPhoto.mockResolvedValue({ id: 1 })
 
@@ -436,7 +462,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('does not create the pet when the link is not valid and focuses it', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
 
       await registerWithPhoto(user, 'luna.png')
 
@@ -448,7 +474,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('asks for the format when it cannot be read from the link', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
 
       await registerWithPhoto(user, 'https://fotos.example.com/luna')
 
@@ -457,7 +483,7 @@ describe('PetRegisterPage', () => {
     })
 
     it('keeps the registered pet when only the photo fails and tells the user', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
       createPet.mockResolvedValue({ id: 12 })
       addPetPhoto.mockRejectedValue(new Error('Photo format is not valid'))
 
@@ -472,7 +498,7 @@ describe('PetRegisterPage', () => {
   })
 
   it('lets the user cancel and go back to the pets', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
 
     await user.click(screen.getByRole('button', { name: 'Cancelar' }))

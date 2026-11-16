@@ -4,11 +4,16 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import RegisterVeterinarianPage from './RegisterVeterinarianPage'
 import { createVeterinarian } from '../../services/veterinarianService'
+import { getSession } from '../../config/session'
 
 vi.mock('../../services/veterinarianService', () => ({
     getVeterinarians: vi.fn(),
     getVeterinarian: vi.fn(),
     createVeterinarian: vi.fn(),
+}))
+vi.mock('../../config/session', () => ({
+    ROLES: { ADMIN: 'ADMIN', SHELTER_ADMIN: 'SHELTER_ADMIN' },
+    getSession: vi.fn(),
 }))
 
 function VeterinariansStub() {
@@ -32,6 +37,7 @@ async function fillForm(user, overrides = {}) {
         firstName: 'Camila',
         lastName: 'Rojas',
         email: 'camila@refugio.com',
+        password: 'password123',
         phone: '300 123 4567',
         specialization: 'Cirugía',
         availability: 'Lunes a viernes',
@@ -40,6 +46,7 @@ async function fillForm(user, overrides = {}) {
     if (values.firstName) await user.type(screen.getByLabelText(/^Nombre/), values.firstName)
     if (values.lastName) await user.type(screen.getByLabelText(/^Apellido/), values.lastName)
     if (values.email) await user.type(screen.getByLabelText(/^Correo/), values.email)
+    if (values.password) await user.type(screen.getByLabelText(/^Contraseña/), values.password)
     if (values.phone) await user.type(screen.getByLabelText(/^Teléfono/), values.phone)
     if (values.specialization) {
         await user.selectOptions(screen.getByLabelText(/^Especialización/), values.specialization)
@@ -54,16 +61,30 @@ const submit = (user) => user.click(screen.getByRole('button', { name: 'Registra
 describe('RegisterVeterinarianPage', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        getSession.mockReturnValue({ role: 'ADMIN' })
+    })
+
+    it('does not expose the veterinarian form to non-admin roles', () => {
+        getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
+
+        renderPage()
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Solo un administrador general puede registrar veterinarios.',
+        )
+        expect(screen.queryByRole('form', { name: 'Registro de veterinario' })).not.toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: 'Registrar' })).not.toBeInTheDocument()
     })
 
     it('shows the registration form with every field marked as required', () => {
         renderPage()
 
         expect(screen.getByRole('heading', { name: 'Registre un veterinario' })).toBeInTheDocument()
-        for (const label of [/^Nombre/, /^Apellido/, /^Correo/, /^Teléfono/, /^Especialización/, /^Disponibilidad/]) {
+        for (const label of [/^Nombre/, /^Apellido/, /^Correo/, /^Contraseña/, /^Teléfono/, /^Especialización/, /^Disponibilidad/]) {
             expect(screen.getByLabelText(label)).toBeInTheDocument()
         }
-        expect(screen.getAllByText('*')).toHaveLength(6)
+        expect(screen.getAllByText('*')).toHaveLength(7)
+        expect(screen.getByLabelText(/^Contraseña/)).toHaveAttribute('type', 'password')
         expect(screen.getByText('*Campos obligatorios')).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Registrar' })).toBeEnabled()
         expect(screen.getByRole('link', { name: 'Cancelar' })).toHaveAttribute('href', '/veterinarians')
@@ -88,7 +109,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('shows one message per missing field and does not call the backend', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         renderPage()
 
         await submit(user)
@@ -96,6 +117,7 @@ describe('RegisterVeterinarianPage', () => {
         expect(screen.getByText('El nombre es obligatorio.')).toBeInTheDocument()
         expect(screen.getByText('El apellido es obligatorio.')).toBeInTheDocument()
         expect(screen.getByText('El correo es obligatorio.')).toBeInTheDocument()
+        expect(screen.getByText('La contraseña es obligatoria.')).toBeInTheDocument()
         expect(screen.getByText('El teléfono es obligatorio.')).toBeInTheDocument()
         expect(screen.getByText('Selecciona una especialización.')).toBeInTheDocument()
         expect(screen.getByText('Selecciona una disponibilidad.')).toBeInTheDocument()
@@ -104,8 +126,19 @@ describe('RegisterVeterinarianPage', () => {
         expect(createVeterinarian).not.toHaveBeenCalled()
     })
 
+    it('requires a password with at least eight characters', async () => {
+        const user = userEvent.setup({ delay: null })
+        renderPage()
+
+        await fillForm(user, { password: 'abc1234' })
+        await submit(user)
+
+        expect(screen.getByText('La contraseña debe tener al menos 8 caracteres.')).toBeInTheDocument()
+        expect(createVeterinarian).not.toHaveBeenCalled()
+    })
+
     it('reports only the field that is missing', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         renderPage()
 
         await fillForm(user, { lastName: '' })
@@ -118,7 +151,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('rejects an invalid e-mail and an invalid phone', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         renderPage()
 
         await fillForm(user, { email: 'camila-sin-arroba', phone: '123' })
@@ -130,7 +163,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('clears the message of a field as soon as the user edits it', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         renderPage()
         await submit(user)
         expect(screen.getByText('El nombre es obligatorio.')).toBeInTheDocument()
@@ -142,11 +175,15 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('registers the veterinarian and goes back to the list with a confirmation', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         createVeterinarian.mockResolvedValue({ id: 5 })
         renderPage()
 
-        await fillForm(user, { firstName: '  Camila ', phone: '300 123 4567 ' })
+        await fillForm(user, {
+            firstName: '  Camila ',
+            password: ' password123 ',
+            phone: '300 123 4567 ',
+        })
         await submit(user)
 
         expect(
@@ -157,6 +194,7 @@ describe('RegisterVeterinarianPage', () => {
             firstName: 'Camila',
             lastName: 'Rojas',
             email: 'camila@refugio.com',
+            password: ' password123 ',
             phone: '300 123 4567',
             specialization: 'Cirugía',
             availability: 'Lunes a viernes',
@@ -164,7 +202,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('disables the button while the veterinarian is being registered', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         let finish
         createVeterinarian.mockReturnValue(
             new Promise((resolve) => {
@@ -184,7 +222,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('shows the backend message and keeps what the user typed when the e-mail is taken', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         createVeterinarian.mockRejectedValue(
             new Error('Two veterinarians cannot be associated with the same user; this user already exists'),
         )
@@ -203,7 +241,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('shows the shelter error sent by the backend', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         createVeterinarian.mockRejectedValue(new Error('The shelter must be an existing shelter'))
         renderPage()
 
@@ -214,7 +252,7 @@ describe('RegisterVeterinarianPage', () => {
     })
 
     it('removes the previous backend error when the form is sent again', async () => {
-        const user = userEvent.setup()
+        const user = userEvent.setup({ delay: null })
         createVeterinarian
             .mockRejectedValueOnce(new Error('No se pudo conectar con el servidor.'))
             .mockResolvedValueOnce({ id: 5 })

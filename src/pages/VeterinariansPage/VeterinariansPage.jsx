@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
+import { getSession, ROLES } from '../../config/session'
 import { getVeterinarians } from '../../services/veterinarianService'
 import styles from './VeterinariansPage.module.css'
 
@@ -18,6 +19,7 @@ const initials = ({ firstName = '', lastName = '' }) =>
 export default function VeterinariansPage() {
   const { state } = useLocation()
   const registered = state?.registered
+  const isAdmin = getSession().role === ROLES.ADMIN
   const [filters, setFilters] = useState(NO_FILTERS)
   const [options, setOptions] = useState({ specializations: [], availabilities: [] })
   const [result, setResult] = useState({
@@ -57,7 +59,7 @@ export default function VeterinariansPage() {
   }, [])
 
   useEffect(() => {
-    search(NO_FILTERS).then((veterinarians) => {
+    void search(NO_FILTERS).then((veterinarians) => {
       if (veterinarians) {
         setOptions({
           specializations: distinct(veterinarians.map((v) => v.specialization)),
@@ -75,7 +77,12 @@ export default function VeterinariansPage() {
   function handleSubmit(event) {
     event.preventDefault()
     setResult((current) => ({ ...current, status: 'loading' }))
-    search(filters)
+    void search(filters)
+  }
+
+  function retry() {
+    setResult((current) => ({ ...current, status: 'loading' }))
+    void search(filters)
   }
 
   const { status, veterinarians, filtered, message } = result
@@ -90,11 +97,13 @@ export default function VeterinariansPage() {
         </p>
       )}
 
-      <div className={styles.toolbar}>
-        <Link to="/veterinarians/new" className={styles.register}>
-          Registrar veterinario
-        </Link>
-      </div>
+      {isAdmin && (
+        <div className={styles.toolbar}>
+          <Link to="/veterinarians/new" className={styles.register}>
+            Registrar veterinario
+          </Link>
+        </div>
+      )}
 
       <form className={styles.filters} onSubmit={handleSubmit} aria-label="Filtros de veterinarios">
         <div className={styles.field}>
@@ -137,7 +146,7 @@ export default function VeterinariansPage() {
       </form>
 
       {status === 'loading' && <ScreenState state="loading" />}
-      {status === 'error' && <ScreenState state="error" message={message} />}
+      {status === 'error' && <ScreenState state="error" message={message} onRetry={retry} />}
       {status === 'ready' && veterinarians.length === 0 && (
         <ScreenState
           state="empty"

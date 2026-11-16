@@ -17,7 +17,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 8. [Project Structure](#project-structure)
 9. [Application Routes](#application-routes)
 10. [Back-end API Used](#back-end-api-used)
-11. [Simulated User and Role](#simulated-user-and-role)
+11. [Authentication](#authentication)
 12. [User Stories](#user-stories)
 13. [Reusable Components](#reusable-components)
 14. [Testing](#testing)
@@ -48,11 +48,13 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 
 ## Features at a Glance
 
+- **Home:** adoption landing page for regular users and a dedicated management dashboard for global administrators.
 - **Veterinarians:** list with filters (specialization / availability), profile with follow-ups and medical events, and registration.
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
-- **Role-based UI:** shelter-administrator-only options, using a simulated session until the back-end has authentication.
-- **Quality:** 20 test files / 204 tests, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
+- **Role-based UI:** account-aware navigation and administrative options backed by the authenticated server session.
+- **Navigation:** responsive, role-specific links and registration actions keep each account focused on usable pages; shared breadcrumbs appear on every route.
+- **Quality:** Vitest/React Testing Library, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
 
@@ -82,7 +84,7 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 
 6. Open the URL displayed by Vite (usually `http://localhost:5173`).
 
-> If `VITE_API_BASE_URL` is **not** defined, requests to `/api` are proxied by Vite to `http://localhost:8080` (see `vite.config.js`).
+> If `VITE_API_BASE_URL` is **not** defined, requests to `/api` are proxied by Vite to `http://localhost:8999` (see `vite.config.js`).
 
 ## Environment Variables
 
@@ -90,11 +92,9 @@ Variables are read from the local `.env` file. **Do not commit secrets** to it.
 
 | Variable | Purpose | Default Value |
 |---|---|---|
-| `VITE_API_BASE_URL` | Full API URL, e.g. `http://localhost:8999/api` if the back-end runs on port 8999 | `/api` (proxied to `localhost:8080`) |
-| `VITE_SHELTER_ID` | ID of the shelter assigned to the simulated administrator. **It must exist in the back-end.** | `1` |
-| `VITE_USER_ID` | ID of the simulated user (sent as the shelter's responsible user) | `1` |
+| `VITE_API_BASE_URL` | Full API URL, e.g. `http://localhost:8999/api` if the back-end runs on port 8999 | `/api` (proxied to `localhost:8999`) |
 
-Automated tests ignore these variables (see `test.env` in `vite.config.js`), so they pass regardless of your `.env`.
+The session is authenticated by the back-end. Do not configure user IDs, roles, or credentials in `VITE_*` variables; only the API base URL belongs in frontend configuration. Automated tests override that URL in `vite.config.js`.
 
 ## Scripts
 
@@ -126,6 +126,7 @@ Automated tests ignore these variables (see `test.env` in `vite.config.js`), so 
     ├── constants/              # Option lists (species, cities, specializations, ...)
     ├── pages/                  # One folder per screen
     │   ├── PetRegisterPage/
+    │   ├── HomePage/
     │   ├── RegisterVeterinarianPage/
     │   ├── ShelterRegisterPage/
     │   ├── VeterinarianProfilePage/
@@ -140,19 +141,35 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 
 | Route | Screen | Role | Status |
 |---|---|---|---|
-| `/` | Redirects to `/veterinarians` | Any | ✅ |
+| `/` | Home with direct paths to the main platform sections | Any | ✅ Implemented |
 | `/veterinarians` | Veterinarian list with filters (HU70) | Any | ✅ Implemented |
-| `/veterinarians/new` | Register a veterinarian | Any | ✅ Implemented |
+| `/veterinarians/new` | Register a veterinarian | `ADMIN` | ✅ Implemented |
 | `/veterinarians/:veterinarianId` | Veterinarian profile (HU70) | Any | ✅ Implemented |
-| `/shelters/new` | Register a shelter (HU01) | Shelter admin | ✅ Implemented |
-| `/shelters/:shelterId` | Shelter detail | Any | 🚧 Placeholder |
-| `/pets/new` | Register a pet (HU06) | Shelter admin | ✅ Implemented |
-| `/pets` | Pet search (HU07) | Any | 🚧 Placeholder |
-| `/pets/:petId` | Pet profile (HU08) | Any | 🚧 Placeholder |
+| `/shelters` | Shelter list with city and address filters (HU02) | Any | ✅ Implemented |
+| `/shelters/new` | Register a shelter (HU01) | `ADMIN` | ✅ Implemented |
+| `/shelters/:shelterId` | Shelter detail with its pets and events (HU03) | Any (actions: shelter admin) | ✅ Implemented |
+| `/shelters/:shelterId/edit` | Edit a shelter (HU04) | Shelter admin | 🚧 Placeholder |
+| `/shelters/:shelterId/events/new` | Create an event (HU12) | Shelter admin | 🚧 Placeholder |
+| `/events/:eventId` | Event detail (HU15) | Any | 🚧 Placeholder |
+| `/pets/inventory` | View and manage the current shelter's pet inventory (HU09, HU11) | Shelter admin | ⚠️ View/delete implemented; editing awaits the update contract |
+| `/pets/new` | Register a pet (HU06) | `ADMIN` | ✅ Implemented |
+| `/medical-events` | Medical events list with filters (HU28) | Any | ✅ Implemented |
+| `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
+| `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
+| `/medical-events/:medicalEventId` | Medical event detail (HU25) | Any | ✅ Implemented |
+| `/medical-events/:medicalEventId/edit` | Edit a medical event (HU26) | Shelter staff | ✅ Implemented |
+| `/adopters` | Filter and browse adopters | `ADMIN` | ✅ Implemented |
+| `/pets` | Pet catalog with text and attribute filters (HU07) | Any | ✅ Implemented |
+| `/pets/:petId` | Pet profile and links to shelter, medical history, reviews, and vaccination record (HU08) | Any | ✅ Implemented |
+| `/pets/:petId/reviews` | Reviews of a pet (HU64) | Any (adopter sees "Mis reseñas") | ✅ Implemented |
+| `/pets/:petId/reviews/new` | Submit a review (HU65) | Adopter | ✅ Implemented |
+| `/pets/:petId/reviews/:reviewId/edit` | Edit or delete my review (HU66) | Adopter (author) | ✅ Implemented |
+| `/pets/:petId/vaccination-record` | Vaccination record of a pet (HU67, HU69) | Any (delete: shelter admin) | ✅ Implemented |
+| `/vaccination-records/new` | Create a vaccination record (HU68) | Shelter admin | ✅ Implemented |
 
 ## Back-end API Used
 
-All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BASE_URL` (or `/api`), sends JSON, and converts failures into an `ApiError` (message taken from `apierror.message` in the response body, or a generic connection error).
+All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BASE_URL` (or `/api`), includes the server session cookie, adds a CSRF header to mutations, and converts failures into an `ApiError` (message taken from `apierror.message` in the response body, or a generic connection error).
 
 | Method | Endpoint | Used by | Service |
 |---|---|---|---|
@@ -162,26 +179,121 @@ All requests go through `src/services/apiClient.js`, which prepends `VITE_API_BA
 | `POST` | `/shelters` | HU01 | `createShelter` |
 | `POST` | `/pets` | HU06 | `createPet` |
 | `POST` | `/pets/{petId}/photos` | HU06 (pet photos) | `addPetPhoto` |
+| `GET` | `/pets` | HU07 (pet catalog), HU28 (filter options) | `getPets` |
+| `GET` | `/shelters/{id}` | HU03 (shelter detail), HU09 (pet inventory) | `getShelter` |
+| `DELETE` | `/pets/{id}` | HU11 (delete a pet; 204 on success, 404/412 on failure) | `deletePet` |
+| `GET` | `/pets/{id}` | HU08 (profile), HU24 (pet header) | `getPet` |
+| `GET` | `/medicalEvents?petId=` | HU24 (medical history) | `getMedicalEvents` |
+| `GET` | `/medicalEvents/{id}` | HU25 (event detail) | `getMedicalEvent` |
+| `PUT` | `/medicalEvents/{id}` | HU26 (edit event) | `updateMedicalEvent` |
+| `DELETE` | `/medicalEvents/{id}` | HU27 (delete event) | `deleteMedicalEvent` |
+| `GET` | `/medicalEvents?petId=&type=&date=` | HU28 (list with filters) | `getMedicalEvents` |
+| `GET` | `/pets` | HU28 (pet filter options) | `getPets` |
+| `POST` | `/medicalEvents` | HU23 (register event) | `createMedicalEvent` |
+| `GET` | `/reviews?petId=&adopterId=` | HU64 (list, "Mis reseñas") | `getReviews` |
+| `GET` | `/pets/{id}` | HU64 (pet header) | `getPet` |
+| `POST` | `/pets/{petId}/reviews` | HU65 (submit review) | `createReview` |
+| `GET` | `/pets/{petId}/reviews/{id}` | HU66 (load my review) | `getReview` |
+| `PUT` | `/pets/{petId}/reviews/{id}?adopterId=` | HU66 (edit review) | `updateReview` |
+| `DELETE` | `/pets/{petId}/reviews/{id}?adopterId=` | HU66 (delete review) | `deleteReview` |
+| `GET` | `/vaccinationRecords/pet/{petId}` | HU67 (view record) | `getVaccinationRecordByPet` |
+| `DELETE` | `/vaccinationRecords/{id}` | HU69 (delete record) | `deleteVaccinationRecord` |
+| `POST` | `/vaccinationRecords` | HU68 (create record) | `createVaccinationRecord` |
+| `GET` | `/pets` | HU68 (pets without record) | `getPets` |
 
-## Simulated User and Role
+## Authentication
 
-The back-end does not implement authentication yet, so the user and role are simulated in `src/config/session.js`. The default user is **AdminUser**, a shelter administrator, whose shelter and ID come from `VITE_SHELTER_ID` and `VITE_USER_ID`.
+The app restores the session with `GET /api/auth/me`, signs in through `POST /api/auth/login`, and signs out through `POST /api/auth/logout`. Requests include the server session cookie; mutations first obtain a CSRF token from `GET /api/auth/csrf` and send it as `X-XSRF-TOKEN`. Authentication data remains in memory and is never configured through frontend role/user variables.
 
-- Available roles: `SHELTER_ADMIN`, `VETERINARIAN`, `ADOPTER`, `VISITOR`.
-- Only the **shelter administrator** sees **Registrar refugio** and **Registrar mascota** in the navigation bar and can use `/shelters/new` and `/pets/new`. Any other role gets a message explaining that they do not have permission.
-- Veterinarian screens are not restricted by role.
-- Once real authentication exists, only the `getSession()` function needs to be replaced.
+The backend's authentication response must include `shelterId` for a `SHELTER_ADMIN` account to use shelter-specific inventory and pet registration. If it is absent, those screens cannot safely infer or select a shelter and should remain unavailable until the API contract supplies it.
+
+For a separately hosted frontend and API, the backend must allow credentialed CORS requests from the frontend origin and permit the `X-XSRF-TOKEN` header. Configure the session and CSRF cookies for the deployed HTTPS origin.
 
 ## User Stories
 
 | User Story | Description | Route | Status |
 |---|---|---|---|
+| **HU73** | Register a new user | `/register` | Implemented |
+| **HU74** | View and update user profile | `/profile` | Implemented |
+| **HU72** | Update a veterinarian's specialization and availability | `/veterinarians/:veterinarianId/edit` | Implemented |
 | **HU70** | Veterinarian list with filters and profile | `/veterinarians` | ✅ Implemented |
 | **HU01** | Register a shelter | `/shelters/new` | ✅ Implemented |
+| **HU02** | View the list of shelters with filters | `/shelters` | ✅ Implemented |
+| **HU03** | View the detail of a shelter | `/shelters/:shelterId` | ✅ Implemented |
+| **HU04** | Edit a shelter | `/shelters/:shelterId/edit` | 🚧 Pending a confirmed shelter update API |
+| **HU05** | Delete a shelter | `/shelters/:shelterId` | 🚧 Pending a confirmed shelter delete API |
 | **HU06** | Register a pet | `/pets/new` | ✅ Implemented |
+| **HU23** | Register a medical event | `/medical-events/new` | ✅ Implemented |
+| **HU24** | View the medical history of a pet | `/pets/:petId/medical-events` | ✅ Implemented |
+| **HU25** | View the detail of a medical event | `/medical-events/:medicalEventId` | ✅ Implemented |
+| **HU26** | Edit a medical event | `/medical-events/:medicalEventId/edit` | ✅ Implemented |
+| **HU27** | Delete a medical event | `/medical-events/:medicalEventId` | ✅ Implemented |
+| **HU28** | View medical events with filters | `/medical-events` | ✅ Implemented |
 | *(extra)* | Register a veterinarian | `/veterinarians/new` | ✅ Implemented |
-| **HU07** | Pet search | `/pets` | 🚧 Pending |
-| **HU08** | Pet profile | `/pets/:petId` | 🚧 Pending |
+| **HU07** | Search and browse pets | `/pets` | ✅ Implemented |
+| **HU08** | View a pet profile | `/pets/:petId` | ✅ Implemented |
+| **HU09** | View the shelter pet inventory | `/pets/inventory` | ⚠️ View implemented; editing awaits the update contract |
+| **HU10** | Edit a pet | `/pets/:petId/edit` | 🚧 Pending a confirmed pet update API |
+| **HU11** | Delete a pet | `/pets/inventory` | ✅ Implemented |
+| **HU64**  | View reviews for a pet | /pets/:petId/reviews | ✅ Implemented |
+| **HU65** | Submit a review for an adopted pet | /pets/:petId/reviews/new | ✅ Implemented |
+| **HU66** | Edit or delete my review | /pets/:petId/reviews/:reviewId/edit | ✅ Implemented |
+| **HU67** | View a pet's vaccination record | /pets/:petId/vaccination-record | ✅ Implemented | 
+| **HU68** | Create a pet's vaccination record | /vaccination-records/new | ✅ Implemented |
+| **HU69** | Delete a pet's vaccination record | /pets/:petId/vaccination-record | ✅ Implemented |
+
+### UX consistency and usability
+
+The shared interface follows Nielsen's usability heuristics through the following patterns:
+
+| Heuristic | Interface support |
+|---|---|
+| Visibility of system status | Loading, success, empty, result-count, and error states use clear text and accessible status roles. |
+| Match with the real world | Spanish labels use familiar adoption, shelter, and veterinary terms. |
+| User control and freedom | Forms provide cancel actions; lists provide clear-filters actions; details provide return links and breadcrumbs. |
+| Consistency and standards | Shared color, spacing, focus, surface, and border tokens are used across page and component styles. |
+| Error prevention | Required fields, input constraints, client validation, and confirmation dialogs prevent common mistakes. |
+| Recognition rather than recall | Fields have visible labels, select options are explicit, and related actions are presented in context. |
+| Flexibility and efficiency | Search/filter controls and role-based shortcuts reduce navigation for frequent tasks. |
+| Aesthetic and minimalist design | Cards, headings, and actions prioritize task-relevant information and adapt to mobile widths. |
+| Help users recover from errors | Backend messages are shown with retry, correction, or return actions where appropriate. |
+| Help and documentation | Forms provide inline hints; user stories include routes, behavior, and manual verification steps. |
+
+### HU73 – Register a New User
+
+**Route:** `/register` · **Role:** Any visitor.
+
+Allows new users to create an account on the pet adoption platform. The form collects **first name, last name, email, phone, password, and password confirmation**.
+
+- **Back-end:** `POST /api/users`.
+- **Validation:** Required fields are validated on the client side before submitting. The password must contain at least 8 characters and match the confirmation field.
+- **Errors:** Unique email enforcement is validated both locally and by the server (`The email address must be unique in the system`). Server errors display an informative dialog while keeping the user's input.
+- **Automated tests:** `UserRegisterPage.test.jsx`, `userForm.test.js`, and `userService.test.js`.
+
+**Manual Testing:**
+
+1. Open `/register` and submit the empty form: validation errors should appear for all required fields.
+2. Enter mismatched passwords or a password with fewer than 8 characters: error messages should guide the user.
+3. Fill in valid data and submit: a confirmation modal should appear, and upon acceptance, redirect to the platform.
+4. Try registering again with the same email address: the server error dialog will inform that the email is already in use.
+
+### HU74 – View and Update User Profile
+
+**Route:** `/profile` · **Role:** Any authenticated user.
+
+Displays the current user's profile information (**name, email, phone, and role**). Allows editing contact information in-place.
+
+- **Back-end:** `GET /api/users/{id}` and `PUT /api/users/{id}`.
+- **Editing:** Clicking "Editar Perfil" enables input fields for first name, last name, email, and phone. The user can save updates or cancel to discard unsaved changes.
+- **Errors:** If the email address is updated to one that already belongs to another user, an error notification is displayed without overwriting existing data.
+- **Automated tests:** `UserProfilePage.test.jsx`, `profileForm.test.js`, and `userService.test.js`.
+
+**Manual Testing:**
+
+1. Navigate to `/profile` by clicking on the user card in the navigation bar.
+2. Verify that your name, email, phone, and assigned role are displayed.
+3. Click "Editar Perfil", modify contact details, and click "Cancelar": changes are safely discarded.
+4. Click "Editar Perfil", make valid updates, and click "Guardar Cambios": a confirmation modal verifies that changes were saved successfully.
 
 ### HU70 – Veterinarian List with Filters
 
@@ -202,45 +314,228 @@ Opening a profile also shows the veterinarian's contact data, **follow-ups**, an
 4. Open a profile and verify that follow-ups and medical events are displayed.
 5. Stop the back-end and verify that an error message is displayed.
 
+### HU72 - Update a Veterinarian's Specialization and Availability
+
+**Route:** `/veterinarians/:veterinarianId/edit` (reached from the **Editar especialización y disponibilidad** link on the veterinarian's profile)
+
+A shelter administrator can change only the **specialization** and the **availability** of a veterinarian. The veterinarian's name is shown read-only, with a notice that only those two fields can be modified. Both fields are required. When the update succeeds, the user is taken back to the profile, which shows a confirmation message.
+
+- **Role:** only `SHELTER_ADMIN` sees the edit link and can open the form; any other role gets an explanatory message.
+- **Back-end:** `GET /api/veterinarians/{id}` to load the current data and `PUT /api/veterinarians/{id}` with `{ specialization, availability }`.
+- **Errors:** the back-end message and its HTTP status are shown in an error dialog (for example `412 Specialization cannot be null or empty` or `404 Veterinarian not found`). When the message refers to a field, that field is marked and receives focus when the dialog is closed.
+- **States:** loading, load error with a link back to the list, and saving.
+
+**Manual Testing:**
+
+1. Open a veterinarian's profile and click the edit link.
+2. Verify that the name is read-only and that the current specialization and availability are selected.
+3. Change both values, click **Guardar**, and verify that the profile shows the new values and the confirmation message.
+4. Clear one or both fields, click **Guardar**, and verify that the required-field errors appear and no request is sent.
+5. Open `/veterinarians/999999/edit` and verify that the "not found" error is displayed with a link back to the list.
+6. Click **Cancelar** and verify that you return to the profile without changes.
+
 ### Register a Veterinarian
 
-**Route:** `/veterinarians/new` (reachable from the **Registrar veterinario** button on the list)
+**Route:** `/veterinarians/new` · **Role:** global administrator (`ADMIN`)
 
-Form with first name, last name, email, phone, specialization, and availability. All fields are required; the email must be valid and the phone must have 7–15 digits (spaces, parentheses, `+`, and `-` are ignored). On success, the user returns to `/veterinarians` with a confirmation message.
+Form with first name, last name, email, password, phone, specialization, and availability. All fields are required; the password must have at least eight characters, the email must be valid, and the phone must have 7–15 digits (spaces, parentheses, `+`, and `-` are ignored). The password is sent only to the backend for account creation and is not retained in the session. On success, the user returns to `/veterinarians` with a confirmation message.
 
 - **Back-end:** `POST /api/veterinarians`.
 - **Errors:** back-end messages are shown in an error state inside the form, keeping the entered data.
 
 **Manual testing:**
 
-1. Open `/veterinarians/new` and submit the empty form: errors should appear for every field.
+1. Sign in as `ADMIN`, open `/veterinarians/new`, and submit the empty form: errors should appear for every field.
 2. Enter an invalid email and a short phone number: both should be rejected.
 3. Fill in valid data and submit: you should return to the list with a confirmation message and see the new veterinarian.
 
-### HU06 – Register a Pet
+### HU23 – Register a Medical Event
 
-**Route:** `/pets/new` · **Role:** shelter administrator
+**Route:** `/medical-events/new` · **Role:** shelter staff (`SHELTER_ADMIN` or `VETERINARIAN`)
 
-The administrator registers a pet under their shelter, including at least one **arrival event** (date, type, and description). All fields are required except description, temperament, and specific needs. The admission date cannot be in the future. Fixed option lists (species, sex, size, etc.) live in `src/constants/petOptions.js` and will also be used by the HU07 filters. Photos are sent as links (see [Known limitation](#known-limitation--no-shelter-photos)).
+The form records a medical event (consultation, surgery, treatment, ...) in the medical history of an **active** pet. The pet and the veterinarian are selected from the lists returned by the back-end, the date cannot be in the future, and every field is required. Inactive pets are not offered.
 
-- **Back-end:** `POST /api/pets`, with the shelter sent as `shelter.id` and arrival events included in `medicalEvents`; photos through `POST /api/pets/{petId}/photos`.
-- **Validation:** first on the client (errors next to each field, focus moved to the first invalid field), then by the back-end. Back-end errors appear next to the matching field or in an alert, and the form keeps the entered data.
-- **Result:** confirmation message and redirect to `/pets/{id}` (profile pending, HU08).
+- **Back-end:** `POST /api/medicalEvents`, with the pet and the veterinarian sent as `{ id }` references.
+- **Dates:** the form sends `YYYY-MM-DDT00:00:00±hh:mm` (`dayStartISO` in `utils/dates.js`). The back-end stores a `java.util.Date`; with a date-only string it shifts the day for negative offsets (2026-09-12 is stored as 2026-09-11).
+- **Validation:** first on the client (errors next to each field, focus moved to the first invalid field), then by the back-end. Back-end messages appear in a dialog and, when they belong to a field, next to it as well.
+- **Result:** a confirmation dialog shows the pet, veterinarian, date, and type, and offers a link to `/pets/{id}`.
 
 **Manual testing:**
 
-1. Create a shelter in the back-end (a responsible user is required; see [Troubleshooting](#troubleshooting)). If its ID is not `1`, set `VITE_SHELTER_ID`.
+1. Start the back-end and create a shelter, an active pet, and a veterinarian.
+2. Open `/medical-events/new` and submit the empty form: errors should appear, and focus should move to the pet list.
+3. Enter a future date: the form should reject it.
+4. Register an event: a confirmation should appear, and **Ver la mascota** should navigate to `/pets/{id}`.
+5. Register the same event again: the duplicate message from the back-end should be displayed.
+
+### HU24 – View the Medical History of a Pet
+
+**Route:** `/pets/:petId/medical-events` · **Role:** any user
+
+The screen shows the pet's data (name, species, and breed) and the medical events registered for it, newest first. Each event displays its date, type, description, and veterinarian (or a message when no veterinarian was assigned).
+
+- **Back-end:** `GET /api/pets/{id}` and `GET /api/medicalEvents?petId=`.
+- **States:** loading, error with its cause (and a **Reintentar** button), and an empty history message.
+- **Shortcut:** the **Registrar evento médico** button opens `/medical-events/new` (HU23).
+
+**Manual testing:**
+
+1. Start the back-end and register a pet with at least one medical event.
+2. Open `/pets/{id}/medical-events` and verify that the events are shown newest first.
+3. Open the history of a pet without events and verify the empty message.
+4. Stop the back-end and verify that the error and the retry button are displayed.
+
+### HU25 – View the Detail of a Medical Event
+
+**Route:** `/medical-events/:medicalEventId` · **Role:** any user
+
+Shows a single medical event with its type, date, pet (linked to the pet's medical history), veterinarian, and description. Each event title in the history list (HU24) links to this screen.
+
+- **Back-end:** `GET /api/medicalEvents/{id}` (404 when the event does not exist, 412 when the id is invalid).
+- **States:** loading, error with its cause (and a **Reintentar** button), and a link back to the pet history (or to `/pets` when the event could not be loaded).
+
+**Manual testing:**
+
+1. Open `/pets/{id}/medical-events` and click the title of an event.
+2. Verify that the type, date, pet, veterinarian, and description are displayed.
+3. Use **Volver a la historia médica** to return to the pet history.
+4. Open `/medical-events/999` and verify that the error and the retry button are displayed.
+
+### HU26 – Edit a Medical Event
+
+**Route:** `/medical-events/:medicalEventId/edit` · **Role:** shelter staff (`SHELTER_ADMIN` or `VETERINARIAN`)
+
+The form is prefilled with the current event and changes its date, type, description, or veterinarian. The pet cannot be changed: it is shown as read-only text, as the back-end rejects a different pet after creation. The same validation as HU23 applies (every field is required, the date cannot be in the future, and the veterinarian must be selected). On success, a confirmation dialog offers to go to the detail (**Ver detalle**) or back to the pet's history.
+
+- **Back-end:** `GET /api/medicalEvents/{id}` to load the event, and `PUT /api/medicalEvents/{id}` with the same payload as HU23 (the pet is sent with its current id).
+- **Dates:** sent as `dayStartISO` (see HU23), so the day does not shift.
+- **Errors:** back-end messages are shown in an error dialog and, when they belong to a field, next to it. The form keeps the entered data.
+- **States:** loading, error with its cause (and a **Reintentar** button), and a message when there are no veterinarians to choose from.
+- **Shortcut:** the **Editar evento** button on the detail page (HU25) opens this form.
+
+**Manual testing:**
+
+1. Open `/medical-events/{id}` and click **Editar evento**.
+2. Verify that the form shows the current date, type, description, and veterinarian, and that the pet is not editable.
+3. Change the description and the veterinarian, and save. The confirmation should show the new values.
+4. Click **Ver detalle** and verify the changes on the detail page.
+5. Enter a future date and verify that the form rejects it.
+6. Open `/medical-events/999/edit` and verify that the error and the retry button are displayed.
+
+### HU27 – Delete a Medical Event
+
+**Route:** `/medical-events/:medicalEventId` (action on the detail page) · **Role:** shelter staff (`SHELTER_ADMIN` or `VETERINARIAN`)
+
+The **Eliminar evento** button appears on the detail page (HU25) next to **Editar evento**, only for the shelter staff. It opens a confirmation dialog that names the event and warns that the action cannot be undone; **Cancelar** has the focus by default, so an accidental Enter does not delete anything. While the deletion runs, the dialog cannot be dismissed. On success the user goes to the pet's medical history, which confirms the deletion.
+
+- **Back-end:** `DELETE /api/medicalEvents/{id}` (204 with no content; 404 when the event does not exist; 412 when the id is invalid).
+- **Errors:** the back-end message is shown in an error dialog, and the event stays on screen.
+- **Shared component:** `ConfirmDialog` (built on `ModalDialog`), reusable for future delete actions.
+
+**Manual testing:**
+
+1. Open `/medical-events/{id}` as the shelter staff and verify that **Editar evento** and **Eliminar evento** are shown.
+2. Click **Eliminar evento**: the dialog should name the event, and **Cancelar** should have the focus.
+3. Cancel and verify that the event is still displayed.
+4. Click **Eliminar evento** again and confirm. The user should go to the pet's history with the message "Se eliminó el evento médico de …", and the event should no longer be listed.
+5. Open the deleted event's URL: the error from the back-end should be displayed.
+
+### HU28 – View Medical Events with Filters
+
+**Route:** `/medical-events` · **Role:** any user
+
+Lists the medical events of every pet, newest first, and filters them by **Mascota**, **Tipo de evento**, and **Fecha del evento** (the exact day). The filters can be combined and are applied when the user presses **Buscar**, as in the veterinarian list (HU70). **Limpiar filtros** restores the full list. Each event links to its detail (HU25).
+
+- **Back-end:** `GET /api/medicalEvents?petId=&type=&date=`. Blank filters are left out, the type is matched without regard to case, and the date must be `yyyy-MM-dd` (a malformed date is rejected with 412).
+- **Options:** the pets come from `GET /api/pets`, including inactive pets so that their history can still be consulted; the types come from `MEDICAL_EVENT_TYPES`.
+- **States:** loading, error with the back-end message, and an empty list with a different message with and without filters.
+- **Race handling:** only the answer to the latest search is shown, so a slow earlier answer never overwrites a newer one.
+- **Navigation:** the **Eventos médicos** item in the navigation bar opens this screen for every role.
+
+**Manual testing:**
+
+1. Open `/medical-events` and verify that every event is listed, newest first, with its pet and veterinarian.
+2. Select a pet and a type and press **Buscar**: only the matching events should be listed.
+3. Select a day with events and verify that only the events of that day are listed.
+4. Combine filters with no matches and verify the "no matches" message.
+5. Press **Limpiar filtros** and verify that every event is listed again.
+6. Click the title of an event and verify that its detail opens.
+
+### HU06 – Register a Pet
+
+**Route:** `/pets/new` · **Role:** global administrator (`ADMIN`)
+
+The administrator selects the destination shelter and registers the pet with at least one **arrival event** (date, type, and description). All fields are required except description, temperament, and specific needs. The admission date cannot be in the future. Fixed option lists (species, sex, size, etc.) live in `src/constants/petOptions.js` and will also be used by the HU07 filters. Photos are sent as links (see [Known limitation](#known-limitation--no-shelter-photos)).
+
+- **Back-end:** `POST /api/pets`, with the shelter sent as `shelter.id` and arrival events included in `medicalEvents`; photos through `POST /api/pets/{petId}/photos`.
+- **Validation:** first on the client (errors next to each field, focus moved to the first invalid field), then by the back-end. Back-end errors appear next to the matching field or in an alert, and the form keeps the entered data.
+- **Result:** confirmation message and redirect to `/pets/{id}`, where the pet profile (HU08) shows the saved information.
+
+**Manual testing:**
+
+1. Sign in with an `ADMIN` account and ensure at least one shelter is registered.
 2. Open `/pets/new` and submit the empty form. Validation errors should appear, and focus should move to the first invalid field.
 3. Enter a future admission date. The form should reject it.
 4. Register a pet with all required data. A confirmation should appear, and the app should navigate to `/pets/{id}`.
 5. Check `GET /api/pets` to verify the pet was saved with its shelter and arrival event.
 6. Register the same pet again. A duplicate error should be displayed.
 
+### HU07 – Search and Browse Pets
+
+**Route:** `/pets` · **Role:** any user
+
+Visitors can browse the pets returned by the back-end and narrow the catalog by name or breed, species, exact age, sex, size, required space, child/other-pet compatibility, and activity level. Filters combine and update immediately; compatibility defaults to “Cualquiera”. Cards show the pet's available breed, age, size, compatibility, shelter and city, plus a link to the profile (HU08). The result count, no-match state, and clear-filters action make the search easy to understand. Shelter administrators also have a shortcut to register a pet.
+
+- **Back-end:** `GET /api/pets`; filtering is performed in the browser because this endpoint returns the catalog without filter parameters.
+- **Errors:** loading and API errors are visible; a failed catalog request can be retried.
+
+**Manual testing:**
+
+1. Open `/pets` and verify the loading state resolves into pet cards with profile links.
+2. Search by a pet name and by a breed; combine exact age, species, sex, size, space, compatibility, and activity filters.
+3. Verify compatibility filters default to “Cualquiera”, then use criteria with no matches and verify the empty result message and clear-filters action.
+4. Clear filters and verify the full list returns. Confirm the registration shortcut appears only for `ADMIN`.
+5. Stop the back-end and verify the error message and retry action.
+
+### HU08 – View a Pet Profile
+
+**Route:** `/pets/:petId` · **Role:** any user
+
+The profile displays the pet's photo (or a visual fallback), description, health, admission date, physical and behavioral details, and compatibility information. Missing temperament and specific-needs values are shown as “No registrado”. The associated shelter and city are shown when available. From the profile, visitors can open the medical history (HU24), return to the catalog (HU07), or visit the associated shelter.
+
+- **Back-end:** `GET /api/pets/{id}`.
+- **Errors:** loading and API errors are visible; the error state offers a retry and a return to the catalog.
+
+**Manual testing:**
+
+1. Open a pet card from `/pets` and verify its available profile details and photo.
+2. Verify true/false compatibility values render as **Sí**/**No**, and optional details can be absent without breaking the profile.
+3. Follow the medical history and shelter links, then return to the catalog.
+4. Open an unknown pet ID and verify the API error and the link back to `/pets`.
+
+### HU09 – View the Shelter Pet Inventory
+
+**Route:** `/pets/inventory` · **Role:** shelter administrator
+
+The page loads the shelter associated with the authenticated administrator session using the existing `GET /api/shelters/{id}` operation. It shows the shelter, city, pet count, pet details, and profile links, with loading, error/retry, and empty states. Administrators can delete pets after confirmation; backend 404/412 messages are shown and the inventory is updated only after a successful 204. Editing remains unavailable until its update contract is confirmed (HU10).
+
+- **Back-end:** `GET /api/shelters/{id}` through the existing `getShelter` service.
+- **Delete:** `DELETE /api/pets/{id}` through `deletePet`; success returns 204 with no body. A 412 business-rule error keeps the pet in the inventory and shows the back-end `apierror.message`.
+- **Access:** other roles are denied in the UI and the API enforces the authenticated user's permissions.
+
+**Manual testing:**
+
+1. Sign in as an administrator associated with an existing shelter, then open `/pets/inventory`.
+2. Verify the shelter name, city, count, each pet's summary, and profile link.
+3. Try a shelter with no pets and verify the empty state and registration link.
+4. Sign in with another role and verify the page does not request the shelter.
+5. As an administrator, cancel a delete and verify the pet remains; confirm a delete and verify the row and count update. Try a pet whose history blocks deletion and verify the back-end message is shown.
+
 ### HU01 – Register a Shelter
 
-**Route:** `/shelters/new` · **Role:** shelter administrator
+**Route:** `/shelters/new` · **Role:** global administrator (`ADMIN`)
 
-The administrator registers a shelter with its **name, city, NIT, and address**. All fields are required. They are validated on the client first and then by the back-end (for example, an NIT already registered is reported next to the NIT field). On success, the user is redirected to `/shelters/{id}` (detail page pending). The creator is sent as `users: [{ id }]` and becomes the shelter's administrator.
+The administrator registers a shelter with its **name, city, NIT, and address**. All fields are required. They are validated on the client first and then by the back-end (for example, an NIT already registered is reported next to the NIT field). On success, the user is redirected to the shelter detail `/shelters/{id}` (HU03). The creator is sent as `users: [{ id }]` and is associated with the shelter as its responsible user.
 
 - **Back-end:** `POST /api/shelters`.
 - **Errors:** field-related back-end errors (missing city, duplicated NIT) are shown next to the field, with focus moved to it. Any other error (same name, city, and location, or a connection failure) is shown in an error dialog. In both cases the form keeps the entered data.
@@ -252,6 +547,122 @@ The administrator registers a shelter with its **name, city, NIT, and address**.
 3. Check `GET /api/shelters` to verify the shelter was saved with its responsible user.
 4. Register the same shelter again. The back-end error should be displayed.
 5. Stop the back-end and submit. A connection error dialog should be displayed.
+
+### HU02 – View the List of Shelters
+
+**Route:** `/shelters` · **Role:** any
+
+Cards with the name, city, address and NIT of every shelter, filtered by **city** and **address** (the back-end compares them exactly, ignoring case). While loading it shows a progress message; with no results it explains why (CT2).
+
+- **Back-end:** `GET /api/shelters?city=&location=` (answers `200` with an empty list when nothing matches).
+
+**Manual testing:**
+
+1. Open `/shelters` and verify that every registered shelter is listed.
+2. Filter by city and by address, alone and together, and verify the results.
+3. Use a filter with no matches and verify the explanatory message.
+
+### HU64 – View Reviews for a Pet
+
+**Route:** /pets/:petId/reviews
+
+Shows the reviews of a pet (newest first) with the average rating, the number of reviews, stars, date, author and comment. The back-end returns a minimal author object with an ID and display name, which powers the author filter. An adopter also gets a Mis reseñas filter.
+
+-Back-end: GET /api/pets/{id} and GET /api/reviews?petId=&adopterId=.
+-States: loading, error with its cause, and empty list.
+-Shared helpers: src/utils/reviews.js (average, order, author) and src/utils/dateFields.js (dates as dd/mm/yyyy).
+
+**Manual testing:**
+
+1. Open a pet profile, select **Ver reseñas**, and verify the average, the count and the list.
+2. Sign in as an adopter, choose Mis reseñas and verify that only yours appear.
+3. Open a pet without reviews and verify the empty message.
+4. Stop the back-end and verify the error message.
+
+### HU65 – Submit a Review for an Adopted Pet
+
+**Route:** /pets/:petId/reviews/new (adopter only)
+
+The adopter chooses a rating (1–5), a date and writes a comment. The review is linked to the finalized adoption of the pet; if there is none, the page explains that the pet cannot be reviewed yet. Errors from the back-end open a dialog and put the focus on the wrong field. The date is sent with the user's time zone offset (dayStartISO) so the back-end does not move the day.
+
+Back-end: POST /api/pets/{petId}/reviews with { rating, comment, date, time, adoption: { id } }.
+Validation: rating required (1–5), a real date, non-empty comment.
+
+**Manual testing:**
+
+1. Sign in as an adopter, open /pets/1/reviews/new, fill the form and publish.
+2. Send it empty and verify the message of each field.
+3. Open a pet without a finalized adoption and verify the notice.
+4. With another role, verify the access message.
+
+### HU66 – Edit or Delete My Review
+
+**Route:** /pets/:petId/reviews/:reviewId/edit (adopter, author only)
+
+Loads the review in the same form as HU65. Guardar updates it and Eliminar asks for confirmation (ConfirmDialog) before deleting. After either action the user goes back to the reviews of the pet with a confirmation message.
+
+Back-end: GET, PUT and DELETE /api/pets/{petId}/reviews/{id}?adopterId=. Only the author can change or delete a review.
+
+**Manual testing:**
+
+1. Edit the comment, save, and verify the change in the list.
+2. Click Eliminar, cancel, then confirm, and verify it disappears.
+3. Try to edit a review of another adopter and verify the back-end error is shown
+
+### HU67 – View a Pet's Vaccination Record
+
+**Route:** /pets/:petId/vaccination-record
+
+Table with every vaccine, its status (Aplicada / Pendiente), application date and next dose. Applied vaccines come first. A pet without a record shows a message and, for the shelter admin, a link to create it.
+
+Back-end: GET /api/vaccinationRecords/pet/{petId}.
+States: loading, error with its cause, and "no record" (404).
+
+### HU69 – Delete a Pet's Vaccination Record
+
+**Route:** /pets/:petId/vaccination-record (shelter admin only)
+
+Eliminar opens a confirmation dialog. The back-end only allows the deletion when the pet was already adopted; otherwise its message is shown in an error dialog.
+
+Back-end: DELETE /api/vaccinationRecords/{id}.
+
+**Manual testing (HU67 and HU69):**
+
+1. Open a pet profile, select **Carnet de vacunación**, and verify the table and the statuses.
+2. Open a pet without a record and verify the message.
+3. As shelter admin, click Eliminar, cancel, then confirm, and verify the empty state.
+4. Try to delete the record of a pet that is not adopted and verify the error dialog.
+
+### HU68 – Create a Pet's Vaccination Record
+
+**Route:** /vaccination-records/new?petId= (shelter admin only)
+
+The admin selects a pet without a record (a pet has at most one) and creates it. Pets with the same name show their number to tell them apart, and ?petId= can preselect one. After saving, the user goes to the record with a confirmation message.
+
+Back-end: POST /api/vaccinationRecords with { pet: { id } }.
+Errors: back-end messages (pet not found, pet already has a record) open a dialog and focus the pet field.
+
+**Manual testing:**
+
+1. Open /vaccination-records/new, pick a pet and create the record.
+2. Send the form without a pet and verify the message.
+3. Try a pet that already has a record and verify the error.
+4. With another role, verify the access message.
+
+### HU03 – View the Detail of a Shelter
+
+**Route:** `/shelters/:shelterId` · **Role:** any (the actions are only for the shelter administrator)
+
+Shows name, NIT, address and city, with the shelter's **pets** and **events**. The administrator of that shelter also sees **Editar**, **Eliminar** (disabled until HU05) and **+ Crear evento**. A global `ADMIN` can register a pet for the displayed shelter. Adoptions, adopters, veterinarians and requests that the back-end also sends are ignored on purpose.
+
+- **Back-end:** `GET /api/shelters/{id}` (`ShelterDetailDTO`). `users` is write-only in the back-end, so shelter ownership must be supplied by the authenticated user's `shelterId` in the authentication contract.
+- **Errors:** 404 and 412 show an alert with a link back to the list; a connection failure shows a generic message.
+
+**Manual testing:**
+
+1. Open `/shelters/1` and verify the data, pets and events.
+2. Open `/shelters/999999` and verify the error with the link back.
+3. Register a pet (HU06) and verify that it appears in the shelter detail.
 
 #### Known limitation – no shelter photos
 
@@ -275,6 +686,8 @@ Once the back-end publishes a shelter photo endpoint, the feature can be added b
 | `ScreenState` | Loading, error, and empty states |
 | `ModalDialog` | Base accessible modal |
 | `SuccessDialog`, `ErrorDialog` | Confirmation and error dialogs built on `ModalDialog` |
+| `StarRating, Stars` | Star rating input (radiogroup) and read-only stars |
+| `ReviewForm` | Review form shared by HU65 and HU66 (validation, delete confirmation) |
 
 ## Testing
 
@@ -285,11 +698,30 @@ npm test                                      # Run all tests
 npm run test:coverage                         # Run tests with coverage
 npx vitest src/pages/PetRegisterPage          # A specific folder, e.g. HU06
 npx vitest src/pages/ShelterRegisterPage      # HU01
+npx vitest src/pages/ShelterListPage          # HU02
+npx vitest src/pages/ShelterDetailPage        # HU03
 npx vitest src/pages/VeterinariansPage        # HU70
+npx vitest src/pages/MedicalEventRegisterPage # HU23
+npx vitest src/pages/MedicalEventHistoryPage  # HU24
+npx vitest src/pages/MedicalEventDetailPage   # HU25
+npx vitest src/pages/MedicalEventEditPage     # HU26
+npx vitest src/components/ConfirmDialog       # HU27 (shared dialog)
+npx vitest src/pages/MedicalEventsPage        # HU28
 ```
 
-Current state: **22 test files, 238 tests, all passing**, with `npm run lint` and `npm run build` clean.
+Current state: **56 test files, 555 tests, all passing** (about 93% statement coverage), with `npm run lint` and `npm run build` clean.
 
+- **HU73:** `UserRegisterPage.test.jsx`, `userForm.test.js`, and `userService.test.js`.
+- **HU74:** `UserProfilePage.test.jsx`, `profileForm.test.js`, and `userService.test.js`.
+- **HU70:** `VeterinariansPage.test.jsx`, `VeterinarianProfilePage.test.jsx`, and `veterinarianService.test.js`.
+- **HU01:** `ShelterRegisterPage.test.jsx`, `shelterForm.test.js`, and `shelterService.test.js`.
+- **HU02:** `ShelterListPage.test.jsx` and `shelterService.test.js`.
+- **HU03:** `ShelterDetailPage.test.jsx`, `shelterDetail.test.js` and `shelterService.test.js`.
+- **HU06:** `PetRegisterPage.test.jsx`, `petForm.test.js`, and `petService.test.js`.
+- **HU72:** `UpdateVeterinarianPage.test.jsx` (full screen), `updateVeterinarianForm.test.js` (validation, payload, and error mapping), `VeterinarianProfilePage.test.jsx` (edit link and confirmation), and `veterinarianService.test.js` (`updateVeterinarian`).
+- **HU01:** `ShelterRegisterPage.test.jsx` (full screen), `shelterForm.test.js` (validation and request body), and `shelterService.test.js`.
+- **HU06:** `PetRegisterPage.test.jsx` (full screen), `petForm.test.js` (validation and request body), and `petService.test.js`.
+- **Shared:** `FormField.test.jsx`, `Navbar.test.jsx`, `ScreenState.test.jsx`, and `dates.test.js`.
 Tests live next to the module they cover:
 
 | Area | Test files |
@@ -298,6 +730,12 @@ Tests live next to the module they cover:
 | **Veterinarian registration** | `RegisterVeterinarianPage.test.jsx`, `validateVeterinarian.test.js` |
 | **HU01** | `ShelterRegisterPage.test.jsx`, `shelterForm.test.js`, `shelterService.test.js` |
 | **HU06** | `PetRegisterPage.test.jsx`, `petForm.test.js`, `petService.test.js` |
+| **HU23** | `MedicalEventRegisterPage.test.jsx`, `medicalEventForm.test.js` |
+| **HU24** | `MedicalEventHistoryPage.test.jsx` |
+| **HU25** | `MedicalEventDetailPage.test.jsx`, `medicalEvents.test.js` |
+| **HU26** | `MedicalEventEditPage.test.jsx` (and the `pillLabel` case in `SuccessDialog.test.jsx`) |
+| **HU27** | `ConfirmDialog.test.jsx`, `MedicalEventDetailPage.test.jsx` (delete and roles), `MedicalEventHistoryPage.test.jsx` (notice), `medicalEvents.test.js` (role rule) |
+| **HU28** | `MedicalEventsPage.test.jsx`, `medicalEventService.test.js` (filters and query string) |
 | **Shared** | `App.test.jsx`, `FormField`, `FormActions`, `FormSection`, `ModalDialog`, `SuccessDialog`, `ErrorDialog`, `Navbar`, `ScreenState` tests, `photoForm.test.js`, `dates.test.js` |
 
 ## Quality: Jenkins and SonarQube
@@ -324,5 +762,3 @@ The workspace is deleted at the end of every run (`deleteDir()`).
 
 ### Important Note:
 The specifications of state of Jenkis and Sonar of each History User are specified on the Wiki of this repository.
-
-```

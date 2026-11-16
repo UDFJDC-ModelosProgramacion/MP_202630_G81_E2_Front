@@ -1,0 +1,150 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createAdopter, deleteAdopter, getAdopter, getAdopters, updateAdopter } from './adopterService'
+import { stubApiFetch } from '../test/mockApiFetch'
+
+const createdResponse = (body) => ({
+  ok: true,
+  status: 201,
+  json: () => Promise.resolve(body),
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
+describe('createAdopter', () => {
+  it('posts the adopter to /api/adopters and returns the created record', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(createdResponse({ id: 9 }))
+    stubApiFetch(fetchMock)
+
+    const adopter = await createAdopter({ firstName: 'María', nationalId: '1020304050' })
+
+    expect(adopter).toEqual({ id: 9 })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adopters')
+    expect(options.method).toBe('POST')
+    expect(JSON.parse(options.body)).toEqual({
+      firstName: 'María',
+      nationalId: '1020304050',
+    })
+  })
+
+  it('fails with the backend message when the adopter is rejected', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 412,
+        json: () =>
+          Promise.resolve({
+            apierror: { message: 'An adopter with the same national id already exists' },
+          }),
+      }),
+    )
+
+    await expect(createAdopter({ nationalId: '1020304050' })).rejects.toThrow(
+      'An adopter with the same national id already exists',
+    )
+  })
+})
+
+describe('getAdopters', () => {
+  it('requests /api/adopters without query params when filters are blank', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(createdResponse([]))
+    stubApiFetch(fetchMock)
+
+    const adopters = await getAdopters({ nationalId: '  ', housingType: '', occupation: '' })
+
+    expect(adopters).toEqual([])
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adopters')
+    expect(options.method).toBeUndefined()
+  })
+
+  it('sends only the filters the backend accepts', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(createdResponse([]))
+    stubApiFetch(fetchMock)
+
+    await getAdopters({ nationalId: '1001', housingType: 'Casa', occupation: '' })
+
+    const [url] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adopters?nationalId=1001&housingType=Casa')
+  })
+})
+
+describe('getAdopter', () => {
+  it('requests the detail of one adopter', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(createdResponse({ id: 7 }))
+    stubApiFetch(fetchMock)
+
+    const adopter = await getAdopter(7)
+
+    expect(adopter).toEqual({ id: 7 })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adopters/7')
+    expect(options.method).toBeUndefined()
+  })
+})
+
+describe('updateAdopter', () => {
+  it('sends a PUT with only the updatable fields', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(createdResponse({ id: 7, occupation: 'Arquitecta' }))
+    stubApiFetch(fetchMock)
+
+    const updated = await updateAdopter(7, { occupation: 'Arquitecta' })
+
+    expect(updated).toEqual({ id: 7, occupation: 'Arquitecta' })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adopters/7')
+    expect(options.method).toBe('PUT')
+    expect(JSON.parse(options.body)).toEqual({ occupation: 'Arquitecta' })
+  })
+
+  it('fails with the backend message when the update is rejected', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 412,
+        json: () => Promise.resolve({ apierror: { message: 'Adopter not found' } }),
+      }),
+    )
+
+    await expect(updateAdopter(404, {})).rejects.toThrow('Adopter not found')
+  })
+})
+
+describe('deleteAdopter', () => {
+  it('sends a DELETE and returns null on 204', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 })
+    stubApiFetch(fetchMock)
+
+    const result = await deleteAdopter(7)
+
+    expect(result).toBeNull()
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/adopters/7')
+    expect(options.method).toBe('DELETE')
+  })
+
+  it('fails with the backend message when the adopter has active requests', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 412,
+        json: () =>
+          Promise.resolve({
+            apierror: {
+              message:
+                'An adopter with approved or in-progress adoption requests cannot be deleted; deactivate it instead',
+            },
+          }),
+      }),
+    )
+
+    await expect(deleteAdopter(7)).rejects.toThrow(
+      'An adopter with approved or in-progress adoption requests cannot be deleted; deactivate it instead',
+    )
+  })
+})

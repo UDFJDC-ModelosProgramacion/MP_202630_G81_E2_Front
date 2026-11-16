@@ -9,7 +9,7 @@ import { createShelter } from '../../services/shelterService'
 
 vi.mock('../../services/shelterService', () => ({ createShelter: vi.fn() }))
 vi.mock('../../config/session', () => ({
-  ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
+  ROLES: { ADMIN: 'ADMIN', SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
 }))
 
@@ -23,7 +23,7 @@ function renderPage() {
       <Routes>
         <Route path="/shelters/new" element={<ShelterRegisterPage />} />
         <Route path="/shelters/:shelterId" element={<ShelterDetailStub />} />
-        <Route path="/" element={<p>Inicio</p>} />
+        <Route path="/shelters" element={<p>Lista de refugios</p>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -45,7 +45,7 @@ const backendError = (message) => new ApiError(message, 412)
 describe('ShelterRegisterPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 7, name: 'AdminUser' })
+    getSession.mockReturnValue({ role: 'ADMIN', userId: 7, name: 'AdminUser' })
   })
 
   it('asks for name, city, NIT and location, all marked as required', () => {
@@ -58,25 +58,27 @@ describe('ShelterRegisterPage', () => {
     expect(screen.getByText('*Campos obligatorios')).toBeInTheDocument()
   })
 
-  it('tells the user that they become the administrator of the shelter', () => {
+  it('tells the user they will be associated as the responsible shelter user', () => {
     renderPage()
 
-    expect(screen.getByText(/AdminUser/)).toHaveTextContent('queda como su administrador')
+    expect(screen.getByText(/AdminUser/)).toHaveTextContent(
+      'quedará asociado como usuario responsable del refugio',
+    )
   })
 
-  it('explains that only the shelter administrator can register shelters', () => {
-    getSession.mockReturnValue({ role: 'ADOPTER' })
+  it('explains that only a global administrator can register shelters', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 7 })
 
     renderPage()
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Solo el administrador de un refugio puede registrar refugios.',
+      'Solo un administrador general puede registrar refugios.',
     )
     expect(screen.queryByRole('button', { name: 'Registrar' })).not.toBeInTheDocument()
   })
 
   it('validates on the client, focuses the first error and does not call the backend', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
 
     await submit(user)
@@ -88,7 +90,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it.each(['p', '123', '900-069-803'])('does not accept "%s" as a NIT', async (nit) => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
     await fillForm(user)
     await user.clear(textbox('NIT'))
@@ -104,7 +106,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('clears the error of a field as soon as it is corrected', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
     await submit(user)
 
@@ -114,7 +116,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('creates the shelter with the logged user as responsible', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockResolvedValue({ id: 5 })
     renderPage()
     await fillForm(user)
@@ -132,7 +134,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('confirms the registration with a summary of the shelter', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockResolvedValue({ id: 5 })
     renderPage()
     await fillForm(user)
@@ -141,14 +143,15 @@ describe('ShelterRegisterPage', () => {
 
     const dialog = await screen.findByRole('dialog', { name: '¡Refugio registrado con éxito!' })
     expect(dialog).toHaveTextContent('El refugio "Patitas Felices" ha sido creado satisfactoriamente.')
-    expect(dialog).toHaveTextContent('Código HTTP 201')
+    expect(dialog).toHaveTextContent('Registro exitoso')
     expect(dialog).toHaveTextContent('900069803-1')
     expect(dialog).toHaveTextContent('Bogotá')
+    expect(dialog).toHaveTextContent('Usuario responsable')
     expect(dialog).toHaveTextContent('AdminUser')
   })
 
   it('opens the detail of the new shelter from the confirmation (HU03)', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockResolvedValue({ id: 5 })
     renderPage()
     await fillForm(user)
@@ -160,7 +163,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('lets the user register another shelter with an empty form', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockResolvedValue({ id: 5 })
     renderPage()
     await fillForm(user)
@@ -175,7 +178,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('shows a loading state and blocks the button while the shelter is being created', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockReturnValue(new Promise(() => {}))
     renderPage()
     await fillForm(user)
@@ -192,7 +195,7 @@ describe('ShelterRegisterPage', () => {
     ['El NIT no puede ser nulo ni estar vacío', 'NIT'],
     ['El NIT ya está registrado para otro refugio', 'NIT'],
   ])('shows "%s" in the dialog and next to the field "%s"', async (message, label) => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockRejectedValue(backendError(message))
     renderPage()
     await fillForm(user)
@@ -211,7 +214,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('shows the missing city next to the city field', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockRejectedValue(backendError('La ciudad no puede ser nula ni estar vacía'))
     renderPage()
     await fillForm(user)
@@ -223,7 +226,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('shows a shelter with the same name, city and location in the error dialog', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     const message = 'Ya existe un refugio con el mismo nombre, ciudad y dirección'
     createShelter.mockRejectedValue(backendError(message))
     renderPage()
@@ -233,13 +236,13 @@ describe('ShelterRegisterPage', () => {
 
     const dialog = await screen.findByRole('alertdialog', { name: 'Error al registrar el refugio' })
     expect(dialog).toHaveTextContent(message)
-    expect(dialog).toHaveTextContent('Error 412 • Conflicto de registro')
+    expect(dialog).toHaveTextContent('Conflicto de registro')
     expect(textbox('Nombre del refugio')).toHaveValue('Patitas Felices')
     expect(textbox('Nombre del refugio')).not.toHaveAccessibleDescription()
   })
 
   it('lets the user leave from the error dialog', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockRejectedValue(
       backendError('Ya existe un refugio con el mismo nombre, ciudad y dirección'),
     )
@@ -249,11 +252,11 @@ describe('ShelterRegisterPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Cancelar / Volver' }))
 
-    expect(await screen.findByText('Inicio')).toBeInTheDocument()
+    expect(await screen.findByText('Lista de refugios')).toBeInTheDocument()
   })
 
   it('lets the user close the dialog and fix the data', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockRejectedValue(backendError('Ya existe un refugio con el mismo nombre, ciudad y dirección'))
     renderPage()
     await fillForm(user)
@@ -266,7 +269,7 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('reports a connection failure in the dialog without a status code', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     createShelter.mockRejectedValue(new ApiError('No se pudo conectar con el servidor.', 0))
     renderPage()
     await fillForm(user)
@@ -279,11 +282,11 @@ describe('ShelterRegisterPage', () => {
   })
 
   it('lets the user cancel', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderPage()
 
     await user.click(screen.getByRole('button', { name: 'Cancelar' }))
 
-    expect(await screen.findByText('Inicio')).toBeInTheDocument()
+    expect(await screen.findByText('Lista de refugios')).toBeInTheDocument()
   })
 })

@@ -1,10 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { api, ApiError } from './apiClient'
-import { createVeterinarian, getVeterinarian, getVeterinarians } from './veterinarianService'
+import {
+  createVeterinarian,
+  getVeterinarian,
+  getVeterinarians,
+  updateVeterinarian,
+} from './veterinarianService'
+import { stubApiFetch } from '../test/mockApiFetch'
 
 function mockFetch(response) {
   const fetchMock = vi.fn().mockResolvedValue(response)
-  vi.stubGlobal('fetch', fetchMock)
+  stubApiFetch(fetchMock)
   return fetchMock
 }
 
@@ -100,7 +106,10 @@ describe('createVeterinarian', () => {
     const [url, options] = fetchMock.mock.calls[0]
     expect(url).toBe('/api/veterinarians')
     expect(options.method).toBe('POST')
-    expect(options.headers).toEqual({ 'Content-Type': 'application/json' })
+    expect(options.headers).toMatchObject({
+      'Content-Type': 'application/json',
+      'X-XSRF-TOKEN': 'test-csrf-token',
+    })
     expect(JSON.parse(options.body)).toEqual(NEW_VETERINARIAN)
   })
 
@@ -124,6 +133,46 @@ describe('createVeterinarian', () => {
   })
 })
 
+describe('updateVeterinarian', () => {
+  const CHANGES = { specialization: 'Cirugía', availability: 'Lunes a viernes' }
+
+  it('puts only the changes as JSON on the veterinarian url', async () => {
+    const fetchMock = mockFetch(okResponse({ id: 4, ...CHANGES }))
+
+    const result = await updateVeterinarian(4, CHANGES)
+
+    expect(result).toEqual({ id: 4, ...CHANGES })
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/veterinarians/4')
+    expect(options.method).toBe('PUT')
+    expect(options.headers).toMatchObject({
+      'Content-Type': 'application/json',
+      'X-XSRF-TOKEN': 'test-csrf-token',
+    })
+    expect(JSON.parse(options.body)).toEqual(CHANGES)
+  })
+
+  it('encodes the id so it cannot change the path', async () => {
+    const fetchMock = mockFetch(okResponse({}))
+
+    await updateVeterinarian('4/../5', CHANGES)
+
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/veterinarians/4%2F..%2F5')
+  })
+
+  it('fails with the message sent by the backend when the veterinarian does not exist', async () => {
+    mockFetch(
+      errorResponse(404, { apierror: { status: 'NOT_FOUND', message: 'Veterinarian not found' } }),
+    )
+
+    const error = await updateVeterinarian(999, CHANGES).catch((e) => e)
+
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.status).toBe(404)
+    expect(error.message).toBe('Veterinarian not found')
+  })
+})
+
 describe('apiClient', () => {
   it('falls back to a generic message when the error has no body', async () => {
     mockFetch(errorResponse(500))
@@ -142,7 +191,7 @@ describe('apiClient', () => {
 
     const error = await api.get('/veterinarians').catch((e) => e)
 
-    expect(error.message).toBe('No se pudo conectar con el servidor. Inténtalo de nuevo.')
+    expect(error.message).toBe('No se pudo conectar con el servidor. Inténtelo de nuevo.')
     expect(error.status).toBe(0)
   })
 
@@ -150,5 +199,17 @@ describe('apiClient', () => {
     mockFetch({ ok: true, status: 204 })
 
     await expect(api.get('/veterinarians/1')).resolves.toBeNull()
+  })
+
+  it('reports a readable error for invalid JSON from a successful response', async () => {
+    mockFetch({
+      ok: true,
+      status: 200,
+      json: () => Promise.reject(new SyntaxError('Unexpected token')),
+    })
+
+    await expect(api.get('/veterinarians')).rejects.toThrow(
+      'El servidor devolvió una respuesta inválida.',
+    )
   })
 })

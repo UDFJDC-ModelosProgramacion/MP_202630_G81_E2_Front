@@ -1,5 +1,31 @@
+.skipLink {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 100;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-deep);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-160%);
+}
+
+.skipLink:focus {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 3px;
+  transform: translateY(0);
+}
+
 .content {
-  max-width: 960px;
+  flex: 1;
+  width: 100%;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 1.5rem 1rem 3rem;
+}
+
+.content:focus {
+  outline: none;
 }

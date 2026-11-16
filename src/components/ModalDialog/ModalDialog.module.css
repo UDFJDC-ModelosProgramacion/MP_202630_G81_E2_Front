@@ -107,19 +107,19 @@
 }
 
 .error .primary {
-  background: #1f2933;
+  background: var(--color-error-dark);
 }
 
 .error .primary:hover {
-  background: #0f1419;
+  background: var(--color-error);
 }
 
 .success .primary {
-  background: var(--color-primary);
+  background: var(--color-primary-dark);
 }
 
 .success .primary:hover {
-  background: var(--color-primary-dark);
+  background: var(--color-primary-deep);
 }
 
 .secondary {

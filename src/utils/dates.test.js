@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { formatDay, todayISO } from './dates'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { dayStartISO, formatDay, todayISO } from './dates'
 
 describe('formatDay', () => {
   it('formats a plain ISO date as a day', () => {
@@ -28,5 +28,34 @@ describe('todayISO', () => {
 
   it('uses the current day by default', () => {
     expect(todayISO()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+})
+
+describe('dayStartISO', () => {
+  it('keeps the chosen day when the backend parses the timestamp', () => {
+    expect(dayStartISO('2026-10-21')).toMatch(/^2026-10-21T00:00:00[+-]\d{2}:\d{2}$/)
+  })
+
+  it('returns the value untouched when it is not a date input value', () => {
+    expect(dayStartISO('')).toBe('')
+    expect(dayStartISO(null)).toBeNull()
+    expect(dayStartISO('2026-10-21T05:00:00Z')).toBe('2026-10-21T05:00:00Z')
+  })
+
+  describe('with a fixed time zone offset', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it.each([
+      [300, '2026-10-21T00:00:00-05:00'], // Colombia (UTC-5)
+      [0, '2026-10-21T00:00:00+00:00'], // UTC
+      [-330, '2026-10-21T00:00:00+05:30'], // India (UTC+5:30), con minutos
+      [-60, '2026-10-21T00:00:00+01:00'], // Europa central
+    ])('uses the offset %i minutes of the time zone', (timezoneOffset, expected) => {
+      vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(timezoneOffset)
+
+      expect(dayStartISO('2026-10-21')).toBe(expected)
+    })
   })
 })

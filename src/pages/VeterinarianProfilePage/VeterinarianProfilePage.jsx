@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
+import { getSession, ROLES } from '../../config/session'
 import { getVeterinarian } from '../../services/veterinarianService'
 import { formatDay } from '../../utils/dates'
 import styles from './VeterinarianProfilePage.module.css'
 
 export default function VeterinarianProfilePage() {
   const { veterinarianId } = useParams()
+  const { state } = useLocation()
+  const canEdit = getSession().role === ROLES.SHELTER_ADMIN
+  const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState({ status: 'loading', veterinarian: null, message: '' })
 
   useEffect(() => {
@@ -21,7 +25,7 @@ export default function VeterinarianProfilePage() {
     return () => {
       cancelled = true
     }
-  }, [veterinarianId])
+  }, [veterinarianId, attempt])
 
   const { status, veterinarian, message } = result
   const backLink = <Link to="/veterinarians">Volver al listado</Link>
@@ -32,7 +36,11 @@ export default function VeterinarianProfilePage() {
   if (status === 'error') {
     return (
       <>
-        <ScreenState state="error" message={message} />
+        <ScreenState
+          state="error"
+          message={message}
+          onRetry={() => setAttempt((value) => value + 1)}
+        />
         {backLink}
       </>
     )
@@ -47,6 +55,12 @@ export default function VeterinarianProfilePage() {
         {veterinarian.firstName} {veterinarian.lastName}
       </h1>
 
+      {state?.updated && (
+        <p role="status" className={styles.success}>
+          Los datos del veterinario se actualizaron correctamente.
+        </p>
+      )}
+
       <section className={styles.section} aria-label="Datos del veterinario">
         <p>
           <strong>Especialización:</strong> {veterinarian.specialization}
@@ -60,6 +74,11 @@ export default function VeterinarianProfilePage() {
         <p>
           <strong>Teléfono:</strong> {veterinarian.phone}
         </p>
+        {canEdit && (
+          <Link to={`/veterinarians/${veterinarian.id}/edit`} className={styles.edit}>
+            Editar especialización y disponibilidad
+          </Link>
+        )}
       </section>
 
       <section className={styles.section} aria-labelledby="follow-ups-title">

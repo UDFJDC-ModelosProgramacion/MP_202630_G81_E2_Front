@@ -5,17 +5,21 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': 'http://localhost:8999',
     },
   },
   test: {
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/setupTests.js',
-    testTimeout: 15000,
-    env: { VITE_API_BASE_URL: '', VITE_SHELTER_ID: '' },
+    testTimeout: 30000,
+    hookTimeout: 30000,
+    pool: 'vmThreads',
+    maxWorkers: 2,
+    env: { VITE_API_BASE_URL: '' },
     coverage: {
-      reporter: ['text', 'lcov'],
+      exclude: ['**/*.module.css'],
+      reporter: [['text', { maxCols: 200 }], 'lcov'],
     },
   },
 })

@@ -33,6 +33,9 @@ pipeline {
         }
 
         stage('Testing') {
+            options {
+                timeout(time: 10, unit: 'MINUTES')
+            }
             steps {
                 bat 'npm run test:coverage'
             }

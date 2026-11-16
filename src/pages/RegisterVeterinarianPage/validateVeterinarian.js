@@ -1,4 +1,5 @@
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { isValidEmail } from '../../utils/isValidEmail'
+
 const PHONE_SEPARATORS = /[\s()+-]/g
 const PHONE_DIGITS = /^\d{7,15}$/
 
@@ -6,6 +7,7 @@ export const EMPTY_VETERINARIAN = {
     firstName: '',
     lastName: '',
     email: '',
+    password: '',
     phone: '',
     specialization: '',
     availability: '',
@@ -18,9 +20,15 @@ export function validateVeterinarian(values) {
     if (!values.firstName.trim()) errors.firstName = 'El nombre es obligatorio.'
     if (!values.lastName.trim()) errors.lastName = 'El apellido es obligatorio.'
 
+    if (!values.password) {
+        errors.password = 'La contraseña es obligatoria.'
+    } else if (values.password.length < 8) {
+        errors.password = 'La contraseña debe tener al menos 8 caracteres.'
+    }
+
     if (!values.email.trim()) {
         errors.email = 'El correo es obligatorio.'
-    } else if (!EMAIL_PATTERN.test(values.email.trim())) {
+    } else if (!isValidEmail(values.email.trim())) {
         errors.email = 'Ingresa un correo válido.'
     }
 

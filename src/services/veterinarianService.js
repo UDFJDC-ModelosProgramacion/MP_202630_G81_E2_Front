@@ -1,4 +1,4 @@
-import { api } from './apiClient'
+import { api, expectArray } from './apiClient'
 
 
 export function getVeterinarians({ specialization = '', availability = '' } = {}) {
@@ -6,7 +6,9 @@ export function getVeterinarians({ specialization = '', availability = '' } = {}
   if (specialization.trim()) params.set('specialization', specialization.trim())
   if (availability.trim()) params.set('availability', availability.trim())
   const query = params.toString()
-  return api.get(query ? `/veterinarians?${query}` : '/veterinarians')
+  return api.get(query ? `/veterinarians?${query}` : '/veterinarians').then((data) =>
+    expectArray(data, 'la lista de veterinarios'),
+  )
 }
 
 export function getVeterinarian(veterinarianId) {
@@ -16,4 +18,8 @@ export function getVeterinarian(veterinarianId) {
 
 export function createVeterinarian(veterinarian) {
   return api.post('/veterinarians', veterinarian)
+}
+
+export function updateVeterinarian(veterinarianId, changes) {
+  return api.put(`/veterinarians/${encodeURIComponent(veterinarianId)}`, changes)
 }

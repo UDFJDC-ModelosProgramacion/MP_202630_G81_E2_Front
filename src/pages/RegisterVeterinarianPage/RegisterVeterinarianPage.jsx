@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
+import { getSession, ROLES } from '../../config/session'
 import { AVAILABILITIES, SPECIALIZATIONS } from '../../constants/veterinarianOptions'
 import { createVeterinarian } from '../../services/veterinarianService'
 import { EMPTY_VETERINARIAN, validateVeterinarian } from './validateVeterinarian'
@@ -10,6 +11,7 @@ const TEXT_FIELDS = [
     { name: 'firstName', label: 'Nombre', type: 'text', placeholder: 'Camila', autoComplete: 'given-name' },
     { name: 'lastName', label: 'Apellido', type: 'text', placeholder: 'Rojas', autoComplete: 'family-name' },
     { name: 'email', label: 'Correo', type: 'email', placeholder: 'camila@refugio.com', autoComplete: 'email' },
+    { name: 'password', label: 'Contraseña', type: 'password', placeholder: 'Mínimo 8 caracteres', autoComplete: 'new-password' },
     { name: 'phone', label: 'Teléfono', type: 'tel', placeholder: '300 123 4567', autoComplete: 'tel' },
 ]
 
@@ -19,7 +21,9 @@ const SELECT_FIELDS = [
 ]
 
 const trimValues = (values) =>
-    Object.fromEntries(Object.entries(values).map(([name, value]) => [name, value.trim()]))
+    Object.fromEntries(
+        Object.entries(values).map(([name, value]) => [name, name === 'password' ? value : value.trim()]),
+    )
 
 function Field({ name, label, error, children }) {
     return (
@@ -62,11 +66,11 @@ export default function RegisterVeterinarianPage() {
         const veterinarian = trimValues(values)
         try {
             await createVeterinarian(veterinarian)
-            navigate('/veterinarians', {
+            await navigate('/veterinarians', {
                 state: { registered: `${veterinarian.firstName} ${veterinarian.lastName}` },
             })
         } catch (error) {
-            
+
             setSubmitError(error.message)
             setSubmitting(false)
         }
@@ -77,15 +81,33 @@ export default function RegisterVeterinarianPage() {
         name,
         value: values[name],
         onChange: handleChange,
+        required: true,
         'aria-invalid': errors[name] ? 'true' : undefined,
         'aria-describedby': errors[name] ? `${name}-error` : undefined,
     })
+
+    if (getSession().role !== ROLES.ADMIN) {
+        return (
+            <section className={styles.panel}>
+                <h1 className={styles.title}>Registre un veterinario</h1>
+                <ScreenState
+                    state="error"
+                    message="Solo un administrador general puede registrar veterinarios."
+                />
+            </section>
+        )
+    }
 
     return (
         <section className={styles.panel}>
             <h1 className={styles.title}>Registre un veterinario</h1>
 
-            <form className={styles.form} onSubmit={handleSubmit} noValidate aria-label="Registro de veterinario">
+            <form
+                className={styles.form}
+                onSubmit={(event) => { void handleSubmit(event) }}
+                noValidate
+                aria-label="Registro de veterinario"
+            >
                 {TEXT_FIELDS.map(({ name, label, type, placeholder, autoComplete }) => (
                     <Field key={name} name={name} label={label} error={errors[name]}>
                         <input {...fieldProps(name)} type={type} placeholder={placeholder} autoComplete={autoComplete} />

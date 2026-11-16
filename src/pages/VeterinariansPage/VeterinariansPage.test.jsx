@@ -4,11 +4,16 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import VeterinariansPage from './VeterinariansPage'
 import { getVeterinarians } from '../../services/veterinarianService'
+import { getSession } from '../../config/session'
 
 vi.mock('../../services/veterinarianService', () => ({
   getVeterinarians: vi.fn(),
   getVeterinarian: vi.fn(),
   createVeterinarian: vi.fn(),
+}))
+vi.mock('../../config/session', () => ({
+  ROLES: { ADMIN: 'ADMIN' },
+  getSession: vi.fn(),
 }))
 
 const LAURA = {
@@ -37,6 +42,7 @@ function renderPage() {
 describe('VeterinariansPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    getSession.mockReturnValue({ role: 'ADOPTER' })
   })
 
   it('shows a loading state and then every veterinarian', async () => {
@@ -172,6 +178,7 @@ describe('VeterinariansPage', () => {
   })
 
   it('links to the registration form', async () => {
+    getSession.mockReturnValue({ role: 'ADMIN' })
     getVeterinarians.mockResolvedValue([LAURA])
 
     renderPage()
@@ -180,6 +187,15 @@ describe('VeterinariansPage', () => {
       'href',
       '/veterinarians/new',
     )
+  })
+
+  it('does not show veterinarian registration to regular users', async () => {
+    getVeterinarians.mockResolvedValue([LAURA])
+
+    renderPage()
+
+    await screen.findByRole('list', { name: 'Lista de veterinarios' })
+    expect(screen.queryByRole('link', { name: 'Registrar veterinario' })).not.toBeInTheDocument()
   })
 
   it('confirms a veterinarian that was just registered', async () => {

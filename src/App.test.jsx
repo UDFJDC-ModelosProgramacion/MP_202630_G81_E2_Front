@@ -1,13 +1,56 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
-import { getVeterinarians } from './services/veterinarianService'
+import { setSession } from './config/session'
+import { getMedicalEvent, getMedicalEvents } from './services/medicalEventService'
+import { getPet, getPets } from './services/petService'
+import { getReviews } from './services/reviewService'
+import { getShelter, getShelters } from './services/shelterService'
+import { getVaccinationRecordByPet } from './services/vaccinationRecordService'
+import { getVeterinarian, getVeterinarians } from './services/veterinarianService'
+
+vi.mock('./services/shelterService', () => ({
+  createShelter: vi.fn(),
+  getShelter: vi.fn(),
+  getShelters: vi.fn(),
+}))
 
 vi.mock('./services/veterinarianService', () => ({
   getVeterinarians: vi.fn(),
   getVeterinarian: vi.fn(),
   createVeterinarian: vi.fn(),
+  updateVeterinarian: vi.fn(),
+}))
+
+vi.mock('./services/petService', () => ({
+  getPets: vi.fn(),
+  getPet: vi.fn(),
+  createPet: vi.fn(),
+  deletePet: vi.fn(),
+  addPetPhoto: vi.fn(),
+}))
+
+vi.mock('./services/medicalEventService', () => ({
+  getMedicalEvents: vi.fn(),
+  getMedicalEvent: vi.fn(),
+  createMedicalEvent: vi.fn(),
+  updateMedicalEvent: vi.fn(),
+  deleteMedicalEvent: vi.fn(),
+}))
+
+vi.mock('./services/reviewService', () => ({
+  getReviews: vi.fn(),
+  getReview: vi.fn(),
+  createReview: vi.fn(),
+  updateReview: vi.fn(),
+  deleteReview: vi.fn(),
+}))
+
+vi.mock('./services/vaccinationRecordService', () => ({
+  getVaccinationRecordByPet: vi.fn(),
+  createVaccinationRecord: vi.fn(),
+  deleteVaccinationRecord: vi.fn(),
 }))
 
 function renderAt(path) {
@@ -21,27 +64,54 @@ function renderAt(path) {
 describe('App', () => {
   beforeEach(() => {
     getVeterinarians.mockResolvedValue([])
+    setSession(null)
+    getPets.mockResolvedValue([])
+    getPet.mockResolvedValue({ id: 1, name: 'Luna', species: 'Perro' })
+    getMedicalEvents.mockResolvedValue([])
+    getMedicalEvent.mockResolvedValue({
+      id: 1,
+      date: '2026-09-10',
+      type: 'Cirugia',
+      description: 'Esterilización sin complicaciones',
+      pet: { id: 1, name: 'Luna', species: 'Perro' },
+      veterinarian: null,
+    })
+    getShelters.mockResolvedValue([])
+    getReviews.mockResolvedValue([])
+    getVaccinationRecordByPet.mockResolvedValue({ id: 1, vaccines: [] })
   })
 
   it('shows the navbar and the veterinarians page', async () => {
     renderAt('/veterinarians')
 
-    expect(screen.getByText('Pet Adoption Platform')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Huellitas Seguras' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Veterinarios' })).toBeInTheDocument()
     expect(await screen.findByText('Aún no hay veterinarios registrados.')).toBeInTheDocument()
+    const breadcrumb = screen.getByRole('navigation', { name: 'Ruta de navegación' })
+    expect(within(breadcrumb).getByRole('link', { name: 'Inicio' })).toHaveAttribute('href', '/')
+    expect(breadcrumb).toHaveTextContent('Veterinarios')
   })
 
-  it('sends the home route to the veterinarians page', async () => {
+  it('shows the home page with a way to explore pets and shelters', async () => {
     renderAt('/')
 
-    expect(screen.getByRole('heading', { name: 'Veterinarios' })).toBeInTheDocument()
-    expect(await screen.findByText('Aún no hay veterinarios registrados.')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Un hogar cambia una vida/ }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Conocer mascotas' })).toHaveAttribute('href', '/pets')
+    expect(screen.getByRole('link', { name: 'Explorar refugios' })).toHaveAttribute(
+      'href',
+      '/shelters',
+    )
   })
 
-  it('shows the pet registration form', () => {
+  it('protects the pet registration form from visitors', () => {
     renderAt('/pets/new')
 
     expect(screen.getByRole('heading', { name: 'Registre su Mascota' })).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Solo un administrador general puede registrar mascotas.',
+    )
   })
 
   it('shows the shelter registration form', () => {
@@ -50,17 +120,117 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Registre su Refugio' })).toBeInTheDocument()
   })
 
-  it('keeps the pages of other stories as pending', () => {
+  it('shows the searchable pet catalog', async () => {
     renderAt('/pets')
 
-    expect(screen.getByRole('heading', { name: 'Mascotas (pendiente)' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Mascotas que buscan un hogar' })).toBeInTheDocument()
+    expect(screen.getByRole('form', { name: 'Filtros de mascotas' })).toBeInTheDocument()
+    expect(await screen.findByText('Aún no hay mascotas registradas')).toBeInTheDocument()
   })
 
-  it('shows the registration form on /veterinarians/new', () => {
-    renderAt('/veterinarians/new')
+  it('shows the pet inventory on its dedicated route', async () => {
+    setSession({ id: 2, email: 'admin@example.com', role: 'SHELTER_ADMIN', shelterId: 1 })
+    getShelter.mockResolvedValue({
+      id: 1,
+      name: 'Patitas Felices',
+      city: 'Bogotá',
+      pets: [{ id: 2, name: 'Luna', species: 'Perro', age: 1 }],
+    })
 
-    expect(screen.getByRole('heading', { name: 'Registre un veterinario' })).toBeInTheDocument()
+    renderAt('/pets/inventory')
+
+    expect(await screen.findByRole('heading', { name: 'Inventario de mascotas' })).toBeInTheDocument()
+    expect(screen.getByText('Patitas Felices · Bogotá')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver perfil de Luna' })).toHaveAttribute('href', '/pets/2')
+  })
+
+  it('shows the pet profile and its medical history link', async () => {
+    renderAt('/pets/1')
+
+    expect(await screen.findByRole('heading', { name: 'Luna' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver historia médica' })).toHaveAttribute(
+      'href',
+      '/pets/1/medical-events',
+    )
+  })
+
+  it('shows the list of shelters', async () => {
+    renderAt('/shelters')
+
+    expect(screen.getByRole('heading', { name: 'Busque un Refugio cerca de usted' })).toBeInTheDocument()
+    expect(await screen.findByText('Aún no hay refugios registrados')).toBeInTheDocument()
+  })
+
+  it('shows the shelter detail', async () => {
+    getShelter.mockResolvedValue({ id: 1, name: 'Patitas Felices', pets: [], events: [] })
+
+    renderAt('/shelters/1')
+
+    expect(await screen.findByRole('heading', { name: 'Patitas Felices' })).toBeInTheDocument()
+  })
+
+  it('shows the medical event registration form on /medical-events/new', async () => {
+    renderAt('/medical-events/new')
+
+    expect(await screen.findByRole('heading', { name: 'Registrar evento médico' })).toBeInTheDocument()
+  })
+
+  it('shows the medical history of a pet', async () => {
+    renderAt('/pets/1/medical-events')
+
+    expect(await screen.findByRole('heading', { name: 'Historia médica' })).toBeInTheDocument()
+  })
+
+  it('shows the detail of a medical event', async () => {
+    renderAt('/medical-events/1')
+
+    expect(await screen.findByRole('heading', { name: 'Cirugía' })).toBeInTheDocument()
+  })
+
+  it('shows the medical events list with its filters', async () => {
+    renderAt('/medical-events')
+
+    expect(await screen.findByRole('heading', { name: 'Eventos médicos' })).toBeInTheDocument()
+    expect(screen.getByRole('form', { name: 'Filtros de eventos médicos' })).toBeInTheDocument()
+  })
+
+  it('shows the edit form of a medical event', async () => {
+    renderAt('/medical-events/1/edit')
+
+    expect(await screen.findByRole('heading', { name: 'Editar evento médico' })).toBeInTheDocument()
+  })
+
+  it('shows the update form on /veterinarians/:id/edit', async () => {
+    getVeterinarian.mockResolvedValue({
+      id: 3,
+      firstName: 'Camila',
+      lastName: 'Rojas',
+      specialization: 'Cirugía',
+      availability: 'Lunes a viernes',
+    })
+
+    renderAt('/veterinarians/3/edit')
+
+    expect(await screen.findByRole('heading', { name: 'Actualizar veterinario' })).toBeInTheDocument()
+  })
+
+  it('shows the reviews of a pet', async () => {
+    renderAt('/pets/1/reviews')
+
+    expect(await screen.findByRole('heading', { name: 'Reseñas de Luna' })).toBeInTheDocument()
+  })
+
+  it('shows the vaccination record of a pet', async () => {
+    renderAt('/pets/1/vaccination-record')
+
+    expect(await screen.findByRole('heading', { name: 'Carnet de vacunación' })).toBeInTheDocument()
+  })
+
+  it('shows the form to create a vaccination record', async () => {
+    renderAt('/vaccination-records/new')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Crear carnet de vacunación' }),
+    ).toBeInTheDocument()
   })
 })
-
-

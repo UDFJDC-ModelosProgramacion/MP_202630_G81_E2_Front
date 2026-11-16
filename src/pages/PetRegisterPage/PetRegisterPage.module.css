@@ -19,6 +19,18 @@
   color: var(--color-muted);
 }
 
+.shelterLink {
+  justify-self: start;
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.shelterLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 .form {
   display: flex;
   flex-direction: column;

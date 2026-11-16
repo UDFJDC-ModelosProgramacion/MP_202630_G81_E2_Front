@@ -1,12 +1,15 @@
-import { useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import ErrorDialog from '../../components/ErrorDialog/ErrorDialog'
 import FormActions from '../../components/FormActions/FormActions'
+import FormSection from '../../components/FormSection/FormSection'
 import PhotoField from '../../components/PhotoField/PhotoField'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import SuccessDialog from '../../components/SuccessDialog/SuccessDialog'
+import { SelectField } from '../../components/FormField/FormField'
 import { getSession, ROLES } from '../../config/session'
 import { addPetPhoto, createPet } from '../../services/petService'
+import { getShelters } from '../../services/shelterService'
 import { todayISO } from '../../utils/dates'
 import { buildPhotoPayload, photoWarning, trySavePhoto } from '../../utils/photoForm'
 import ArrivalEvents from './ArrivalEvents'
@@ -33,10 +36,12 @@ const withoutKeys = (object, keys) =>
 
 const controlId = (key) => (key.startsWith('events.') ? key.replace('events.', 'event-').replaceAll('.', '-') : key)
 
-function PetRegisterForm({ shelterId }) {
+function PetRegisterForm({ shelters, initialShelterId }) {
   const navigate = useNavigate()
   const nextEventUid = useRef(1)
   const [values, setValues] = useState(EMPTY_PET)
+  const [shelterId, setShelterId] = useState(initialShelterId == null ? '' : String(initialShelterId))
+  const [shelterError, setShelterError] = useState('')
   const [events, setEvents] = useState([{ ...EMPTY_EVENT, uid: 0 }])
   const [errors, setErrors] = useState({})
   const [errorDialog, setErrorDialog] = useState(null)
@@ -96,10 +101,15 @@ function PetRegisterForm({ shelterId }) {
       document.getElementById(controlId(firstInvalid))?.focus()
       return
     }
+    if (!shelterId) {
+      setShelterError('Seleccione el refugio donde quedará registrada la mascota.')
+      document.getElementById('shelterId')?.focus()
+      return
+    }
 
     setSubmitting(true)
     try {
-      const pet = await createPet(buildPetPayload(values, events, shelterId))
+      const pet = await createPet(buildPetPayload(values, events, Number(shelterId)))
       const photoError = await trySavePhoto(
         (photo) => addPetPhoto(pet.id, photo),
         buildPhotoPayload(values, PHOTO_DESCRIPTION),
@@ -131,6 +141,30 @@ function PetRegisterForm({ shelterId }) {
         onSubmit={handleSubmit}
         aria-label="Registro de mascota"
       >
+        <FormSection
+          title="Refugio responsable"
+          description="Selecciona dónde quedará registrada y bajo cuidado la mascota."
+        >
+          <div className={styles.grid}>
+            <SelectField
+              id="shelterId"
+              name="shelterId"
+              label="Refugio"
+              value={shelterId}
+              options={shelters.map(({ id, name, city }) => ({
+                value: String(id),
+                label: [name, city].filter(Boolean).join(' · ') || `Refugio ${id}`,
+              }))}
+              required
+              error={shelterError}
+              disabled={initialShelterId != null}
+              onChange={(event) => {
+                setShelterId(event.target.value)
+                setShelterError('')
+              }}
+            />
+          </div>
+        </FormSection>
         <PhotoField values={values} errors={errors} onChange={handleChange} />
         <PetFields values={values} errors={errors} today={today} onChange={handleChange} />
         <ArrivalEvents
@@ -180,18 +214,100 @@ function PetRegisterForm({ shelterId }) {
   )
 }
 
+function PetRegisterSetup({ session }) {
+  const assignedShelterId = session.shelterId
+  const [result, setResult] = useState({
+    status: assignedShelterId == null ? 'loading' : 'ready',
+    shelters:
+      assignedShelterId == null
+        ? []
+        : [{ id: assignedShelterId, name: `Refugio asociado (ID ${assignedShelterId})` }],
+    message: '',
+  })
+  const [attempt, setAttempt] = useState(0)
+
+  useEffect(() => {
+    if (assignedShelterId != null) return undefined
+
+    let active = true
+    getShelters()
+      .then((shelters) => {
+        if (active) setResult({ status: 'ready', shelters, message: '' })
+      })
+      .catch((error) => {
+        if (active) setResult({ status: 'error', shelters: [], message: error.message })
+      })
+    return () => {
+      active = false
+    }
+  }, [assignedShelterId, attempt])
+
+  function retry() {
+    setResult({ status: 'loading', shelters: [], message: '' })
+    setAttempt((current) => current + 1)
+  }
+
+  const heading = (
+    <header className={styles.header}>
+      <h1 className={styles.title}>Registre su Mascota</h1>
+      <p className={styles.subtitle}>Complete la ficha de ingreso del nuevo rescate.</p>
+    </header>
+  )
+
+  if (result.status === 'loading') {
+    return (
+      <section className={styles.page}>
+        {heading}
+        <ScreenState state="loading" message="Cargando refugios disponibles..." />
+      </section>
+    )
+  }
+
+  if (result.status === 'error') {
+    return (
+      <section className={styles.page}>
+        {heading}
+        <ScreenState
+          state="error"
+          message={result.message}
+          onRetry={retry}
+        />
+      </section>
+    )
+  }
+
+  if (result.shelters.length === 0) {
+    return (
+      <section className={styles.page}>
+        {heading}
+        <ScreenState state="empty" message="No hay refugios disponibles para registrar mascotas." />
+        <Link className={styles.shelterLink} to="/shelters/new">
+          Registrar un refugio
+        </Link>
+      </section>
+    )
+  }
+
+  return (
+    <PetRegisterForm
+      shelters={result.shelters}
+      initialShelterId={assignedShelterId}
+    />
+  )
+}
+
 export default function PetRegisterPage() {
   const session = getSession()
-  if (session.role !== ROLES.SHELTER_ADMIN) {
+  if (session.role !== ROLES.ADMIN) {
     return (
       <section className={styles.page}>
         <h1 className={styles.title}>Registre su Mascota</h1>
         <ScreenState
           state="error"
-          message="Solo el administrador de un refugio puede registrar mascotas."
+          message="Solo un administrador general puede registrar mascotas."
         />
       </section>
     )
   }
-  return <PetRegisterForm shelterId={session.shelterId} />
+  return <PetRegisterSetup session={session} />
 }
