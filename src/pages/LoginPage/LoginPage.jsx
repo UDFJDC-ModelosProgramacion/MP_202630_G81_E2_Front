@@ -19,7 +19,7 @@ export default function LoginPage() {
     setSubmitting(true)
     try {
       await signIn({ email: email.trim(), password })
-      navigate(location.state?.from?.pathname ?? '/', { replace: true })
+      await navigate(location.state?.from?.pathname ?? '/', { replace: true })
     } catch (requestError) {
       setError(requestError)
     } finally {
@@ -35,7 +35,7 @@ export default function LoginPage() {
         <p className={styles.subtitle}>Ingresa con el correo y la contraseña de tu cuenta.</p>
       </header>
 
-      <form className={styles.form} onSubmit={handleSubmit}>
+      <form className={styles.form} onSubmit={(event) => { void handleSubmit(event) }}>
         <TextField
           id="login-email"
           name="email"

@@ -16,7 +16,7 @@ function WriteReviewForm({ pet, adoption }) {
 
     async function publish(review) {
         await createReview(pet.id, { ...review, adoption: { id: adoption.id } })
-        navigate(`/pets/${pet.id}/reviews`, { state: { published: true } })
+        await navigate(`/pets/${pet.id}/reviews`, { state: { published: true } })
     }
 
     return (

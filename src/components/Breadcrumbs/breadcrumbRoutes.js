@@ -1,4 +1,5 @@
 import { generatePath, matchPath } from 'react-router-dom'
+import { trimTrailingSlashes } from '../../utils/trimTrailingSlashes'
 
 const ROUTES = [
   { path: '/', label: 'Inicio' },
@@ -121,7 +122,7 @@ const ROUTES = [
 ]
 
 export function getBreadcrumbItems(pathname) {
-  const normalizedPath = pathname.replace(/\/+$/, '') || '/'
+  const normalizedPath = trimTrailingSlashes(pathname) || '/'
   let match
   let route
 

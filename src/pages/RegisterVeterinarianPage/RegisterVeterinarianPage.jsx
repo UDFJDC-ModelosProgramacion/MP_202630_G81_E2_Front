@@ -66,7 +66,7 @@ export default function RegisterVeterinarianPage() {
         const veterinarian = trimValues(values)
         try {
             await createVeterinarian(veterinarian)
-            navigate('/veterinarians', {
+            await navigate('/veterinarians', {
                 state: { registered: `${veterinarian.firstName} ${veterinarian.lastName}` },
             })
         } catch (error) {
@@ -102,7 +102,12 @@ export default function RegisterVeterinarianPage() {
         <section className={styles.panel}>
             <h1 className={styles.title}>Registre un veterinario</h1>
 
-            <form className={styles.form} onSubmit={handleSubmit} noValidate aria-label="Registro de veterinario">
+            <form
+                className={styles.form}
+                onSubmit={(event) => { void handleSubmit(event) }}
+                noValidate
+                aria-label="Registro de veterinario"
+            >
                 {TEXT_FIELDS.map(({ name, label, type, placeholder, autoComplete }) => (
                     <Field key={name} name={name} label={label} error={errors[name]}>
                         <input {...fieldProps(name)} type={type} placeholder={placeholder} autoComplete={autoComplete} />

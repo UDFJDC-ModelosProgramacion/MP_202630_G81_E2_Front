@@ -1,4 +1,5 @@
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { isValidEmail } from '../../utils/isValidEmail'
+
 const PHONE_SEPARATORS = /[\s()+-]/g
 const PHONE_DIGITS = /^\d{7,15}$/
 
@@ -27,7 +28,7 @@ export function validateVeterinarian(values) {
 
     if (!values.email.trim()) {
         errors.email = 'El correo es obligatorio.'
-    } else if (!EMAIL_PATTERN.test(values.email.trim())) {
+    } else if (!isValidEmail(values.email.trim())) {
         errors.email = 'Ingresa un correo válido.'
     }
 

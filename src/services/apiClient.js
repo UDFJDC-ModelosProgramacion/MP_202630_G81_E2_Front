@@ -1,4 +1,6 @@
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '')
+import { trimTrailingSlashes } from '../utils/trimTrailingSlashes'
+
+const BASE_URL = trimTrailingSlashes(import.meta.env.VITE_API_BASE_URL || '/api')
 
 const CONNECTION_ERROR = 'No se pudo conectar con el servidor. Inténtelo de nuevo.'
 

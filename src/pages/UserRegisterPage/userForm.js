@@ -1,3 +1,5 @@
+import { isValidEmail } from '../../utils/isValidEmail'
+
 export const EMPTY_USER_FORM = {
   firstName: '',
   lastName: '',
@@ -7,7 +9,6 @@ export const EMPTY_USER_FORM = {
   confirmPassword: '',
 }
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_PASSWORD_LENGTH = 8
 
 // Validate user registration form inputs
@@ -24,7 +25,7 @@ export function validateUserForm(values) {
 
   if (!values.email.trim()) {
     errors.email = 'El correo electrónico es obligatorio'
-  } else if (!EMAIL_PATTERN.test(values.email.trim())) {
+  } else if (!isValidEmail(values.email.trim())) {
     errors.email = 'Ingrese un correo electrónico válido'
   }
 

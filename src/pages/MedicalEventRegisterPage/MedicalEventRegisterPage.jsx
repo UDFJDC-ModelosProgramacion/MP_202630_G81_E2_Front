@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import ErrorDialog from '../../components/ErrorDialog/ErrorDialog'
 import FormActions from '../../components/FormActions/FormActions'
 import FormSection from '../../components/FormSection/FormSection'
-import { SelectField, TextAreaField, TextField } from '../../components/FormField/FormField'
+import { SelectField } from '../../components/FormField/FormField'
+import MedicalEventFields from '../../components/MedicalEventFields/MedicalEventFields'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import SuccessDialog from '../../components/SuccessDialog/SuccessDialog'
 import { MEDICAL_EVENT_TYPES } from '../../constants/medicalEventOptions'
@@ -199,49 +200,12 @@ function MedicalEventForm() {
                 error={errors.petId}
                 onChange={handleChange}
               />
-              <SelectField
-                id="veterinarianId"
-                name="veterinarianId"
-                label="Veterinario"
-                required
-                options={veterinarianOptions}
-                placeholder="Seleccione el veterinario"
-                value={values.veterinarianId}
-                error={errors.veterinarianId}
+              <MedicalEventFields
+                values={values}
+                errors={errors}
                 onChange={handleChange}
-              />
-              <TextField
-                id="date"
-                name="date"
-                label="Fecha del evento (hasta hoy)"
-                required
-                type="date"
-                max={today}
-                value={values.date}
-                error={errors.date}
-                onChange={handleChange}
-              />
-              <SelectField
-                id="type"
-                name="type"
-                label="Tipo de evento"
-                required
-                options={MEDICAL_EVENT_TYPES}
-                placeholder="Seleccione el tipo"
-                value={values.type}
-                error={errors.type}
-                onChange={handleChange}
-              />
-              <TextAreaField
-                id="description"
-                name="description"
-                label="Descripción"
-                required
-                wide
-                rows={4}
-                value={values.description}
-                error={errors.description}
-                onChange={handleChange}
+                today={today}
+                veterinarianOptions={veterinarianOptions}
               />
             </div>
           </FormSection>

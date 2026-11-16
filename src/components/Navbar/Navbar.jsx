@@ -64,17 +64,15 @@ function NavigationDropdown({ id, label, ariaLabel, items, open, onToggle, onClo
   const triggerClassName = admin
     ? `${styles.dropdownTrigger} ${styles.adminTrigger}`
     : styles.dropdownTrigger
+  const closeOnEscape = (event) => {
+    if (event.key === 'Escape' && open) {
+      onClose()
+      triggerRef.current?.focus()
+    }
+  }
 
   return (
-    <div
-      className={className}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape' && open) {
-          onClose()
-          triggerRef.current?.focus()
-        }
-      }}
-    >
+    <div className={className}>
       <button
         ref={triggerRef}
         type="button"
@@ -83,6 +81,7 @@ function NavigationDropdown({ id, label, ariaLabel, items, open, onToggle, onClo
         aria-expanded={open}
         aria-controls={id}
         onClick={onToggle}
+        onKeyDown={closeOnEscape}
       >
         {admin && <span aria-hidden="true">＋</span>}
         {label}
@@ -99,6 +98,7 @@ function NavigationDropdown({ id, label, ariaLabel, items, open, onToggle, onClo
                   : styles.dropdownLink
               }
               onClick={onNavigate}
+              onKeyDown={closeOnEscape}
             >
               {itemLabel}
             </NavLink>

@@ -56,7 +56,7 @@ export default function MedicalEventDetailPage() {
     setDeleting(true)
     try {
       await deleteMedicalEvent(medicalEventId)
-      navigate(petPath ?? '/pets', {
+      await navigate(petPath ?? '/pets', {
         state: { deleted: medicalEventTypeLabel(medicalEvent.type) },
       })
     } catch (error) {
@@ -146,7 +146,7 @@ export default function MedicalEventDetailPage() {
           confirmLabel="Eliminar evento"
           pendingLabel="Eliminando..."
           pending={deleting}
-          onConfirm={handleDelete}
+          onConfirm={() => { void handleDelete() }}
           onCancel={() => setConfirmingDelete(false)}
         />
       )}

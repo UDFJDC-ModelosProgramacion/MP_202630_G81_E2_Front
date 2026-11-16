@@ -48,7 +48,7 @@ function CreateVaccinationRecordForm({ options, initialPetId }) {
         setSubmitting(true)
         try {
             await createVaccinationRecord(petId)
-            navigate(`/pets/${petId}/vaccination-record`, { state: { created: true } })
+            await navigate(`/pets/${petId}/vaccination-record`, { state: { created: true } })
         } catch (requestError) {
             const field = fieldOfBackendMessage(requestError.message)
             setError(field ? requestError.message : '')
@@ -61,7 +61,7 @@ function CreateVaccinationRecordForm({ options, initialPetId }) {
         <form
             className={styles.form}
             noValidate
-            onSubmit={handleSubmit}
+            onSubmit={(event) => { void handleSubmit(event) }}
             aria-label="Creación de carnet de vacunación"
         >
             <FormSection title="Datos del carnet">
@@ -103,7 +103,7 @@ function CreateVaccinationRecordForm({ options, initialPetId }) {
                     hint={ERROR_HINT}
                     actionLabel="Modificar datos"
                     onClose={closeErrorDialog}
-                    onCancel={() => navigate('/pets')}
+                    onCancel={() => { void navigate('/pets') }}
                 />
             )}
         </form>

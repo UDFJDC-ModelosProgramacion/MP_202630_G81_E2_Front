@@ -14,12 +14,12 @@ function EditReviewForm({ petId, userId, review }) {
 
     async function update(changes) {
         await updateReview(petId, review.id, userId, changes)
-        navigate(listPath, { state: { updated: true } })
+        await navigate(listPath, { state: { updated: true } })
     }
 
     async function remove() {
         await deleteReview(petId, review.id, userId)
-        navigate(listPath, { state: { deleted: true } })
+        await navigate(listPath, { state: { deleted: true } })
     }
 
     return (

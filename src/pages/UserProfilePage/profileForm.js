@@ -1,4 +1,4 @@
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { isValidEmail } from '../../utils/isValidEmail'
 
 // Validate user profile update inputs
 export function validateUserProfileForm(values) {
@@ -14,7 +14,7 @@ export function validateUserProfileForm(values) {
 
   if (!values.email.trim()) {
     errors.email = 'El correo electrónico es obligatorio'
-  } else if (!EMAIL_PATTERN.test(values.email.trim())) {
+  } else if (!isValidEmail(values.email.trim())) {
     errors.email = 'Ingrese un correo electrónico válido'
   }
 

@@ -6,6 +6,7 @@ import { TextField } from '../../components/FormField/FormField'
 import FormSection from '../../components/FormSection/FormSection'
 import { UserIcon } from '../../components/Icons/Icons'
 import SuccessDialog from '../../components/SuccessDialog/SuccessDialog'
+import UserContactFields from '../../components/UserContactFields/UserContactFields'
 import { createUser } from '../../services/userService'
 import {
   EMPTY_USER_FORM,
@@ -64,12 +65,12 @@ export default function UserRegisterPage() {
   }
 
   function handleCancel() {
-    navigate(-1)
+    void navigate(-1)
   }
 
   function handleSuccessClose() {
     setCreatedUser(null)
-    navigate('/veterinarians')
+    void navigate('/veterinarians')
   }
 
   return (
@@ -86,51 +87,20 @@ export default function UserRegisterPage() {
         </div>
       </header>
 
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
+      <form
+        className={styles.form}
+        onSubmit={(event) => { void handleSubmit(event) }}
+        noValidate
+      >
         <FormSection
           title="Datos Personales"
           description="Información básica requerida para tu perfil de usuario."
         >
-          <div className={styles.row}>
-            <TextField
-              id="firstName"
-              name="firstName"
-              label="Nombre"
-              value={form.firstName}
-              onChange={handleChange}
-              error={errors.firstName}
-              required
-            />
-            <TextField
-              id="lastName"
-              name="lastName"
-              label="Apellido"
-              value={form.lastName}
-              onChange={handleChange}
-              error={errors.lastName}
-              required
-            />
-          </div>
-
-          <TextField
-            id="email"
-            name="email"
-            type="email"
-            label="Correo Electrónico"
-            value={form.email}
+          <UserContactFields
+            values={form}
+            errors={errors}
             onChange={handleChange}
-            error={errors.email}
-            required
-          />
-
-          <TextField
-            id="phone"
-            name="phone"
-            type="tel"
-            label="Teléfono de Contacto"
-            value={form.phone}
-            onChange={handleChange}
-            error={errors.phone}
+            phoneLabel="Teléfono de Contacto"
           />
         </FormSection>
 

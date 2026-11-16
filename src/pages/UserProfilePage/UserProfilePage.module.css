@@ -51,12 +51,6 @@
   box-shadow: var(--shadow-card);
 }
 
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
 .detailsList {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -98,7 +92,6 @@
 }
 
 @media (max-width: 600px) {
-  .row,
   .detailsList {
     grid-template-columns: 1fr;
   }

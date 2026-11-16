@@ -62,7 +62,7 @@ function UpdateVeterinarianForm({ veterinarian }) {
         setSubmitting(true)
         try {
             await updateVeterinarian(veterinarian.id, buildUpdatePayload(values))
-            navigate(profilePath, { state: { updated: true } })
+            await navigate(profilePath, { state: { updated: true } })
         } catch (error) {
             showBackendError(error)
             setSubmitting(false)
@@ -91,7 +91,7 @@ function UpdateVeterinarianForm({ veterinarian }) {
             <form
                 className={styles.form}
                 noValidate
-                onSubmit={handleSubmit}
+                onSubmit={(event) => { void handleSubmit(event) }}
                 aria-label="Actualización de veterinario"
             >
                 <FormSection title="Datos del veterinario">
@@ -124,7 +124,7 @@ function UpdateVeterinarianForm({ veterinarian }) {
                 <FormActions
                     submitLabel="Guardar"
                     submitting={submitting}
-                    onCancel={() => navigate(profilePath)}
+                    onCancel={() => { void navigate(profilePath) }}
                 />
             </form>
 
@@ -136,7 +136,7 @@ function UpdateVeterinarianForm({ veterinarian }) {
                     hint={ERROR_HINT}
                     actionLabel="Modificar datos"
                     onClose={closeErrorDialog}
-                    onCancel={() => navigate('/veterinarians')}
+                    onCancel={() => { void navigate('/veterinarians') }}
                 />
             )}
         </section>

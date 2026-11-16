@@ -54,7 +54,7 @@ export default function AdoptersPage() {
 
   useEffect(() => {
     if (!isAdmin) return
-    search(NO_FILTERS).then((adopters) => {
+    void search(NO_FILTERS).then((adopters) => {
       if (adopters) {
         setHousingOptions(distinct([...HOUSING_TYPES, ...adopters.map((a) => a.housingType)]))
       }
@@ -69,18 +69,18 @@ export default function AdoptersPage() {
   function handleSubmit(event) {
     event.preventDefault()
     setResult((current) => ({ ...current, status: 'loading' }))
-    search(filters)
+    void search(filters)
   }
 
   function handleClear() {
     setFilters(NO_FILTERS)
     setResult((current) => ({ ...current, status: 'loading' }))
-    search(NO_FILTERS)
+    void search(NO_FILTERS)
   }
 
   function retry() {
     setResult((current) => ({ ...current, status: 'loading' }))
-    search(filters)
+    void search(filters)
   }
 
   const { status, adopters, filtered, message } = result

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import ErrorDialog from '../../components/ErrorDialog/ErrorDialog'
 import FormActions from '../../components/FormActions/FormActions'
-import { TextField } from '../../components/FormField/FormField'
 import FormSection from '../../components/FormSection/FormSection'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import SuccessDialog from '../../components/SuccessDialog/SuccessDialog'
+import UserContactFields from '../../components/UserContactFields/UserContactFields'
 import { getSession } from '../../config/session'
 import { ROLE_LABELS } from '../../constants/roleLabels'
 import { getUser, updateUser } from '../../services/userService'
@@ -179,47 +179,7 @@ export default function UserProfilePage() {
               title="Editar Información de Contacto"
               description="Actualiza tus datos de contacto registrados."
             >
-              <div className={styles.row}>
-                <TextField
-                  id="firstName"
-                  name="firstName"
-                  label="Nombre"
-                  value={form.firstName}
-                  onChange={handleChange}
-                  error={errors.firstName}
-                  required
-                />
-                <TextField
-                  id="lastName"
-                  name="lastName"
-                  label="Apellido"
-                  value={form.lastName}
-                  onChange={handleChange}
-                  error={errors.lastName}
-                  required
-                />
-              </div>
-
-              <TextField
-                id="email"
-                name="email"
-                type="email"
-                label="Correo Electrónico"
-                value={form.email}
-                onChange={handleChange}
-                error={errors.email}
-                required
-              />
-
-              <TextField
-                id="phone"
-                name="phone"
-                type="tel"
-                label="Teléfono"
-                value={form.phone}
-                onChange={handleChange}
-                error={errors.phone}
-              />
+              <UserContactFields values={form} errors={errors} onChange={handleChange} />
             </FormSection>
 
             <FormActions

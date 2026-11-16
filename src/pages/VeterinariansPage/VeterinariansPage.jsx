@@ -59,7 +59,7 @@ export default function VeterinariansPage() {
   }, [])
 
   useEffect(() => {
-    search(NO_FILTERS).then((veterinarians) => {
+    void search(NO_FILTERS).then((veterinarians) => {
       if (veterinarians) {
         setOptions({
           specializations: distinct(veterinarians.map((v) => v.specialization)),
@@ -77,12 +77,12 @@ export default function VeterinariansPage() {
   function handleSubmit(event) {
     event.preventDefault()
     setResult((current) => ({ ...current, status: 'loading' }))
-    search(filters)
+    void search(filters)
   }
 
   function retry() {
     setResult((current) => ({ ...current, status: 'loading' }))
-    search(filters)
+    void search(filters)
   }
 
   const { status, veterinarians, filtered, message } = result
