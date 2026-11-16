@@ -24,10 +24,12 @@ export const sortReviews = (reviews) =>
     [...reviews].sort((a, b) => sortKey(b).localeCompare(sortKey(a)))
 
 
-export const adopterOf = (review) => review.adoption?.adopter ?? review.adopter ?? null
+export const adopterOf = (review) =>
+    review.author ?? review.adoption?.adopter ?? review.adopter ?? null
 
 export function authorName(review) {
     const adopter = adopterOf(review)
+    if (adopter?.displayName?.trim()) return adopter.displayName.trim()
     const name = [adopter?.firstName, adopter?.lastName].filter(Boolean).join(' ')
     return name || 'Adoptante'
 }

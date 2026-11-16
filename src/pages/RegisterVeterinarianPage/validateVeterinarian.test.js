@@ -5,6 +5,7 @@ const VALID = {
     firstName: 'Camila',
     lastName: 'Rojas',
     email: 'camila@refugio.com',
+    password: 'password123',
     phone: '300 123 4567',
     specialization: 'Cirugía',
     availability: 'Lunes a viernes',
@@ -20,10 +21,17 @@ describe('validateVeterinarian', () => {
             firstName: 'El nombre es obligatorio.',
             lastName: 'El apellido es obligatorio.',
             email: 'El correo es obligatorio.',
+            password: 'La contraseña es obligatoria.',
             phone: 'El teléfono es obligatorio.',
             specialization: 'Selecciona una especialización.',
             availability: 'Selecciona una disponibilidad.',
         })
+    })
+
+    it('rejects passwords shorter than eight characters', () => {
+        expect(validateVeterinarian({ ...VALID, password: 'short' }).password).toBe(
+            'La contraseña debe tener al menos 8 caracteres.',
+        )
     })
 
     it('treats fields with only spaces as empty', () => {

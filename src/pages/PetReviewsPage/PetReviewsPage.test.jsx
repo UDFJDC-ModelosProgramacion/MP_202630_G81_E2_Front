@@ -25,7 +25,8 @@ const REVIEWS = [
         comment: 'Un perro muy cariñoso.',
         date: '2026-08-28T00:00:00.000+00:00',
         time: '2026-08-28T10:00:00.000+00:00',
-        adoption: { id: 12, adopter: CARLOS },
+        adoption: { id: 12 },
+        author: { id: CARLOS.id, displayName: 'Carlos Pérez' },
     },
     {
         id: 1,
@@ -33,7 +34,8 @@ const REVIEWS = [
         comment: 'Max se adaptó muy rápido a nuestra casa.',
         date: '2026-09-05T00:00:00.000+00:00',
         time: '2026-09-05T10:00:00.000+00:00',
-        adoption: { id: 11, adopter: LAURA },
+        adoption: { id: 11 },
+        author: { id: LAURA.id, displayName: 'Laura Gómez' },
     },
 ]
 

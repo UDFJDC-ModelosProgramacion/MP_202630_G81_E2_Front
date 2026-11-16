@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { MEDICAL_EVENT_TYPES } from '../../constants/medicalEventOptions'
@@ -30,24 +30,33 @@ export default function MedicalEventsPage() {
   })
   const lastRequest = useRef(0)
 
-  useEffect(() => {
+  const load = useCallback((appliedFilters) => {
     const requestId = ++lastRequest.current
-    Promise.all([getPets(), getMedicalEvents(NO_FILTERS)])
+    Promise.all([getPets(), getMedicalEvents(appliedFilters)])
       .then(([allPets, events]) => {
         if (requestId !== lastRequest.current) return
         setPets(allPets)
         setResult({
           status: 'ready',
           events: sortByDateDescending(events),
-          filtered: false,
+          filtered: hasFilters(appliedFilters),
           message: '',
         })
       })
       .catch((error) => {
         if (requestId !== lastRequest.current) return
-        setResult({ status: 'error', events: [], filtered: false, message: error.message })
+        setResult({
+          status: 'error',
+          events: [],
+          filtered: hasFilters(appliedFilters),
+          message: error.message,
+        })
       })
   }, [])
+
+  useEffect(() => {
+    load(NO_FILTERS)
+  }, [load])
 
   // Only the answer to the latest search is shown, so a slow older answer never overwrites it.
   function search(appliedFilters) {
@@ -87,6 +96,11 @@ export default function MedicalEventsPage() {
   function clearFilters() {
     setFilters(NO_FILTERS)
     search(NO_FILTERS)
+  }
+
+  function retry() {
+    setResult((current) => ({ ...current, status: 'loading' }))
+    load(filters)
   }
 
   const { status, events, filtered, message } = result
@@ -143,7 +157,7 @@ export default function MedicalEventsPage() {
       </form>
 
       {status === 'loading' && <ScreenState state="loading" />}
-      {status === 'error' && <ScreenState state="error" message={message} />}
+      {status === 'error' && <ScreenState state="error" message={message} onRetry={retry} />}
       {status === 'ready' && events.length === 0 && (
         <ScreenState
           state="empty"

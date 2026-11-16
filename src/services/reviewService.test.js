@@ -7,10 +7,11 @@ import {
     getReviews,
     updateReview,
 } from './reviewService'
+import { stubApiFetch } from '../test/mockApiFetch'
 
 function mockFetch(response) {
     const fetchMock = vi.fn().mockResolvedValue(response)
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
     return fetchMock
 }
 

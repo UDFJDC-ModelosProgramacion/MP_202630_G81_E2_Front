@@ -78,6 +78,11 @@ export default function VeterinariansPage() {
     search(filters)
   }
 
+  function retry() {
+    setResult((current) => ({ ...current, status: 'loading' }))
+    search(filters)
+  }
+
   const { status, veterinarians, filtered, message } = result
 
   return (
@@ -137,7 +142,7 @@ export default function VeterinariansPage() {
       </form>
 
       {status === 'loading' && <ScreenState state="loading" />}
-      {status === 'error' && <ScreenState state="error" message={message} />}
+      {status === 'error' && <ScreenState state="error" message={message} onRetry={retry} />}
       {status === 'ready' && veterinarians.length === 0 && (
         <ScreenState
           state="empty"

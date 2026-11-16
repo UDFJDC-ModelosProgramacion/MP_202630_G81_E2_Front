@@ -229,6 +229,7 @@ export default function AdopterEditPage() {
   const session = getSession()
   const isAdopter = session.role === ROLES.ADOPTER
   const isOwner = isAdopter && String(session.userId) === String(adopterId)
+  const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState({ status: 'loading', adopter: null, message: '' })
 
   useEffect(() => {
@@ -244,7 +245,7 @@ export default function AdopterEditPage() {
     return () => {
       cancelled = true
     }
-  }, [adopterId, isOwner])
+  }, [adopterId, isOwner, attempt])
 
   const blockedMessage = !isAdopter
     ? 'Solo el adoptante puede editar su perfil.'
@@ -268,7 +269,11 @@ export default function AdopterEditPage() {
   if (status === 'error') {
     return (
       <section className={styles.page}>
-        <ScreenState state="error" message={message} />
+        <ScreenState
+          state="error"
+          message={message}
+          onRetry={() => setAttempt((value) => value + 1)}
+        />
       </section>
     )
   }

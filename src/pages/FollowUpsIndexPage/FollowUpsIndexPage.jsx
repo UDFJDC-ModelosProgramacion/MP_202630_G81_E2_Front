@@ -13,6 +13,7 @@ export default function FollowUpsIndexPage() {
   const session = getSession()
   const isVeterinarian = session.role === ROLES.VETERINARIAN
   const [result, setResult] = useState({ status: 'loading', followUps: [], message: '' })
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     if (!isVeterinarian) return undefined
@@ -32,7 +33,7 @@ export default function FollowUpsIndexPage() {
     return () => {
       active = false
     }
-  }, [isVeterinarian, session.userId])
+  }, [isVeterinarian, session.userId, attempt])
 
   const { status, followUps, message } = result
 
@@ -48,7 +49,13 @@ export default function FollowUpsIndexPage() {
       ) : (
         <>
           {status === 'loading' && <ScreenState state="loading" />}
-          {status === 'error' && <ScreenState state="error" message={message} />}
+          {status === 'error' && (
+            <ScreenState
+              state="error"
+              message={message}
+              onRetry={() => setAttempt((value) => value + 1)}
+            />
+          )}
           {status === 'ready' && followUps.length === 0 && (
             <ScreenState state="empty" message="Aún no tiene seguimientos asignados." />
           )}

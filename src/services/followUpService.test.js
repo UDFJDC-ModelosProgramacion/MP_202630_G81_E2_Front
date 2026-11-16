@@ -6,6 +6,7 @@ import {
   getFollowUps,
   updateFollowUp,
 } from './followUpService'
+import { stubApiFetch } from '../test/mockApiFetch'
 
 const jsonResponse = (body, status = 200) => ({
   ok: true,
@@ -20,7 +21,7 @@ afterEach(() => {
 describe('getFollowUps', () => {
   it('requests the follow-ups of an adoption', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse([]))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     const followUps = await getFollowUps(1)
 
@@ -34,7 +35,7 @@ describe('getFollowUps', () => {
 describe('getFollowUp', () => {
   it('requests one follow-up without access params', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ id: 5 }))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     const followUp = await getFollowUp(1, 5)
 
@@ -44,7 +45,7 @@ describe('getFollowUp', () => {
 
   it('maps the shelter administrator role to the backend role', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ id: 5 }))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     await getFollowUp(1, 5, { requesterId: 7, role: 'SHELTER_ADMIN' })
 
@@ -57,7 +58,7 @@ describe('getFollowUp', () => {
 describe('createFollowUp', () => {
   it('posts the follow-up to the adoption', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ id: 9 }, 201))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     const followUp = await createFollowUp(1, {
       date: '2030-01-15T23:59:59',
@@ -100,7 +101,7 @@ describe('createFollowUp', () => {
 describe('updateFollowUp', () => {
   it('sends a PUT with the date and observation', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ id: 5 }))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     await updateFollowUp(1, 5, { date: '2030-01-15T23:59:59', observation: 'Actualizada' })
 
@@ -117,7 +118,7 @@ describe('updateFollowUp', () => {
 describe('deleteFollowUp', () => {
   it('sends a DELETE and returns null on 204', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 })
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     const result = await deleteFollowUp(1, 5)
 

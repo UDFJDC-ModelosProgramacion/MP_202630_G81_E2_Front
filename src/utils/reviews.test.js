@@ -73,6 +73,14 @@ describe('authors', () => {
         expect(adopterOf({ adoption: {} })).toBeNull()
     })
 
+    it('prefers the minimal author object returned by the API', () => {
+        const author = { id: 3, displayName: 'Laura Gómez' }
+
+        expect(adopterOf({ author, adoption: { adopter } })).toBe(author)
+        expect(authorName({ author })).toBe('Laura Gómez')
+        expect(collectAdopters([{ author }])).toEqual([{ id: 3, name: 'Laura Gómez' }])
+    })
+
     it('writes the full name, a partial one, or a generic label', () => {
         expect(authorName({ adopter })).toBe('Laura Gómez')
         expect(authorName({ adopter: { firstName: 'Laura' } })).toBe('Laura')

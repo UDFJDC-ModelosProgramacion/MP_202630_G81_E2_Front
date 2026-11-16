@@ -16,6 +16,7 @@ export default function UserProfilePage() {
   const session = getSession()
   const userId = session.userId || 1
 
+  const [fetchAttempt, setFetchAttempt] = useState(0)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState(null)
   const [user, setUser] = useState(null)
@@ -48,7 +49,13 @@ export default function UserProfilePage() {
     return () => {
       active = false
     }
-  }, [userId])
+  }, [userId, fetchAttempt])
+
+  function retryProfile() {
+    setLoading(true)
+    setFetchError(null)
+    setFetchAttempt((attempt) => attempt + 1)
+  }
 
   function handleStartEditing() {
     if (!user) return
@@ -122,7 +129,7 @@ export default function UserProfilePage() {
   }
 
   if (fetchError) {
-    return <ScreenState state="error" message={fetchError} />
+    return <ScreenState state="error" message={fetchError} onRetry={retryProfile} />
   }
 
   return (
