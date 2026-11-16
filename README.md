@@ -2,6 +2,10 @@
 
 ### Front Video:
 
+[![Ver video de explicación y reflexión del Front-end](https://img.youtube.com/vi/WkIOcAHtcgM/maxresdefault.jpg)](https://www.youtube.com/watch?v=WkIOcAHtcgM)
+
+> 🎬 **[Ver en YouTube](https://www.youtube.com/watch?v=WkIOcAHtcgM)** — Explicación y reflexión del Front-end del proyecto Pet Adoption, desarrollado para la asignatura Modelos de Programación, grupo G81, equipo E2.
+
 Web application for managing pet adoptions: shelters, pets, and veterinarians. Developed for the **Programming Models** course at **Universidad Distrital Francisco José de Caldas**, group **G81**, team **E2**.
 
 The front-end consumes the REST API of the back-end (Spring Boot) built during Cycle 1.
