@@ -1,0 +1,586 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3rem, 7vw, 5.5rem);
+  padding-bottom: 1.5rem;
+}
+
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(17rem, 0.9fr);
+  align-items: center;
+  gap: clamp(1.5rem, 5vw, 4rem);
+  min-height: 28rem;
+  padding: clamp(2rem, 5vw, 4rem);
+  overflow: hidden;
+  border: 1px solid #d5f3e7;
+  border-radius: 2rem;
+  background:
+    radial-gradient(ellipse at 82% 18%, rgb(167 243 208 / 55%), transparent 34%),
+    linear-gradient(125deg, #f0fdf7 0%, #fbfffd 55%, #f5fbf7 100%);
+}
+
+.heroCopy {
+  position: relative;
+  z-index: 1;
+  max-width: 39rem;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.7rem;
+  color: var(--color-primary-dark);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.eyebrowDot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--color-primary-bright);
+  box-shadow: 0 0 0 0.25rem rgb(16 185 129 / 13%);
+}
+
+.heroTitle {
+  max-width: 13ch;
+  margin: 0;
+  color: var(--color-text);
+  font-size: clamp(2.35rem, 5.2vw, 4.25rem);
+  font-weight: 850;
+  letter-spacing: -0.065em;
+  line-height: 1.04;
+}
+
+.heroTitle span {
+  color: var(--color-primary-dark);
+}
+
+.heroText {
+  max-width: 35rem;
+  margin: 1.15rem 0 0;
+  color: #536477;
+  font-size: clamp(1rem, 1.5vw, 1.12rem);
+  line-height: 1.75;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.6rem;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 750;
+  text-decoration: none;
+  transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.primaryAction {
+  background: var(--color-primary-dark);
+  color: #ffffff;
+  box-shadow: 0 7px 16px -6px rgb(4 120 87 / 52%);
+}
+
+.primaryAction:hover {
+  transform: translateY(-1px);
+  background: var(--color-primary-deep);
+  box-shadow: 0 10px 20px -7px rgb(4 120 87 / 55%);
+}
+
+.secondaryAction {
+  border-color: var(--color-primary-line);
+  background: rgb(255 255 255 / 72%);
+  color: var(--color-primary-deep);
+}
+
+.secondaryAction:hover {
+  transform: translateY(-1px);
+  background: #ffffff;
+}
+
+.primaryAction:focus-visible,
+.secondaryAction:focus-visible,
+.cardLink:focus-visible,
+.textLink:focus-visible {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 3px;
+}
+
+.promise {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.4rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+.promiseIcon {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-primary);
+}
+
+.heroArt {
+  position: relative;
+  display: grid;
+  min-height: 20rem;
+  place-items: center;
+}
+
+.artHalo {
+  position: absolute;
+  width: min(100%, 22rem);
+  aspect-ratio: 1;
+  border: 1px dashed rgb(5 150 105 / 24%);
+  border-radius: 50%;
+  transform: rotate(-18deg) scale(0.9, 0.75);
+}
+
+.artCircle {
+  position: relative;
+  display: grid;
+  width: min(72%, 17rem);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 75%);
+  border-radius: 45% 55% 52% 48% / 49% 44% 56% 51%;
+  background: linear-gradient(145deg, #34d399, #059669 75%);
+  box-shadow: 0 30px 60px -24px rgb(4 120 87 / 54%), inset 0 3px 12px rgb(255 255 255 / 25%);
+  transform: rotate(-7deg);
+}
+
+.bigPaw {
+  width: 46%;
+  height: 46%;
+  color: #ffffff;
+  opacity: 0.96;
+  transform: rotate(7deg);
+}
+
+.heartBadge {
+  position: absolute;
+  top: 8%;
+  right: 7%;
+  display: grid;
+  width: 3.2rem;
+  height: 3.2rem;
+  place-items: center;
+  border: 4px solid #f0fdf7;
+  border-radius: 50%;
+  background: #fda4af;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgb(15 23 42 / 12%);
+  transform: rotate(7deg);
+}
+
+.heartBadge svg {
+  width: 1.45rem;
+  height: 1.45rem;
+  fill: currentColor;
+}
+
+.artPaw {
+  position: absolute;
+  color: rgb(5 150 105 / 22%);
+}
+
+.artPaw svg {
+  width: 2.8rem;
+  height: 2.8rem;
+}
+
+.artPawOne {
+  top: 8%;
+  left: 13%;
+  transform: rotate(-24deg);
+}
+
+.artPawTwo {
+  right: 10%;
+  bottom: 13%;
+  transform: rotate(20deg) scale(0.72);
+}
+
+.artNote {
+  position: absolute;
+  right: 0;
+  bottom: 5%;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgb(255 255 255 / 88%);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 90%);
+  box-shadow: 0 12px 30px rgb(15 23 42 / 10%);
+  transform: rotate(2deg);
+}
+
+.noteIcon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 0.8rem;
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+.noteIcon svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: currentColor;
+}
+
+.artNote strong,
+.artNote small {
+  display: block;
+}
+
+.artNote strong {
+  color: var(--color-text);
+  font-size: 0.8rem;
+}
+
+.artNote small {
+  margin-top: 0.15rem;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+}
+
+.explore {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.sectionHeader {
+  max-width: 43rem;
+}
+
+.sectionHeader .eyebrow,
+.stepsIntro .eyebrow,
+.adminCallout .eyebrow {
+  margin-bottom: 0.45rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: var(--color-text);
+  font-size: clamp(1.7rem, 3.2vw, 2.35rem);
+  letter-spacing: -0.045em;
+  line-height: 1.15;
+}
+
+.sectionText {
+  margin: 0.55rem 0 0;
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  min-height: 15rem;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1.2rem;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-primary-line);
+  box-shadow: 0 14px 28px -16px rgb(4 120 87 / 36%);
+}
+
+.cardIcon {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  border-radius: 0.9rem;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}
+
+.cardIcon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.cardTitle {
+  margin: 1rem 0 0;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.cardText {
+  margin: 0.45rem 0 1rem;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  line-height: 1.65;
+}
+
+.cardLink,
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: auto;
+  color: var(--color-primary-dark);
+  font-size: 0.86rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.cardLink:hover,
+.textLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: center;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid #e8eee8;
+  border-radius: 1.5rem;
+  background: #f4f8f2;
+}
+
+.stepsIntro .textLink {
+  margin-top: 1.15rem;
+}
+
+.stepsList {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepsList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid rgb(226 232 240 / 75%);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 84%);
+}
+
+.stepNumber {
+  display: grid;
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 0.8rem;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.stepsList h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.stepsList p {
+  margin: 0.25rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.adminCallout {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--color-primary-line);
+  border-radius: 1.2rem;
+  background: linear-gradient(110deg, #ecfdf5, #ffffff);
+}
+
+.adminIcon {
+  display: grid;
+  flex: 0 0 auto;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: #d1fae5;
+  color: var(--color-primary-dark);
+}
+
+.adminIcon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.adminCallout h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.adminCallout p:not(.eyebrow) {
+  margin: 0.25rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.adminActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.adminActions .primaryAction,
+.adminActions .secondaryAction {
+  min-height: 2.65rem;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1.1fr) minmax(13rem, 0.9fr);
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .page {
+    gap: 3rem;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    min-height: auto;
+    padding: 1.5rem;
+    border-radius: 1.4rem;
+  }
+
+  .heroTitle {
+    max-width: 15ch;
+    font-size: clamp(2.35rem, 10vw, 3.3rem);
+  }
+
+  .heroArt {
+    min-height: 16rem;
+    margin-top: 0.5rem;
+  }
+
+  .artCircle {
+    width: min(62%, 14rem);
+  }
+
+  .artNote {
+    right: 2%;
+    bottom: 3%;
+  }
+
+  .promise {
+    align-items: flex-start;
+    line-height: 1.55;
+  }
+
+  .cardGrid {
+    gap: 0.75rem;
+  }
+
+  .card {
+    min-height: 14rem;
+    padding: 1rem;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.25rem;
+  }
+
+  .adminCallout {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .adminCallout > div:first-of-type {
+    flex: 1 1 calc(100% - 4rem);
+  }
+
+  .adminActions {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .heroActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 0;
+  }
+
+  .adminActions {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryAction,
+  .secondaryAction,
+  .card {
+    transition: none;
+  }
+}

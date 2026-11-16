@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
+import useAuth from './auth/useAuth'
 import Layout from './components/Layout/Layout'
 import PendingPage from './components/PendingPage/PendingPage'
 import AdopterDetailPage from './pages/AdopterDetailPage/AdopterDetailPage'
@@ -11,12 +12,15 @@ import FollowUpEditPage from './pages/FollowUpEditPage/FollowUpEditPage'
 import FollowUpRegisterPage from './pages/FollowUpRegisterPage/FollowUpRegisterPage'
 import FollowUpsIndexPage from './pages/FollowUpsIndexPage/FollowUpsIndexPage'
 import FollowUpsPage from './pages/FollowUpsPage/FollowUpsPage'
+import HomePage from './pages/HomePage/HomePage'
+import LoginPage from './pages/LoginPage/LoginPage'
 import MedicalEventDetailPage from './pages/MedicalEventDetailPage/MedicalEventDetailPage'
 import MedicalEventEditPage from './pages/MedicalEventEditPage/MedicalEventEditPage'
 import MedicalEventHistoryPage from './pages/MedicalEventHistoryPage/MedicalEventHistoryPage'
 import MedicalEventRegisterPage from './pages/MedicalEventRegisterPage/MedicalEventRegisterPage'
 import MedicalEventsPage from './pages/MedicalEventsPage/MedicalEventsPage'
 import PetDetailPage from './pages/PetDetailPage/PetDetailPage'
+import PetInventoryPage from './pages/PetInventoryPage/PetInventoryPage'
 import PetsPage from './pages/PetsPage/PetsPage'
 import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
 import PetReviewsPage from './pages/PetReviewsPage/PetReviewsPage'
@@ -33,17 +37,21 @@ import VeterinariansPage from './pages/VeterinariansPage/VeterinariansPage'
 import WriteReviewPage from './pages/WriteReviewPage/WriteReviewPage'
 
 export default function App() {
+  useAuth()
+
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<Navigate to="/veterinarians" replace />} />
+        <Route path="/" element={<HomePage />} />
 
         {/* Usuarios */}
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<UserRegisterPage />} />
         <Route path="/profile" element={<UserProfilePage />} />
 
         {/* Mascotas */}
         <Route path="/pets" element={<PetsPage />} />
+        <Route path="/pets/inventory" element={<PetInventoryPage />} />
         <Route path="/pets/new" element={<PetRegisterPage />} />
         <Route path="/pets/:petId" element={<PetDetailPage />} />
         <Route path="/pets/:petId/medical-events" element={<MedicalEventHistoryPage />} />

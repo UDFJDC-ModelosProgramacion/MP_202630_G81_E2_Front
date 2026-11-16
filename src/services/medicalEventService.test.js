@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { deleteMedicalEvent, getMedicalEvents } from './medicalEventService'
+import { stubApiFetch } from '../test/mockApiFetch'
 
 function mockFetch(response) {
   const fetchMock = vi.fn().mockResolvedValue(response)
-  vi.stubGlobal('fetch', fetchMock)
+  stubApiFetch(fetchMock)
   return fetchMock
 }
 

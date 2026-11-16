@@ -10,9 +10,9 @@ vi.mock('../../config/session', () => ({
   getSession: vi.fn(),
 }))
 
-function renderNavbar() {
+function renderNavbar(path = '/') {
   return render(
-    <MemoryRouter initialEntries={['/veterinarians']}>
+    <MemoryRouter initialEntries={[path]}>
       <Navbar />
     </MemoryRouter>,
   )
@@ -20,17 +20,51 @@ function renderNavbar() {
 
 describe('Navbar', () => {
   beforeEach(() => {
-    getSession.mockReturnValue({ role: 'ADOPTER' })
+    getSession.mockReturnValue({ role: 'ADOPTER', name: 'Ana Gómez' })
   })
 
-  it('links to the veterinarians section', () => {
+  it('keeps the main destinations visible and marks the current section', () => {
+    renderNavbar('/shelters')
+
+    expect(screen.getByRole('link', { name: 'Huellitas Seguras' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: 'Inicio' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: 'Mascotas' })).toHaveAttribute('href', '/pets')
+    expect(screen.getByRole('link', { name: 'Refugios' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('groups secondary sections in an accessible menu and closes it after navigation', async () => {
+    const user = userEvent.setup()
     renderNavbar()
 
+    const more = screen.getByRole('button', { name: 'Más secciones' })
+    await user.click(more)
     expect(screen.getByRole('link', { name: 'Veterinarios' })).toHaveAttribute(
       'href',
       '/veterinarians',
     )
-    expect(screen.getByRole('link', { name: 'Huellitas Seguras' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Eventos médicos' })).toHaveAttribute(
+      'href',
+      '/medical-events',
+    )
+    expect(screen.getByRole('link', { name: 'Seguimientos' })).toHaveAttribute('href', '/followUps')
+
+    await user.click(screen.getByRole('link', { name: 'Veterinarios' }))
+
+    expect(more).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('link', { name: 'Veterinarios' })).not.toBeInTheDocument()
+  })
+
+  it('closes the secondary menu with Escape and returns focus to its trigger', async () => {
+    const user = userEvent.setup()
+    renderNavbar()
+
+    const more = screen.getByRole('button', { name: 'Más secciones' })
+    await user.click(more)
+    screen.getByRole('link', { name: 'Veterinarios' }).focus()
+    await user.keyboard('{Escape}')
+
+    expect(more).toHaveAttribute('aria-expanded', 'false')
+    expect(more).toHaveFocus()
   })
 
   it('opens the compact navigation and closes it after choosing a destination', async () => {
@@ -48,74 +82,51 @@ describe('Navbar', () => {
     )
   })
 
-  it('links to the medical events list for every role', () => {
+  it('shows admin registration actions as one grouped menu', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', name: 'AdminUser' })
     renderNavbar()
 
-    expect(screen.getByRole('link', { name: 'Eventos médicos' })).toHaveAttribute(
-      'href',
-      '/medical-events',
-    )
-  })
-
-  it('shows the option to register a pet to the shelter administrator', () => {
-    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
-
-    renderNavbar()
+    expect(screen.getByRole('button', { name: 'Registrar' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Registrar' }))
 
     expect(screen.getByRole('link', { name: 'Registrar mascota' })).toHaveAttribute(
       'href',
       '/pets/new',
     )
-  })
-
-  it('shows the option to register a shelter to the shelter administrator', () => {
-    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
-
-    renderNavbar()
-
+    expect(screen.getByRole('link', { name: 'Inventario de mascotas' })).toHaveAttribute(
+      'href',
+      '/pets/inventory',
+    )
     expect(screen.getByRole('link', { name: 'Registrar refugio' })).toHaveAttribute(
       'href',
       '/shelters/new',
     )
-  })
-
-  it('shows the option to register a medical event to the shelter administrator', () => {
-    getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
-
-    renderNavbar()
-
     expect(screen.getByRole('link', { name: 'Registrar evento médico' })).toHaveAttribute(
       'href',
       '/medical-events/new',
     )
+    expect(screen.getByRole('link', { name: 'Crear carnet de vacunación' })).toHaveAttribute(
+      'href',
+      '/vaccination-records/new',
+    )
   })
 
-  it('hides the option to register a shelter from other roles', () => {
+  it('does not show the admin menu to other roles', () => {
     renderNavbar()
 
-    expect(screen.queryByRole('link', { name: 'Registrar refugio' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Registrar' })).not.toBeInTheDocument()
   })
 
-  it('hides the option to register a pet from other roles', () => {
-    renderNavbar()
-
-    expect(screen.queryByRole('link', { name: 'Registrar mascota' })).not.toBeInTheDocument()
-  })
-
-  it('links to the list of shelters for any role', () => {
-    renderNavbar()
-
-    expect(screen.getByRole('link', { name: 'Refugios' })).toHaveAttribute('href', '/shelters')
-  })
-
-  it('shows the name and role of the current user', () => {
+  it('shows the current user name and role in the profile link', () => {
     getSession.mockReturnValue({ role: 'SHELTER_ADMIN', name: 'AdminUser' })
 
     renderNavbar()
 
-    const user = screen.getByRole('group', { name: 'Usuario actual' })
-    expect(user).toHaveTextContent('AdminUser')
-    expect(user).toHaveTextContent('Administrador de refugio')
+    const profile = screen.getByRole('link', { name: 'Perfil de AdminUser' })
+    expect(profile).toHaveAttribute('href', '/profile')
+    expect(profile).toHaveTextContent('AdminUser')
+    expect(profile).toHaveTextContent('Administrador de refugio')
   })
 
   it('shows a generic user when the session has no name or a known role', () => {
@@ -123,19 +134,16 @@ describe('Navbar', () => {
 
     renderNavbar()
 
-    const user = screen.getByRole('group', { name: 'Usuario actual' })
-    expect(user).toHaveTextContent('Usuario')
-    expect(user).toHaveTextContent('Visitante')
+    const profile = screen.getByRole('link', { name: 'Perfil de Usuario' })
+    expect(profile).toHaveTextContent('Usuario')
+    expect(profile).toHaveTextContent('Visitante')
   })
 
-  it('shows the initials of the user in the avatar', () => {
+  it('shows initials for the profile avatar', () => {
     getSession.mockReturnValue({ role: 'SHELTER_ADMIN', name: 'AdminUser' })
-    const { unmount } = renderNavbar()
-    expect(screen.getByRole('group', { name: 'Usuario actual' })).toHaveTextContent('AU')
-    unmount()
 
-    getSession.mockReturnValue({ role: 'ADOPTER', name: 'luna' })
     renderNavbar()
-    expect(screen.getByRole('group', { name: 'Usuario actual' })).toHaveTextContent('LU')
+
+    expect(screen.getByRole('link', { name: 'Perfil de AdminUser' })).toHaveTextContent('AU')
   })
 })

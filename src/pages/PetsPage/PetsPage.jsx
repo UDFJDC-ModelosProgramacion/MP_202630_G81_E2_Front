@@ -3,11 +3,37 @@ import { Link } from 'react-router-dom'
 import { PawIcon, SearchIcon } from '../../components/Icons/Icons'
 import ScreenState from '../../components/ScreenState/ScreenState'
 import { getSession, ROLES } from '../../config/session'
-import { SEXES, SIZES, SPECIES } from '../../constants/petOptions'
+import {
+  ACTIVITY_LEVELS,
+  REQUIRED_SPACES,
+  SEXES,
+  SIZES,
+  SPECIES,
+} from '../../constants/petOptions'
 import { getPets } from '../../services/petService'
 import styles from './PetsPage.module.css'
 
-const EMPTY_FILTERS = { query: '', species: '', sex: '', size: '' }
+const EMPTY_FILTERS = {
+  query: '',
+  species: '',
+  age: '',
+  size: '',
+  requiredSpace: '',
+  compatibilityChildren: '',
+  compatibilityOtherPets: '',
+  activityLevel: '',
+  sex: '',
+}
+
+const COMPATIBILITY_OPTIONS = [
+  { value: '', label: 'Cualquiera' },
+  { value: 'true', label: 'Sí' },
+  { value: 'false', label: 'No' },
+]
+
+const matchesText = (value, filter) =>
+  !filter ||
+  String(value ?? '').trim().toLocaleLowerCase('es') === filter.trim().toLocaleLowerCase('es')
 
 function matches(pet, filters) {
   const query = filters.query.trim().toLocaleLowerCase('es')
@@ -17,15 +43,36 @@ function matches(pet, filters) {
     .toLocaleLowerCase('es')
   return (
     (!query || searchableText.includes(query)) &&
-    (!filters.species || pet.species === filters.species) &&
-    (!filters.sex || pet.sex === filters.sex) &&
-    (!filters.size || pet.size === filters.size)
+    matchesText(pet.species, filters.species) &&
+    (!filters.age || String(pet.age ?? '') === filters.age) &&
+    matchesText(pet.size, filters.size) &&
+    matchesText(pet.requiredSpace, filters.requiredSpace) &&
+    (!filters.compatibilityChildren ||
+      String(pet.compatibilityChildren) === filters.compatibilityChildren) &&
+    (!filters.compatibilityOtherPets ||
+      String(pet.compatibilityOtherPets) === filters.compatibilityOtherPets) &&
+    matchesText(pet.activityLevel, filters.activityLevel) &&
+    matchesText(pet.sex, filters.sex)
   )
 }
 
 function PetCard({ pet }) {
   const photo = pet.photos?.find((item) => item?.url)?.url
   const [photoFailed, setPhotoFailed] = useState(false)
+  const age =
+    pet.age == null || pet.age === ''
+      ? ''
+      : `${pet.age} ${Number(pet.age) === 1 ? 'año' : 'años'}`
+  const compatibility = [
+    typeof pet.compatibilityChildren === 'boolean'
+      ? `Niños: ${pet.compatibilityChildren ? 'Sí' : 'No'}`
+      : '',
+    typeof pet.compatibilityOtherPets === 'boolean'
+      ? `Otras mascotas: ${pet.compatibilityOtherPets ? 'Sí' : 'No'}`
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <li className={styles.card}>
@@ -42,8 +89,17 @@ function PetCard({ pet }) {
           <span className={styles.species}>{pet.species}</span>
         </div>
         <p className={styles.summary}>
-          {[pet.breed, pet.sex, pet.size].filter(Boolean).join(' · ')}
+          {[pet.breed, age, pet.size, pet.sex, pet.requiredSpace, pet.activityLevel]
+            .filter(Boolean)
+            .join(' · ')}
         </p>
+        {compatibility && <p className={styles.summary}>{compatibility}</p>}
+        {pet.shelter?.name && (
+          <p className={styles.shelter}>
+            {pet.shelter.name}
+            {pet.shelter.city && ` · ${pet.shelter.city}`}
+          </p>
+        )}
         {pet.description && <p className={styles.description}>{pet.description}</p>}
         <Link to={`/pets/${pet.id}`} className={styles.cardLink}>
           Conocer a {pet.name}
@@ -110,7 +166,11 @@ export default function PetsPage() {
         )}
       </header>
 
-      <form className={styles.filters} aria-label="Filtros de mascotas" onSubmit={(event) => event.preventDefault()}>
+      <form
+        className={styles.filters}
+        aria-label="Filtros de mascotas"
+        onSubmit={(event) => event.preventDefault()}
+      >
         <div className={styles.queryField}>
           <label htmlFor="pet-query">Buscar por nombre o raza</label>
           <div className={styles.search}>
@@ -135,13 +195,16 @@ export default function PetsPage() {
           </select>
         </div>
         <div className={styles.field}>
-          <label htmlFor="pet-sex">Sexo</label>
-          <select id="pet-sex" name="sex" value={filters.sex} onChange={handleChange}>
-            <option value="">Todos</option>
-            {SEXES.map((sex) => (
-              <option key={sex} value={sex}>{sex}</option>
-            ))}
-          </select>
+          <label htmlFor="pet-age">Edad exacta</label>
+          <input
+            id="pet-age"
+            name="age"
+            type="number"
+            min="0"
+            step="1"
+            value={filters.age}
+            onChange={handleChange}
+          />
         </div>
         <div className={styles.field}>
           <label htmlFor="pet-size">Tamaño</label>
@@ -149,6 +212,75 @@ export default function PetsPage() {
             <option value="">Todos</option>
             {SIZES.map((size) => (
               <option key={size} value={size}>{size}</option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.field}>
+          <label htmlFor="pet-required-space">Espacio requerido</label>
+          <select
+            id="pet-required-space"
+            name="requiredSpace"
+            value={filters.requiredSpace}
+            onChange={handleChange}
+          >
+            <option value="">Cualquiera</option>
+            {REQUIRED_SPACES.map((space) => (
+              <option key={space} value={space}>{space}</option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.field}>
+          <label htmlFor="pet-compatibility-children">Compatible con niños</label>
+          <select
+            id="pet-compatibility-children"
+            name="compatibilityChildren"
+            value={filters.compatibilityChildren}
+            onChange={handleChange}
+          >
+            {COMPATIBILITY_OPTIONS.map(({ value, label }) => (
+              <option key={value || 'any'} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.field}>
+          <label htmlFor="pet-compatibility-pets">Compatible con otras mascotas</label>
+          <select
+            id="pet-compatibility-pets"
+            name="compatibilityOtherPets"
+            value={filters.compatibilityOtherPets}
+            onChange={handleChange}
+          >
+            {COMPATIBILITY_OPTIONS.map(({ value, label }) => (
+              <option key={value || 'any'} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.field}>
+          <label htmlFor="pet-activity">Nivel de actividad</label>
+          <select
+            id="pet-activity"
+            name="activityLevel"
+            value={filters.activityLevel}
+            onChange={handleChange}
+          >
+            <option value="">Cualquiera</option>
+            {ACTIVITY_LEVELS.map((activity) => (
+              <option key={activity} value={activity}>
+                {activity}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.field}>
+          <label htmlFor="pet-sex">Sexo</label>
+          <select id="pet-sex" name="sex" value={filters.sex} onChange={handleChange}>
+            <option value="">Todos</option>
+            {SEXES.map((sex) => (
+              <option key={sex} value={sex}>{sex}</option>
             ))}
           </select>
         </div>
@@ -171,7 +303,8 @@ export default function PetsPage() {
       {result.status === 'ready' && (
         <>
           <p className={styles.count} role="status">
-            {filteredPets.length} {filteredPets.length === 1 ? 'mascota encontrada' : 'mascotas encontradas'}
+            {filteredPets.length}{' '}
+            {filteredPets.length === 1 ? 'mascota encontrada' : 'mascotas encontradas'}
           </p>
           {filteredPets.length === 0 ? (
             <div className={styles.empty} role="status">

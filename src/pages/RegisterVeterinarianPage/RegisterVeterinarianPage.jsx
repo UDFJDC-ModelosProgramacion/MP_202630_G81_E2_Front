@@ -10,6 +10,7 @@ const TEXT_FIELDS = [
     { name: 'firstName', label: 'Nombre', type: 'text', placeholder: 'Camila', autoComplete: 'given-name' },
     { name: 'lastName', label: 'Apellido', type: 'text', placeholder: 'Rojas', autoComplete: 'family-name' },
     { name: 'email', label: 'Correo', type: 'email', placeholder: 'camila@refugio.com', autoComplete: 'email' },
+    { name: 'password', label: 'Contraseña', type: 'password', placeholder: 'Mínimo 8 caracteres', autoComplete: 'new-password' },
     { name: 'phone', label: 'Teléfono', type: 'tel', placeholder: '300 123 4567', autoComplete: 'tel' },
 ]
 
@@ -19,7 +20,9 @@ const SELECT_FIELDS = [
 ]
 
 const trimValues = (values) =>
-    Object.fromEntries(Object.entries(values).map(([name, value]) => [name, value.trim()]))
+    Object.fromEntries(
+        Object.entries(values).map(([name, value]) => [name, name === 'password' ? value : value.trim()]),
+    )
 
 function Field({ name, label, error, children }) {
     return (
@@ -66,7 +69,7 @@ export default function RegisterVeterinarianPage() {
                 state: { registered: `${veterinarian.firstName} ${veterinarian.lastName}` },
             })
         } catch (error) {
-            
+
             setSubmitError(error.message)
             setSubmitting(false)
         }
@@ -77,6 +80,7 @@ export default function RegisterVeterinarianPage() {
         name,
         value: values[name],
         onChange: handleChange,
+        required: true,
         'aria-invalid': errors[name] ? 'true' : undefined,
         'aria-describedby': errors[name] ? `${name}-error` : undefined,
     })

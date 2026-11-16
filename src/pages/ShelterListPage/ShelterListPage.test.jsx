@@ -193,6 +193,19 @@ describe('ShelterListPage', () => {
     )
   })
 
+  it('retries a failed request and displays the shelters when it succeeds', async () => {
+    const user = userEvent.setup()
+    getShelters.mockRejectedValueOnce(new Error('Servicio no disponible')).mockResolvedValueOnce([PATITAS])
+
+    renderPage()
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Servicio no disponible')
+    await user.click(screen.getByRole('button', { name: 'Reintentar' }))
+
+    expect(await waitForList()).toHaveTextContent('Patitas Felices')
+    expect(getShelters).toHaveBeenCalledTimes(2)
+  })
+
   describe('when answers arrive out of order', () => {
     function deferred() {
       const control = {}

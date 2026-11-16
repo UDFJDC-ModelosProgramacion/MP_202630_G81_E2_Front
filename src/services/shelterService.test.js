@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from './apiClient'
 import { createShelter, getShelter, getShelters } from './shelterService'
+import { stubApiFetch } from '../test/mockApiFetch'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -13,7 +14,7 @@ describe('createShelter', () => {
       status: 201,
       json: () => Promise.resolve({ id: 3, name: 'Patitas Felices' }),
     })
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
     const shelter = { name: 'Patitas Felices', users: [{ id: 1 }] }
 
     const result = await createShelter(shelter)
@@ -55,7 +56,7 @@ function stubFetchWith(body) {
     status: 200,
     json: () => Promise.resolve(body),
   })
-  vi.stubGlobal('fetch', fetchMock)
+  stubApiFetch(fetchMock)
   return fetchMock
 }
 

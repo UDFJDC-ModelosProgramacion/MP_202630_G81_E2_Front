@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from './apiClient'
-import { addPetPhoto, createPet, getPet, getPets} from './petService'
+import { addPetPhoto, createPet, deletePet, getPet, getPets } from './petService'
+import { stubApiFetch } from '../test/mockApiFetch'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -13,7 +14,7 @@ describe('createPet', () => {
       status: 201,
       json: () => Promise.resolve({ id: 12, name: 'Luna' }),
     })
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     const result = await createPet({ name: 'Luna', shelter: { id: 1 } })
 
@@ -21,13 +22,15 @@ describe('createPet', () => {
     const [url, options] = fetchMock.mock.calls[0]
     expect(url).toBe('/api/pets')
     expect(options.method).toBe('POST')
-    expect(options.headers).toEqual({ 'Content-Type': 'application/json' })
+    expect(options.headers).toMatchObject({
+      'Content-Type': 'application/json',
+      'X-XSRF-TOKEN': 'test-csrf-token',
+    })
     expect(JSON.parse(options.body)).toEqual({ name: 'Luna', shelter: { id: 1 } })
   })
 
   it('fails with the message sent by the backend', async () => {
-    vi.stubGlobal(
-      'fetch',
+    stubApiFetch(
       vi.fn().mockResolvedValue({
         ok: false,
         status: 412,
@@ -53,7 +56,7 @@ describe('addPetPhoto', () => {
       status: 201,
       json: () => Promise.resolve({ id: 4 }),
     })
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
     const photo = { url: 'https://x.com/luna.jpg', type: 'JPG', description: 'Foto de perfil' }
 
     const result = await addPetPhoto(12, photo)
@@ -71,7 +74,7 @@ describe('getPets and getPet', () => {
 
   it('requests the list of pets', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okJson([{ id: 1 }]))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     expect(await getPets()).toEqual([{ id: 1 }])
     expect(fetchMock.mock.calls[0][0]).toBe('/api/pets')
@@ -79,9 +82,37 @@ describe('getPets and getPet', () => {
 
   it('requests one pet and encodes its id', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okJson({ id: 7 }))
-    vi.stubGlobal('fetch', fetchMock)
+    stubApiFetch(fetchMock)
 
     expect(await getPet('7/../x')).toEqual({ id: 7 })
     expect(fetchMock.mock.calls[0][0]).toBe('/api/pets/7%2F..%2Fx')
+  })
+})
+
+describe('deletePet', () => {
+  it('sends a DELETE request and resolves without content on 204', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 })
+    stubApiFetch(fetchMock)
+
+    expect(await deletePet('7/../x')).toBeNull()
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/pets/7%2F..%2Fx')
+    expect(options.method).toBe('DELETE')
+    expect(options.body).toBeUndefined()
+  })
+
+  it.each([
+    [404, 'Mascota no encontrada'],
+    [412, 'La mascota no se puede eliminar por sus relaciones o historial'],
+  ])('preserves the backend message for status %s', async (status, message) => {
+    stubApiFetch(
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status,
+        json: () => Promise.resolve({ apierror: { message } }),
+      }),
+    )
+
+    await expect(deletePet(7)).rejects.toMatchObject({ status, message })
   })
 })

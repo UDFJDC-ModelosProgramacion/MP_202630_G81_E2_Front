@@ -6,10 +6,11 @@ import {
   getVeterinarians,
   updateVeterinarian,
 } from './veterinarianService'
+import { stubApiFetch } from '../test/mockApiFetch'
 
 function mockFetch(response) {
   const fetchMock = vi.fn().mockResolvedValue(response)
-  vi.stubGlobal('fetch', fetchMock)
+  stubApiFetch(fetchMock)
   return fetchMock
 }
 
@@ -105,7 +106,10 @@ describe('createVeterinarian', () => {
     const [url, options] = fetchMock.mock.calls[0]
     expect(url).toBe('/api/veterinarians')
     expect(options.method).toBe('POST')
-    expect(options.headers).toEqual({ 'Content-Type': 'application/json' })
+    expect(options.headers).toMatchObject({
+      'Content-Type': 'application/json',
+      'X-XSRF-TOKEN': 'test-csrf-token',
+    })
     expect(JSON.parse(options.body)).toEqual(NEW_VETERINARIAN)
   })
 
@@ -141,7 +145,10 @@ describe('updateVeterinarian', () => {
     const [url, options] = fetchMock.mock.calls[0]
     expect(url).toBe('/api/veterinarians/4')
     expect(options.method).toBe('PUT')
-    expect(options.headers).toEqual({ 'Content-Type': 'application/json' })
+    expect(options.headers).toMatchObject({
+      'Content-Type': 'application/json',
+      'X-XSRF-TOKEN': 'test-csrf-token',
+    })
     expect(JSON.parse(options.body)).toEqual(CHANGES)
   })
 

@@ -12,6 +12,10 @@ export function createPet(pet) {
   return api.post('/pets', pet)
 }
 
+export function deletePet(petId) {
+  return api.delete(`/pets/${encodeURIComponent(petId)}`)
+}
+
 export function addPetPhoto(petId, photo) {
   return api.post(`/pets/${petId}/photos`, photo)
 }

@@ -21,6 +21,10 @@ function DetailRow({ label, children }) {
   )
 }
 
+function recordedOrFallback(value) {
+  return value == null || String(value).trim() === '' ? 'No registrado' : value
+}
+
 function PetProfile({ pet }) {
   const [photoFailed, setPhotoFailed] = useState(false)
   const photo = pet.photos?.find((item) => item?.url)?.url
@@ -57,11 +61,20 @@ function PetProfile({ pet }) {
               ) : (
                 'un refugio'
               )}
+              {shelter.city && ` · ${shelter.city}`}
             </p>
           )}
-          <Link to={`/pets/${pet.id}/medical-events`} className={styles.primaryAction}>
-            Ver historia médica
-          </Link>
+          <nav aria-label={`Más información sobre ${pet.name}`} className={styles.actions}>
+            <Link to={`/pets/${pet.id}/medical-events`} className={styles.primaryAction}>
+              Ver historia médica
+            </Link>
+            <Link to={`/pets/${pet.id}/reviews`} className={styles.secondaryAction}>
+              Ver reseñas
+            </Link>
+            <Link to={`/pets/${pet.id}/vaccination-record`} className={styles.secondaryAction}>
+              Carnet de vacunación
+            </Link>
+          </nav>
         </div>
       </header>
 
@@ -83,8 +96,8 @@ function PetProfile({ pet }) {
             <DetailRow label="Fecha de ingreso">{pet.admissionDate ? formatDay(pet.admissionDate) : null}</DetailRow>
             <DetailRow label="Nivel de actividad">{pet.activityLevel}</DetailRow>
             <DetailRow label="Espacio requerido">{pet.requiredSpace}</DetailRow>
-            <DetailRow label="Temperamento">{pet.temperament}</DetailRow>
-            <DetailRow label="Necesidades específicas">{pet.specificNeeds}</DetailRow>
+            <DetailRow label="Temperamento">{recordedOrFallback(pet.temperament)}</DetailRow>
+            <DetailRow label="Necesidades específicas">{recordedOrFallback(pet.specificNeeds)}</DetailRow>
             {COMPATIBILITY_FIELDS.map(([key, label]) => (
               <DetailRow key={key} label={label}>
                 {typeof pet[key] === 'boolean' ? (pet[key] ? 'Sí' : 'No') : null}

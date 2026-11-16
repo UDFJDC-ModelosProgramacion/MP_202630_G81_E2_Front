@@ -16,7 +16,7 @@ export default defineConfig({
     hookTimeout: 30000,
     pool: 'vmThreads',
     maxWorkers: 2,
-    env: { VITE_API_BASE_URL: '', VITE_SHELTER_ID: '' },
+    env: { VITE_API_BASE_URL: '' },
     coverage: {
       reporter: [['text', { maxCols: 200 }], 'lcov'],
     },

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
+import { setSession } from './config/session'
 import { getMedicalEvent, getMedicalEvents } from './services/medicalEventService'
 import { getPet, getPets } from './services/petService'
 import { getReviews } from './services/reviewService'
@@ -26,6 +27,7 @@ vi.mock('./services/petService', () => ({
   getPets: vi.fn(),
   getPet: vi.fn(),
   createPet: vi.fn(),
+  deletePet: vi.fn(),
   addPetPhoto: vi.fn(),
 }))
 
@@ -62,6 +64,7 @@ function renderAt(path) {
 describe('App', () => {
   beforeEach(() => {
     getVeterinarians.mockResolvedValue([])
+    setSession(null)
     getPets.mockResolvedValue([])
     getPet.mockResolvedValue({ id: 1, name: 'Luna', species: 'Perro' })
     getMedicalEvents.mockResolvedValue([])
@@ -86,11 +89,17 @@ describe('App', () => {
     expect(await screen.findByText('Aún no hay veterinarios registrados.')).toBeInTheDocument()
   })
 
-  it('sends the home route to the veterinarians page', async () => {
+  it('shows the home page with a way to explore pets and shelters', async () => {
     renderAt('/')
 
-    expect(screen.getByRole('heading', { name: 'Veterinarios' })).toBeInTheDocument()
-    expect(await screen.findByText('Aún no hay veterinarios registrados.')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Un hogar cambia una vida/ }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Conocer mascotas' })).toHaveAttribute('href', '/pets')
+    expect(screen.getByRole('link', { name: 'Explorar refugios' })).toHaveAttribute(
+      'href',
+      '/shelters',
+    )
   })
 
   it('shows the pet registration form', () => {
@@ -111,6 +120,22 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Mascotas que buscan un hogar' })).toBeInTheDocument()
     expect(screen.getByRole('form', { name: 'Filtros de mascotas' })).toBeInTheDocument()
     expect(await screen.findByText('Aún no hay mascotas registradas')).toBeInTheDocument()
+  })
+
+  it('shows the pet inventory on its dedicated route', async () => {
+    setSession({ id: 2, email: 'admin@example.com', role: 'SHELTER_ADMIN', shelterId: 1 })
+    getShelter.mockResolvedValue({
+      id: 1,
+      name: 'Patitas Felices',
+      city: 'Bogotá',
+      pets: [{ id: 2, name: 'Luna', species: 'Perro', age: 1 }],
+    })
+
+    renderAt('/pets/inventory')
+
+    expect(await screen.findByRole('heading', { name: 'Inventario de mascotas' })).toBeInTheDocument()
+    expect(screen.getByText('Patitas Felices · Bogotá')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver perfil de Luna' })).toHaveAttribute('href', '/pets/2')
   })
 
   it('shows the pet profile and its medical history link', async () => {
