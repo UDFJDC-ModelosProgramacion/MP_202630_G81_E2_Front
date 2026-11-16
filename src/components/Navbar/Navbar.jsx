@@ -13,22 +13,39 @@ const PRIMARY_LINKS = [
   { path: '/shelters', label: 'Refugios' },
 ]
 
-const MORE_LINKS = [
+const COMMON_MORE_LINKS = [
   { path: '/veterinarians', label: 'Veterinarios' },
   { path: '/medical-events', label: 'Eventos médicos' },
-  { path: '/adopters', label: 'Adoptantes' },
-  { path: '/followUps', label: 'Seguimientos' },
-  { path: '/notifications', label: 'Notificaciones' },
-  { path: '/adopters/new', label: 'Registrar adoptante' },
+]
+
+const MORE_LINKS_BY_ROLE = {
+  [ROLES.VISITOR]: [
+    ...COMMON_MORE_LINKS,
+    { path: '/adopters/new', label: 'Registrar adoptante' },
+  ],
+  [ROLES.ADOPTER]: COMMON_MORE_LINKS,
+  [ROLES.SHELTER_ADMIN]: COMMON_MORE_LINKS,
+  [ROLES.VETERINARIAN]: [
+    ...COMMON_MORE_LINKS,
+    { path: '/followUps', label: 'Mis seguimientos' },
+  ],
+  [ROLES.ADMIN]: [...COMMON_MORE_LINKS, { path: '/adopters', label: 'Adoptantes' }],
+}
+
+const ADMIN_LINKS = [
+  { path: '/shelters/new', label: 'Registrar refugio' },
+  { path: '/pets/new', label: 'Registrar mascota' },
   { path: '/veterinarians/new', label: 'Registrar veterinario' },
 ]
 
-const ADMIN_LINKS = [
+const SHELTER_ADMIN_LINKS = [
   { path: '/pets/inventory', label: 'Inventario de mascotas' },
-  { path: '/shelters/new', label: 'Registrar refugio' },
-  { path: '/pets/new', label: 'Registrar mascota' },
   { path: '/medical-events/new', label: 'Registrar evento médico' },
   { path: '/vaccination-records/new', label: 'Crear carnet de vacunación' },
+]
+
+const VETERINARIAN_LINKS = [
+  { path: '/medical-events/new', label: 'Registrar evento médico' },
 ]
 
 // "AdminUser" -> "AU", "Ana Gómez" -> "AG", "luna" -> "LU"
@@ -69,7 +86,7 @@ function NavigationDropdown({ id, label, ariaLabel, items, open, onToggle, onClo
       >
         {admin && <span aria-hidden="true">＋</span>}
         {label}
-        <span className={styles.chevron} aria-hidden="true">⌄</span>
+        <span className={styles.chevron} aria-hidden="true" />
       </button>
       <ul id={id} className={styles.dropdownMenu} hidden={!open}>
         {items.map(({ path, label: itemLabel }) => (
@@ -101,7 +118,15 @@ export default function Navbar() {
   const navigate = useNavigate()
   const session = auth?.session ?? getSession()
   const isAuthenticated = auth?.isAuthenticated ?? session.role !== ROLES.VISITOR
-  const isAdmin = session.role === ROLES.SHELTER_ADMIN
+  const moreLinks = MORE_LINKS_BY_ROLE[session.role] ?? []
+  const registrationLinks =
+    session.role === ROLES.ADMIN
+      ? ADMIN_LINKS
+      : session.role === ROLES.SHELTER_ADMIN
+        ? SHELTER_ADMIN_LINKS
+        : session.role === ROLES.VETERINARIAN
+          ? VETERINARIAN_LINKS
+          : null
   const closeMenu = () => {
     setMenuOpen(false)
     setMoreOpen(false)
@@ -168,21 +193,23 @@ export default function Navbar() {
                   </NavLink>
                 </li>
               ))}
-              <li>
-                <NavigationDropdown
-                  id="more-navigation"
-                  label="Más"
-                  ariaLabel="Más secciones"
-                  items={MORE_LINKS}
-                  open={moreOpen}
-                  onToggle={() => {
-                    setMoreOpen((isOpen) => !isOpen)
-                    setRegisterOpen(false)
-                  }}
-                  onClose={() => setMoreOpen(false)}
-                  onNavigate={closeMenu}
-                />
-              </li>
+              {moreLinks.length > 0 && (
+                <li>
+                  <NavigationDropdown
+                    id="more-navigation"
+                    label="Más"
+                    ariaLabel="Más secciones"
+                    items={moreLinks}
+                    open={moreOpen}
+                    onToggle={() => {
+                      setMoreOpen((isOpen) => !isOpen)
+                      setRegisterOpen(false)
+                    }}
+                    onClose={() => setMoreOpen(false)}
+                    onNavigate={closeMenu}
+                  />
+                </li>
+              )}
             </ul>
           </nav>
 
@@ -192,11 +219,11 @@ export default function Navbar() {
                 {auth.error}
               </span>
             )}
-            {isAdmin && (
+            {registrationLinks && (
               <NavigationDropdown
                 id="admin-navigation"
                 label="Registrar"
-                items={ADMIN_LINKS}
+                items={registrationLinks}
                 open={registerOpen}
                 onToggle={() => {
                   setRegisterOpen((isOpen) => !isOpen)

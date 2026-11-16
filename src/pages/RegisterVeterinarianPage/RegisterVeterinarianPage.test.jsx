@@ -4,11 +4,16 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import RegisterVeterinarianPage from './RegisterVeterinarianPage'
 import { createVeterinarian } from '../../services/veterinarianService'
+import { getSession } from '../../config/session'
 
 vi.mock('../../services/veterinarianService', () => ({
     getVeterinarians: vi.fn(),
     getVeterinarian: vi.fn(),
     createVeterinarian: vi.fn(),
+}))
+vi.mock('../../config/session', () => ({
+    ROLES: { ADMIN: 'ADMIN', SHELTER_ADMIN: 'SHELTER_ADMIN' },
+    getSession: vi.fn(),
 }))
 
 function VeterinariansStub() {
@@ -56,6 +61,19 @@ const submit = (user) => user.click(screen.getByRole('button', { name: 'Registra
 describe('RegisterVeterinarianPage', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        getSession.mockReturnValue({ role: 'ADMIN' })
+    })
+
+    it('does not expose the veterinarian form to non-admin roles', () => {
+        getSession.mockReturnValue({ role: 'SHELTER_ADMIN' })
+
+        renderPage()
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Solo un administrador general puede registrar veterinarios.',
+        )
+        expect(screen.queryByRole('form', { name: 'Registro de veterinario' })).not.toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: 'Registrar' })).not.toBeInTheDocument()
     })
 
     it('shows the registration form with every field marked as required', () => {

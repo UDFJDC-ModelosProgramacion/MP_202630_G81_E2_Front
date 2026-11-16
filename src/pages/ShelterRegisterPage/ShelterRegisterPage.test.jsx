@@ -9,7 +9,7 @@ import { createShelter } from '../../services/shelterService'
 
 vi.mock('../../services/shelterService', () => ({ createShelter: vi.fn() }))
 vi.mock('../../config/session', () => ({
-  ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
+  ROLES: { ADMIN: 'ADMIN', SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
 }))
 
@@ -45,7 +45,7 @@ const backendError = (message) => new ApiError(message, 412)
 describe('ShelterRegisterPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 7, name: 'AdminUser' })
+    getSession.mockReturnValue({ role: 'ADMIN', userId: 7, name: 'AdminUser' })
   })
 
   it('asks for name, city, NIT and location, all marked as required', () => {
@@ -58,19 +58,21 @@ describe('ShelterRegisterPage', () => {
     expect(screen.getByText('*Campos obligatorios')).toBeInTheDocument()
   })
 
-  it('tells the user that they become the administrator of the shelter', () => {
+  it('tells the user they will be associated as the responsible shelter user', () => {
     renderPage()
 
-    expect(screen.getByText(/AdminUser/)).toHaveTextContent('queda como su administrador')
+    expect(screen.getByText(/AdminUser/)).toHaveTextContent(
+      'quedará asociado como usuario responsable del refugio',
+    )
   })
 
-  it('explains that only the shelter administrator can register shelters', () => {
-    getSession.mockReturnValue({ role: 'ADOPTER' })
+  it('explains that only a global administrator can register shelters', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', userId: 7 })
 
     renderPage()
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Solo el administrador de un refugio puede registrar refugios.',
+      'Solo un administrador general puede registrar refugios.',
     )
     expect(screen.queryByRole('button', { name: 'Registrar' })).not.toBeInTheDocument()
   })
@@ -144,6 +146,7 @@ describe('ShelterRegisterPage', () => {
     expect(dialog).toHaveTextContent('Registro exitoso')
     expect(dialog).toHaveTextContent('900069803-1')
     expect(dialog).toHaveTextContent('Bogotá')
+    expect(dialog).toHaveTextContent('Usuario responsable')
     expect(dialog).toHaveTextContent('AdminUser')
   })
 

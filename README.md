@@ -48,12 +48,12 @@ The front-end consumes the REST API of the back-end (Spring Boot) built during C
 
 ## Features at a Glance
 
-- **Home:** welcoming landing page with direct paths to pets, shelters, veterinary care, and medical events.
+- **Home:** adoption landing page for regular users and a dedicated management dashboard for global administrators.
 - **Veterinarians:** list with filters (specialization / availability), profile with follow-ups and medical events, and registration.
 - **Shelters:** registration with client-side and back-end validation.
 - **Pets:** registration with arrival events and photo links.
 - **Role-based UI:** account-aware navigation and administrative options backed by the authenticated server session.
-- **Navigation:** responsive, grouped links with a dedicated home route and role-aware registration actions.
+- **Navigation:** responsive, role-specific links and registration actions keep each account focused on usable pages; shared breadcrumbs appear on every route.
 - **Quality:** Vitest/React Testing Library, ESLint, and a Jenkins pipeline with a SonarQube quality gate.
 
 ## Requirements
@@ -143,21 +143,22 @@ Each screen lives in its own folder next to its CSS Module and tests. Logic that
 |---|---|---|---|
 | `/` | Home with direct paths to the main platform sections | Any | ✅ Implemented |
 | `/veterinarians` | Veterinarian list with filters (HU70) | Any | ✅ Implemented |
-| `/veterinarians/new` | Register a veterinarian | Any | ✅ Implemented |
+| `/veterinarians/new` | Register a veterinarian | `ADMIN` | ✅ Implemented |
 | `/veterinarians/:veterinarianId` | Veterinarian profile (HU70) | Any | ✅ Implemented |
 | `/shelters` | Shelter list with city and address filters (HU02) | Any | ✅ Implemented |
-| `/shelters/new` | Register a shelter (HU01) | Shelter admin | ✅ Implemented |
+| `/shelters/new` | Register a shelter (HU01) | `ADMIN` | ✅ Implemented |
 | `/shelters/:shelterId` | Shelter detail with its pets and events (HU03) | Any (actions: shelter admin) | ✅ Implemented |
 | `/shelters/:shelterId/edit` | Edit a shelter (HU04) | Shelter admin | 🚧 Placeholder |
 | `/shelters/:shelterId/events/new` | Create an event (HU12) | Shelter admin | 🚧 Placeholder |
 | `/events/:eventId` | Event detail (HU15) | Any | 🚧 Placeholder |
 | `/pets/inventory` | View and manage the current shelter's pet inventory (HU09, HU11) | Shelter admin | ⚠️ View/delete implemented; editing awaits the update contract |
-| `/pets/new` | Register a pet (HU06) | Shelter admin | ✅ Implemented |
+| `/pets/new` | Register a pet (HU06) | `ADMIN` | ✅ Implemented |
 | `/medical-events` | Medical events list with filters (HU28) | Any | ✅ Implemented |
 | `/medical-events/new` | Register a medical event (HU23) | Shelter staff | ✅ Implemented |
 | `/pets/:petId/medical-events` | Pet medical history (HU24) | Any | ✅ Implemented |
 | `/medical-events/:medicalEventId` | Medical event detail (HU25) | Any | ✅ Implemented |
 | `/medical-events/:medicalEventId/edit` | Edit a medical event (HU26) | Shelter staff | ✅ Implemented |
+| `/adopters` | Filter and browse adopters | `ADMIN` | ✅ Implemented |
 | `/pets` | Pet catalog with text and attribute filters (HU07) | Any | ✅ Implemented |
 | `/pets/:petId` | Pet profile and links to shelter, medical history, reviews, and vaccination record (HU08) | Any | ✅ Implemented |
 | `/pets/:petId/reviews` | Reviews of a pet (HU64) | Any (adopter sees "Mis reseñas") | ✅ Implemented |
@@ -335,7 +336,7 @@ A shelter administrator can change only the **specialization** and the **availab
 
 ### Register a Veterinarian
 
-**Route:** `/veterinarians/new` (reachable from the **Registrar veterinario** button on the list)
+**Route:** `/veterinarians/new` · **Role:** global administrator (`ADMIN`)
 
 Form with first name, last name, email, password, phone, specialization, and availability. All fields are required; the password must have at least eight characters, the email must be valid, and the phone must have 7–15 digits (spaces, parentheses, `+`, and `-` are ignored). The password is sent only to the backend for account creation and is not retained in the session. On success, the user returns to `/veterinarians` with a confirmation message.
 
@@ -344,7 +345,7 @@ Form with first name, last name, email, password, phone, specialization, and ava
 
 **Manual testing:**
 
-1. Open `/veterinarians/new` and submit the empty form: errors should appear for every field.
+1. Sign in as `ADMIN`, open `/veterinarians/new`, and submit the empty form: errors should appear for every field.
 2. Enter an invalid email and a short phone number: both should be rejected.
 3. Fill in valid data and submit: you should return to the list with a confirmation message and see the new veterinarian.
 
@@ -462,9 +463,9 @@ Lists the medical events of every pet, newest first, and filters them by **Masco
 
 ### HU06 – Register a Pet
 
-**Route:** `/pets/new` · **Role:** shelter administrator
+**Route:** `/pets/new` · **Role:** global administrator (`ADMIN`)
 
-The administrator registers a pet under their shelter, including at least one **arrival event** (date, type, and description). All fields are required except description, temperament, and specific needs. The admission date cannot be in the future. Fixed option lists (species, sex, size, etc.) live in `src/constants/petOptions.js` and will also be used by the HU07 filters. Photos are sent as links (see [Known limitation](#known-limitation--no-shelter-photos)).
+The administrator selects the destination shelter and registers the pet with at least one **arrival event** (date, type, and description). All fields are required except description, temperament, and specific needs. The admission date cannot be in the future. Fixed option lists (species, sex, size, etc.) live in `src/constants/petOptions.js` and will also be used by the HU07 filters. Photos are sent as links (see [Known limitation](#known-limitation--no-shelter-photos)).
 
 - **Back-end:** `POST /api/pets`, with the shelter sent as `shelter.id` and arrival events included in `medicalEvents`; photos through `POST /api/pets/{petId}/photos`.
 - **Validation:** first on the client (errors next to each field, focus moved to the first invalid field), then by the back-end. Back-end errors appear next to the matching field or in an alert, and the form keeps the entered data.
@@ -472,7 +473,7 @@ The administrator registers a pet under their shelter, including at least one **
 
 **Manual testing:**
 
-1. Sign in with an account associated with the shelter where the pet should be registered.
+1. Sign in with an `ADMIN` account and ensure at least one shelter is registered.
 2. Open `/pets/new` and submit the empty form. Validation errors should appear, and focus should move to the first invalid field.
 3. Enter a future admission date. The form should reject it.
 4. Register a pet with all required data. A confirmation should appear, and the app should navigate to `/pets/{id}`.
@@ -493,7 +494,7 @@ Visitors can browse the pets returned by the back-end and narrow the catalog by 
 1. Open `/pets` and verify the loading state resolves into pet cards with profile links.
 2. Search by a pet name and by a breed; combine exact age, species, sex, size, space, compatibility, and activity filters.
 3. Verify compatibility filters default to “Cualquiera”, then use criteria with no matches and verify the empty result message and clear-filters action.
-4. Clear filters and verify the full list returns. Confirm the registration shortcut appears only for the shelter administrator.
+4. Clear filters and verify the full list returns. Confirm the registration shortcut appears only for `ADMIN`.
 5. Stop the back-end and verify the error message and retry action.
 
 ### HU08 – View a Pet Profile
@@ -532,9 +533,9 @@ The page loads the shelter associated with the authenticated administrator sessi
 
 ### HU01 – Register a Shelter
 
-**Route:** `/shelters/new` · **Role:** shelter administrator
+**Route:** `/shelters/new` · **Role:** global administrator (`ADMIN`)
 
-The administrator registers a shelter with its **name, city, NIT, and address**. All fields are required. They are validated on the client first and then by the back-end (for example, an NIT already registered is reported next to the NIT field). On success, the user is redirected to the shelter detail `/shelters/{id}` (HU03). The creator is sent as `users: [{ id }]` and becomes the shelter's administrator.
+The administrator registers a shelter with its **name, city, NIT, and address**. All fields are required. They are validated on the client first and then by the back-end (for example, an NIT already registered is reported next to the NIT field). On success, the user is redirected to the shelter detail `/shelters/{id}` (HU03). The creator is sent as `users: [{ id }]` and is associated with the shelter as its responsible user.
 
 - **Back-end:** `POST /api/shelters`.
 - **Errors:** field-related back-end errors (missing city, duplicated NIT) are shown next to the field, with focus moved to it. Any other error (same name, city, and location, or a connection failure) is shown in an error dialog. In both cases the form keeps the entered data.
@@ -652,7 +653,7 @@ Errors: back-end messages (pet not found, pet already has a record) open a dialo
 
 **Route:** `/shelters/:shelterId` · **Role:** any (the actions are only for the shelter administrator)
 
-Shows name, NIT, address and city, with the shelter's **pets** and **events**. The administrator of that shelter also sees **Editar**, **Eliminar** (disabled until HU05), **+ Registrar mascota** and **+ Crear evento**. Adoptions, adopters, veterinarians and requests that the back-end also sends are ignored on purpose.
+Shows name, NIT, address and city, with the shelter's **pets** and **events**. The administrator of that shelter also sees **Editar**, **Eliminar** (disabled until HU05) and **+ Crear evento**. A global `ADMIN` can register a pet for the displayed shelter. Adoptions, adopters, veterinarians and requests that the back-end also sends are ignored on purpose.
 
 - **Back-end:** `GET /api/shelters/{id}` (`ShelterDetailDTO`). `users` is write-only in the back-end, so shelter ownership must be supplied by the authenticated user's `shelterId` in the authentication contract.
 - **Errors:** 404 and 412 show an alert with a link back to the list; a connection failure shows a generic message.

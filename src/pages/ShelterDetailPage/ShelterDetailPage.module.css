@@ -4,28 +4,6 @@
   gap: 1.25rem;
 }
 
-.breadcrumb {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  color: var(--color-muted);
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.breadcrumb a {
-  color: var(--color-muted);
-}
-
-.breadcrumb a:hover {
-  color: var(--color-primary-dark);
-}
-
-.breadcrumb [aria-current='page'] {
-  color: var(--color-text);
-  font-weight: 700;
-}
-
 .header {
   display: flex;
   flex-wrap: wrap;

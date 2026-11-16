@@ -21,6 +21,15 @@
     linear-gradient(125deg, #f0fdf7 0%, #fbfffd 55%, #f5fbf7 100%);
 }
 
+.adminHero {
+  padding: clamp(2rem, 5vw, 4rem);
+  border: 1px solid #d5f3e7;
+  border-radius: 2rem;
+  background:
+    radial-gradient(ellipse at 82% 18%, rgb(167 243 208 / 55%), transparent 34%),
+    linear-gradient(125deg, #f0fdf7 0%, #fbfffd 55%, #f5fbf7 100%);
+}
+
 .heroCopy {
   position: relative;
   z-index: 1;
@@ -278,8 +287,7 @@
 }
 
 .sectionHeader .eyebrow,
-.stepsIntro .eyebrow,
-.adminCallout .eyebrow {
+.stepsIntro .eyebrow {
   margin-bottom: 0.45rem;
 }
 
@@ -429,57 +437,6 @@
   line-height: 1.6;
 }
 
-.adminCallout {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.25rem;
-  border: 1px solid var(--color-primary-line);
-  border-radius: 1.2rem;
-  background: linear-gradient(110deg, #ecfdf5, #ffffff);
-}
-
-.adminIcon {
-  display: grid;
-  flex: 0 0 auto;
-  width: 3rem;
-  height: 3rem;
-  place-items: center;
-  border-radius: 1rem;
-  background: #d1fae5;
-  color: var(--color-primary-dark);
-}
-
-.adminIcon svg {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.adminCallout h2 {
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.adminCallout p:not(.eyebrow) {
-  margin: 0.25rem 0 0;
-  color: var(--color-muted);
-  font-size: 0.85rem;
-}
-
-.adminActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-left: auto;
-}
-
-.adminActions .primaryAction,
-.adminActions .secondaryAction {
-  min-height: 2.65rem;
-  padding: 0.6rem 0.8rem;
-  font-size: 0.82rem;
-}
-
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: minmax(0, 1.1fr) minmax(13rem, 0.9fr);
@@ -500,6 +457,11 @@
     grid-template-columns: 1fr;
     gap: 0.5rem;
     min-height: auto;
+    padding: 1.5rem;
+    border-radius: 1.4rem;
+  }
+
+  .adminHero {
     padding: 1.5rem;
     border-radius: 1.4rem;
   }
@@ -543,19 +505,6 @@
     padding: 1.25rem;
   }
 
-  .adminCallout {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .adminCallout > div:first-of-type {
-    flex: 1 1 calc(100% - 4rem);
-  }
-
-  .adminActions {
-    width: 100%;
-    margin-left: 0;
-  }
 }
 
 @media (max-width: 400px) {
@@ -572,9 +521,6 @@
     min-height: 0;
   }
 
-  .adminActions {
-    flex-direction: column;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

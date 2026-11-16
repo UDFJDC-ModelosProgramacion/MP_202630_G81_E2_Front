@@ -18,6 +18,7 @@ export default defineConfig({
     maxWorkers: 2,
     env: { VITE_API_BASE_URL: '' },
     coverage: {
+      exclude: ['**/*.module.css'],
       reporter: [['text', { maxCols: 200 }], 'lcov'],
     },
   },

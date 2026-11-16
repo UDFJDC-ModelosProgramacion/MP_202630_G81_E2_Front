@@ -111,7 +111,7 @@ function PetCard({ pet }) {
 }
 
 export default function PetsPage() {
-  const isAdmin = getSession().role === ROLES.SHELTER_ADMIN
+  const isAdmin = getSession().role === ROLES.ADMIN
   const [pets, setPets] = useState([])
   const [filters, setFilters] = useState(EMPTY_FILTERS)
   const [result, setResult] = useState({ status: 'loading', message: '' })

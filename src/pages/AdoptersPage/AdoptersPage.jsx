@@ -19,7 +19,7 @@ const distinct = (values) =>
   [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'))
 
 export default function AdoptersPage() {
-  const isAdmin = getSession().role === ROLES.SHELTER_ADMIN
+  const isAdmin = getSession().role === ROLES.ADMIN
   const [filters, setFilters] = useState(NO_FILTERS)
   const [housingOptions, setHousingOptions] = useState(HOUSING_TYPES)
   const [result, setResult] = useState({
@@ -92,7 +92,7 @@ export default function AdoptersPage() {
       {!isAdmin ? (
         <ScreenState
           state="error"
-          message="Solo el administrador del refugio puede consultar los adoptantes."
+          message="Solo un administrador puede consultar la lista de adoptantes."
         />
       ) : (
         <>

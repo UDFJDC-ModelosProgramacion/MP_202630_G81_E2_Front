@@ -131,6 +131,34 @@ describe('PetDetailPage', () => {
     expect(screen.getByText('Perro · Criollo · 1 año')).toBeInTheDocument()
   })
 
+  it('shows recorded optional details and handles a pet without a photo or shelter', async () => {
+    getPet.mockResolvedValue({
+      ...PET,
+      age: null,
+      admissionDate: null,
+      photos: undefined,
+      shelter: null,
+      compatibilityChildren: null,
+      compatibilityOtherPets: 'unknown',
+      temperament: 'Tranquila',
+      specificNeeds: 'Medicamento diario',
+    })
+    renderPage()
+
+    expect(await screen.findByRole('heading', { name: 'Luna' })).toBeInTheDocument()
+    expect(screen.getByText('Temperamento').nextSibling).toHaveTextContent('Tranquila')
+    expect(screen.getByText('Necesidades específicas').nextSibling).toHaveTextContent(
+      'Medicamento diario',
+    )
+    expect(screen.queryByRole('link', { name: 'Conocer el refugio' })).not.toBeInTheDocument()
+    expect(screen.queryByAltText('Fotografía de Luna')).not.toBeInTheDocument()
+    expect(screen.queryByText('Edad')).not.toBeInTheDocument()
+    expect(screen.queryByText('Fecha de ingreso')).not.toBeInTheDocument()
+    expect(screen.queryByText('Compatible con niños')).not.toBeInTheDocument()
+    expect(screen.queryByText('Compatible con otras mascotas')).not.toBeInTheDocument()
+    expect(document.querySelector('svg')).toBeInTheDocument()
+  })
+
   it.each([
     ['successful', (request) => request.resolve(PET)],
     ['failed', (request) => request.reject(new Error('late error'))],

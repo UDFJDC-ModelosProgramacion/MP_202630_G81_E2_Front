@@ -9,7 +9,7 @@ import { getSession, ROLES } from '../../config/session'
 vi.mock('../../services/petService', () => ({ getPets: vi.fn() }))
 vi.mock('../../config/session', () => ({
   getSession: vi.fn(),
-  ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN' },
+  ROLES: { ADMIN: 'ADMIN', SHELTER_ADMIN: 'SHELTER_ADMIN' },
 }))
 
 const PETS = [
@@ -67,7 +67,7 @@ function deferred() {
 describe('PetsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    getSession.mockReturnValue({ role: ROLES.SHELTER_ADMIN })
+    getSession.mockReturnValue({ role: ROLES.ADMIN })
     getPets.mockResolvedValue(PETS)
   })
 
@@ -177,6 +177,46 @@ describe('PetsPage', () => {
     expect(rows[0].querySelector('svg')).toBeInTheDocument()
     expect(rows[1].querySelector('img')).not.toBeInTheDocument()
     expect(rows[1].querySelector('svg')).toBeInTheDocument()
+  })
+
+  it('handles incomplete pet details and safely filters missing values', async () => {
+    const user = userEvent.setup()
+    getPets.mockResolvedValue([
+      { id: 3, name: 'Nube', species: 'Gato', age: null },
+      {
+        id: 4,
+        name: 'Pipo',
+        species: 'Perro',
+        age: '',
+        photos: [],
+        compatibilityChildren: null,
+        compatibilityOtherPets: 'false',
+        shelter: { name: '' },
+      },
+    ])
+    renderPage()
+
+    const rows = within(await screen.findByRole('list', { name: 'Mascotas disponibles' })).getAllByRole(
+      'listitem',
+    )
+    expect(rows).toHaveLength(2)
+    expect(rows[0]).toHaveTextContent('Nube')
+    expect(rows[0]).not.toHaveTextContent('años')
+    expect(rows[0]).not.toHaveTextContent('Niños:')
+    expect(rows[0]).not.toHaveTextContent('Otras mascotas:')
+    expect(rows[1]).toHaveTextContent('Pipo')
+    expect(rows[1]).not.toHaveTextContent('años')
+
+    await user.type(screen.getByLabelText('Edad exacta'), '1')
+    expect(screen.getByText('No encontramos coincidencias')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
+
+    await user.selectOptions(screen.getByLabelText('Espacio requerido'), 'Apartamento')
+    expect(screen.getByText('No encontramos coincidencias')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
+
+    await user.selectOptions(screen.getByLabelText('Compatible con niños'), 'true')
+    expect(screen.getByText('No encontramos coincidencias')).toBeInTheDocument()
   })
 
   it('prevents the filter form from navigating or reloading the page', async () => {

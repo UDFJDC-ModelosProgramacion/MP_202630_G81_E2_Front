@@ -135,14 +135,16 @@
 }
 
 .chevron {
-  color: var(--color-muted);
-  font-size: 1rem;
-  line-height: 1;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-0.1rem) rotate(45deg);
   transition: transform 0.15s;
 }
 
 .dropdownOpen .chevron {
-  transform: rotate(180deg);
+  transform: translateY(0.1rem) rotate(225deg);
 }
 
 .dropdownMenu {

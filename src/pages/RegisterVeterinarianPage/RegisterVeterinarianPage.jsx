@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
+import { getSession, ROLES } from '../../config/session'
 import { AVAILABILITIES, SPECIALIZATIONS } from '../../constants/veterinarianOptions'
 import { createVeterinarian } from '../../services/veterinarianService'
 import { EMPTY_VETERINARIAN, validateVeterinarian } from './validateVeterinarian'
@@ -84,6 +85,18 @@ export default function RegisterVeterinarianPage() {
         'aria-invalid': errors[name] ? 'true' : undefined,
         'aria-describedby': errors[name] ? `${name}-error` : undefined,
     })
+
+    if (getSession().role !== ROLES.ADMIN) {
+        return (
+            <section className={styles.panel}>
+                <h1 className={styles.title}>Registre un veterinario</h1>
+                <ScreenState
+                    state="error"
+                    message="Solo un administrador general puede registrar veterinarios."
+                />
+            </section>
+        )
+    }
 
     return (
         <section className={styles.panel}>

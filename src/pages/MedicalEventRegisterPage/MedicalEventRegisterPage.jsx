@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import ErrorDialog from '../../components/ErrorDialog/ErrorDialog'
 import FormActions from '../../components/FormActions/FormActions'
 import FormSection from '../../components/FormSection/FormSection'
@@ -169,19 +169,15 @@ function MedicalEventForm() {
           {pets.length === 0 && (
             <ScreenState
               state="empty"
-              message="No hay mascotas activas registradas: registra una mascota antes de crear un evento médico."
+              message="No hay mascotas activas registradas. Solicita a un administrador que registre una mascota antes de crear un evento médico."
             />
           )}
           {veterinarians.length === 0 && (
             <ScreenState
               state="empty"
-              message="No hay veterinarios registrados: registra un veterinario antes de crear un evento médico."
+              message="No hay veterinarios registrados. Solicita a un administrador que registre un veterinario antes de crear un evento médico."
             />
           )}
-          <div className={styles.links}>
-            {pets.length === 0 && <Link to="/pets/new">Registrar mascota</Link>}
-            {veterinarians.length === 0 && <Link to="/veterinarians/new">Registrar veterinario</Link>}
-          </div>
         </div>
       )}
 

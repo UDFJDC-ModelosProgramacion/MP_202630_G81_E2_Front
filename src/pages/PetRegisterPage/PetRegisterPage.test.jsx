@@ -6,11 +6,13 @@ import PetRegisterPage from './PetRegisterPage'
 import { getSession } from '../../config/session'
 import { ApiError } from '../../services/apiClient'
 import { addPetPhoto, createPet } from '../../services/petService'
+import { getShelters } from '../../services/shelterService'
 import { todayISO } from '../../utils/dates'
 
 vi.mock('../../services/petService', () => ({ createPet: vi.fn(), addPetPhoto: vi.fn() }))
+vi.mock('../../services/shelterService', () => ({ getShelters: vi.fn() }))
 vi.mock('../../config/session', () => ({
-  ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
+  ROLES: { ADMIN: 'ADMIN', SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
 }))
 
@@ -66,7 +68,8 @@ const submit = (user) => user.click(screen.getByRole('button', { name: 'Registra
 describe('PetRegisterPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', shelterId: 3 })
+    getSession.mockReturnValue({ role: 'ADMIN', shelterId: 3 })
+    getShelters.mockResolvedValue([{ id: 3, name: 'Patitas', city: 'Bogotá' }])
   })
 
   it('shows the form with its mandatory fields marked', () => {
@@ -93,26 +96,32 @@ describe('PetRegisterPage', () => {
     expect(screen.getByLabelText(/^Fecha de ingreso/)).toHaveAttribute('max', todayISO())
   })
 
-  it('explains that only the shelter administrator can register pets', () => {
-    getSession.mockReturnValue({ role: 'ADOPTER', shelterId: null })
+  it('explains that only a global administrator can register pets', () => {
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', shelterId: 3 })
 
     renderPage()
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Solo el administrador de un refugio puede registrar mascotas.',
+      'Solo un administrador general puede registrar mascotas.',
     )
     expect(screen.queryByRole('button', { name: 'Registrar' })).not.toBeInTheDocument()
   })
 
-  it('does not submit a pet without the shelter attached to the authenticated session', () => {
-    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', shelterId: null })
+  it('requires an administrator to select a shelter when none is associated with the session', async () => {
+    const user = userEvent.setup({ delay: null })
+    getSession.mockReturnValue({ role: 'ADMIN', shelterId: null })
 
     renderPage()
+    await screen.findByRole('combobox', { name: 'Refugio' })
+    await fillRequiredFields(user)
+    await fillArrivalEvent(user)
+    await submit(user)
 
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'La sesión no incluye el refugio asociado.',
+    expect(createPet).not.toHaveBeenCalled()
+    expect(screen.getByRole('combobox', { name: 'Refugio' })).toHaveAccessibleDescription(
+      'Seleccione el refugio donde quedará registrada la mascota.',
     )
-    expect(screen.queryByRole('button', { name: 'Registrar' })).not.toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Refugio' })).toHaveFocus()
   })
 
   it('validates on the client, focuses the first error and does not call the backend', async () => {
@@ -165,10 +174,12 @@ describe('PetRegisterPage', () => {
     expect(textbox('Nombre')).not.toHaveAccessibleDescription()
   })
 
-  it('registers the pet in the administrator shelter', async () => {
+  it('registers the pet in the selected shelter', async () => {
     const user = userEvent.setup({ delay: null })
+    getSession.mockReturnValue({ role: 'ADMIN', shelterId: null })
     createPet.mockResolvedValue({ id: 12 })
     renderPage()
+    await user.selectOptions(await screen.findByRole('combobox', { name: 'Refugio' }), '3')
     await fillRequiredFields(user)
     await fillArrivalEvent(user)
 

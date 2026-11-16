@@ -39,8 +39,6 @@ export default function PetInventoryPage() {
   }, [attempt, isAdmin, shelterId])
 
   async function confirmDelete() {
-    if (!petToDelete) return
-
     setDeletingPetId(petToDelete.id)
     try {
       await deletePet(petToDelete.id)
@@ -113,12 +111,6 @@ export default function PetInventoryPage() {
 
   return (
     <section className={styles.page}>
-      <nav aria-label="Ruta de navegación" className={styles.breadcrumb}>
-        <Link to="/pets">Mascotas</Link>
-        <span aria-hidden="true">/</span>
-        <span aria-current="page">Inventario</span>
-      </nav>
-
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>Administración del refugio</p>
@@ -128,9 +120,6 @@ export default function PetInventoryPage() {
             {shelter.city && ` · ${shelter.city}`}
           </p>
         </div>
-        {shelter.pets.length > 0 && (
-          <Link to="/pets/new" className={styles.primaryAction}>Registrar mascota</Link>
-        )}
       </header>
 
       <p className={styles.count} role="status">{count}</p>
@@ -139,8 +128,7 @@ export default function PetInventoryPage() {
       {shelter.pets.length === 0 ? (
         <div className={styles.empty} role="status">
           <h2>Tu refugio aún no tiene mascotas registradas</h2>
-          <p>Registra la primera mascota para comenzar a organizar el inventario.</p>
-          <Link to="/pets/new" className={styles.primaryAction}>Registrar mascota</Link>
+          <p>Cuando se registren mascotas, aparecerán aquí para consultar y administrar el inventario.</p>
         </div>
       ) : (
         <ul className={styles.list} aria-label="Mascotas del inventario">

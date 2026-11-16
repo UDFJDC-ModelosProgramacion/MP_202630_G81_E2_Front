@@ -6,7 +6,13 @@ import Navbar from './Navbar'
 import { getSession } from '../../config/session'
 
 vi.mock('../../config/session', () => ({
-  ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
+  ROLES: {
+    ADMIN: 'ADMIN',
+    SHELTER_ADMIN: 'SHELTER_ADMIN',
+    VETERINARIAN: 'VETERINARIAN',
+    ADOPTER: 'ADOPTER',
+    VISITOR: 'VISITOR',
+  },
   getSession: vi.fn(),
 }))
 
@@ -46,7 +52,9 @@ describe('Navbar', () => {
       'href',
       '/medical-events',
     )
-    expect(screen.getByRole('link', { name: 'Seguimientos' })).toHaveAttribute('href', '/followUps')
+    expect(screen.queryByRole('link', { name: 'Mis seguimientos' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Adoptantes' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Notificaciones' })).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('link', { name: 'Veterinarios' }))
 
@@ -84,7 +92,7 @@ describe('Navbar', () => {
 
   it('shows admin registration actions as one grouped menu', async () => {
     const user = userEvent.setup()
-    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', name: 'AdminUser' })
+    getSession.mockReturnValue({ role: 'ADMIN', name: 'AdminUser' })
     renderNavbar()
 
     expect(screen.getByRole('button', { name: 'Registrar' })).toBeInTheDocument()
@@ -94,22 +102,86 @@ describe('Navbar', () => {
       'href',
       '/pets/new',
     )
-    expect(screen.getByRole('link', { name: 'Inventario de mascotas' })).toHaveAttribute(
-      'href',
-      '/pets/inventory',
-    )
     expect(screen.getByRole('link', { name: 'Registrar refugio' })).toHaveAttribute(
       'href',
       '/shelters/new',
+    )
+    expect(screen.getByRole('link', { name: 'Registrar veterinario' })).toHaveAttribute(
+      'href',
+      '/veterinarians/new',
+    )
+  })
+
+  it('shows shelter operations to shelter administrators without global registration actions', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'SHELTER_ADMIN', name: 'AdminUser' })
+    renderNavbar()
+
+    await user.click(screen.getByRole('button', { name: 'Registrar' }))
+
+    expect(screen.getByRole('link', { name: 'Inventario de mascotas' })).toHaveAttribute(
+      'href',
+      '/pets/inventory',
     )
     expect(screen.getByRole('link', { name: 'Registrar evento médico' })).toHaveAttribute(
       'href',
       '/medical-events/new',
     )
-    expect(screen.getByRole('link', { name: 'Crear carnet de vacunación' })).toHaveAttribute(
+    expect(screen.queryByRole('link', { name: 'Registrar refugio' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Registrar mascota' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Registrar veterinario' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Más secciones' }))
+    expect(screen.queryByRole('link', { name: 'Adoptantes' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Mis seguimientos' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Notificaciones' })).not.toBeInTheDocument()
+  })
+
+  it('shows only admin-relevant pages to a global administrator', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'ADMIN', name: 'Root' })
+    renderNavbar()
+
+    await user.click(screen.getByRole('button', { name: 'Más secciones' }))
+
+    expect(screen.getByRole('link', { name: 'Adoptantes' })).toHaveAttribute('href', '/adopters')
+    expect(screen.queryByRole('link', { name: 'Mis seguimientos' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Notificaciones' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Registrar adoptante' })).not.toBeInTheDocument()
+  })
+
+  it('shows veterinarian follow-ups and medical-event registration only to veterinarians', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'VETERINARIAN', name: 'Dra. Ana' })
+    renderNavbar()
+
+    await user.click(screen.getByRole('button', { name: 'Más secciones' }))
+    expect(screen.getByRole('link', { name: 'Mis seguimientos' })).toHaveAttribute(
       'href',
-      '/vaccination-records/new',
+      '/followUps',
     )
+    expect(screen.queryByRole('link', { name: 'Adoptantes' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Registrar' }))
+    expect(screen.getByRole('link', { name: 'Registrar evento médico' })).toHaveAttribute(
+      'href',
+      '/medical-events/new',
+    )
+  })
+
+  it('shows adopter registration but not adopter administration to visitors', async () => {
+    const user = userEvent.setup()
+    getSession.mockReturnValue({ role: 'VISITOR', name: '' })
+    renderNavbar()
+
+    await user.click(screen.getByRole('button', { name: 'Más secciones' }))
+
+    expect(screen.getByRole('link', { name: 'Registrar adoptante' })).toHaveAttribute(
+      'href',
+      '/adopters/new',
+    )
+    expect(screen.queryByRole('link', { name: 'Adoptantes' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Registrar' })).not.toBeInTheDocument()
   })
 
   it('does not show the admin menu to other roles', () => {

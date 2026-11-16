@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import Breadcrumbs from '../../components/Breadcrumbs/Breadcrumbs'
 import ShelterDetailPage from './ShelterDetailPage'
 import { getSession } from '../../config/session'
 import { getShelter } from '../../services/shelterService'
@@ -44,6 +45,7 @@ const SHELTER = {
 function renderAt(path = '/shelters/1') {
   return render(
     <MemoryRouter initialEntries={[path]}>
+      <Breadcrumbs />
       <Routes>
         <Route path="/shelters/:shelterId" element={<ShelterDetailPage />} />
       </Routes>
@@ -112,7 +114,8 @@ describe('ShelterDetailPage', () => {
 
     expect(await screen.findByText('Este refugio aún no tiene mascotas registradas.')).toBeInTheDocument()
     expect(screen.getByText('Este refugio aún no tiene eventos programados.')).toBeInTheDocument()
-    expect(screen.queryByRole('list')).not.toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Mascotas del refugio' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Eventos del refugio' })).not.toBeInTheDocument()
   })
 
   it('keeps one section filled when only the other one is empty', async () => {
@@ -201,7 +204,7 @@ describe('ShelterDetailPage', () => {
     expect(getShelter).toHaveBeenCalledTimes(2)
   })
 
-  it('shows the administrator of the shelter the actions to edit, delete, register a pet and create an event', async () => {
+  it('shows shelter management actions but keeps pet registration for global admins', async () => {
     getSession.mockReturnValue(ADMIN)
     getShelter.mockResolvedValue(SHELTER)
 
@@ -209,20 +212,34 @@ describe('ShelterDetailPage', () => {
 
     expect(await screen.findByRole('link', { name: 'Editar' })).toHaveAttribute('href', '/shelters/1/edit')
     expect(screen.getByRole('button', { name: 'Eliminar' })).toBeDisabled()
-    expect(screen.getByRole('link', { name: '+ Registrar mascota' })).toHaveAttribute('href', '/pets/new')
+    expect(screen.queryByRole('link', { name: '+ Registrar mascota' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: '+ Crear evento' })).toHaveAttribute(
       'href',
       '/shelters/1/events/new',
     )
   })
 
-  it('shows them also in an empty shelter, so the administrator can start filling it', async () => {
+  it('shows pet registration to the global admin, including for an empty shelter', async () => {
+    getSession.mockReturnValue({ userId: 99, name: 'Root', role: 'ADMIN' })
+    getShelter.mockResolvedValue({ ...SHELTER, pets: [], events: [] })
+
+    renderAt()
+
+    expect(await screen.findByRole('link', { name: '+ Registrar mascota' })).toHaveAttribute(
+      'href',
+      '/pets/new',
+    )
+    expect(screen.queryByRole('link', { name: 'Editar' })).not.toBeInTheDocument()
+  })
+
+  it('keeps event registration available to shelter administrators without pet registration', async () => {
     getSession.mockReturnValue(ADMIN)
     getShelter.mockResolvedValue({ ...SHELTER, pets: [], events: [] })
 
     renderAt()
 
-    expect(await screen.findByRole('link', { name: '+ Registrar mascota' })).toBeInTheDocument()
+    await screen.findByRole('heading', { level: 1, name: SHELTER.name })
+    expect(screen.queryByRole('link', { name: '+ Registrar mascota' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: '+ Crear evento' })).toBeInTheDocument()
   })
 
@@ -255,7 +272,7 @@ describe('ShelterDetailPage', () => {
 
     const breadcrumb = await screen.findByRole('navigation', { name: 'Ruta de navegación' })
     expect(within(breadcrumb).getByRole('link', { name: 'Refugios' })).toHaveAttribute('href', '/shelters')
-    expect(within(breadcrumb).getByText('Fundación Patitas Felices')).toHaveAttribute('aria-current', 'page')
+    expect(within(breadcrumb).getByText('Refugio #1')).toHaveAttribute('aria-current', 'page')
   })
 
   it('uses the singular in the total when the shelter has one pet', async () => {

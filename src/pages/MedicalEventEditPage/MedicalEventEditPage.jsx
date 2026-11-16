@@ -182,11 +182,8 @@ function MedicalEventForm() {
         <div>
           <ScreenState
             state="empty"
-            message="No hay veterinarios registrados: registra un veterinario antes de editar el evento."
+            message="No hay veterinarios registrados. Solicita a un administrador que registre un veterinario antes de editar el evento."
           />
-          <div className={styles.links}>
-            <Link to="/veterinarians/new">Registrar veterinario</Link>
-          </div>
         </div>
       )}
 

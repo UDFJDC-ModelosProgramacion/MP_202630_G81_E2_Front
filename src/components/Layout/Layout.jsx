@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import Navbar from '../Navbar/Navbar'
+import Breadcrumbs from '../Breadcrumbs/Breadcrumbs'
 import styles from './Layout.module.css'
 
 export default function Layout() {
@@ -10,6 +11,7 @@ export default function Layout() {
       </a>
       <Navbar />
       <main id="main-content" className={styles.content} tabIndex="-1">
+        <Breadcrumbs />
         <Outlet />
       </main>
     </>

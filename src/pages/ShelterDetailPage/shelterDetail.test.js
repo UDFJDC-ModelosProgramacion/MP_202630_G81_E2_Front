@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { canManageShelter, eventTime, formatAge, toShelterDetail } from './shelterDetail'
+import {
+  canManageShelter,
+  eventTime,
+  formatAge,
+  toShelterDetail,
+  toShelterInventory,
+} from './shelterDetail'
 
 describe('formatAge', () => {
   it('uses the singular for one year and the plural otherwise', () => {
@@ -110,6 +116,17 @@ describe('toShelterDetail', () => {
     expect(detail.pets).toEqual([])
     expect(detail.events).toEqual([])
     expect(detail.adminIds).toEqual([])
+  })
+})
+
+describe('toShelterInventory', () => {
+  it('defaults the pet list to empty when the response omits it', () => {
+    expect(toShelterInventory({ id: 3, name: ' Refugio ', city: ' Cali ' })).toEqual({
+      id: 3,
+      name: 'Refugio',
+      city: 'Cali',
+      pets: [],
+    })
   })
 })
 

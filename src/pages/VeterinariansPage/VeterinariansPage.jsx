@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import ScreenState from '../../components/ScreenState/ScreenState'
+import { getSession, ROLES } from '../../config/session'
 import { getVeterinarians } from '../../services/veterinarianService'
 import styles from './VeterinariansPage.module.css'
 
@@ -18,6 +19,7 @@ const initials = ({ firstName = '', lastName = '' }) =>
 export default function VeterinariansPage() {
   const { state } = useLocation()
   const registered = state?.registered
+  const isAdmin = getSession().role === ROLES.ADMIN
   const [filters, setFilters] = useState(NO_FILTERS)
   const [options, setOptions] = useState({ specializations: [], availabilities: [] })
   const [result, setResult] = useState({
@@ -95,11 +97,13 @@ export default function VeterinariansPage() {
         </p>
       )}
 
-      <div className={styles.toolbar}>
-        <Link to="/veterinarians/new" className={styles.register}>
-          Registrar veterinario
-        </Link>
-      </div>
+      {isAdmin && (
+        <div className={styles.toolbar}>
+          <Link to="/veterinarians/new" className={styles.register}>
+            Registrar veterinario
+          </Link>
+        </div>
+      )}
 
       <form className={styles.filters} onSubmit={handleSubmit} aria-label="Filtros de veterinarios">
         <div className={styles.field}>

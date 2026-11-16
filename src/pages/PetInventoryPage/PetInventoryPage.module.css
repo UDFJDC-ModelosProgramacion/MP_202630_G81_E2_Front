@@ -4,23 +4,9 @@
   gap: 1.25rem;
 }
 
-.breadcrumb {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  color: var(--color-muted);
-  font-size: 0.85rem;
-}
-
-.breadcrumb a,
 .backLink,
 .petLink {
   color: var(--color-primary-dark);
-  font-weight: 700;
-}
-
-.breadcrumb [aria-current='page'] {
-  color: var(--color-text);
   font-weight: 700;
 }
 

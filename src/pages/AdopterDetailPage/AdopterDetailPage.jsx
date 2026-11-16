@@ -24,7 +24,7 @@ const text = (value) => (value == null || value === '' ? '—' : value)
 
 export default function AdopterDetailPage() {
   const { adopterId } = useParams()
-  const isAdmin = getSession().role === ROLES.SHELTER_ADMIN
+  const isAdmin = getSession().role === ROLES.ADMIN
   const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState({ status: 'loading', adopter: null, message: '' })
 
@@ -55,7 +55,7 @@ export default function AdopterDetailPage() {
         <h1 className={styles.title}>Detalle del adoptante</h1>
         <ScreenState
           state="error"
-          message="Solo el administrador del refugio puede consultar el detalle del adoptante."
+          message="Solo un administrador puede consultar el detalle del adoptante."
         />
       </section>
     )

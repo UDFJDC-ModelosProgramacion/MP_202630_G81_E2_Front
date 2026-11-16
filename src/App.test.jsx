@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import { setSession } from './config/session'
@@ -87,6 +87,9 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: 'Huellitas Seguras' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Veterinarios' })).toBeInTheDocument()
     expect(await screen.findByText('Aún no hay veterinarios registrados.')).toBeInTheDocument()
+    const breadcrumb = screen.getByRole('navigation', { name: 'Ruta de navegación' })
+    expect(within(breadcrumb).getByRole('link', { name: 'Inicio' })).toHaveAttribute('href', '/')
+    expect(breadcrumb).toHaveTextContent('Veterinarios')
   })
 
   it('shows the home page with a way to explore pets and shelters', async () => {
@@ -102,10 +105,13 @@ describe('App', () => {
     )
   })
 
-  it('shows the pet registration form', () => {
+  it('protects the pet registration form from visitors', () => {
     renderAt('/pets/new')
 
     expect(screen.getByRole('heading', { name: 'Registre su Mascota' })).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Solo un administrador general puede registrar mascotas.',
+    )
   })
 
   it('shows the shelter registration form', () => {

@@ -32,12 +32,6 @@ function PetProfile({ pet }) {
 
   return (
     <section className={styles.page}>
-      <nav aria-label="Ruta de navegación" className={styles.breadcrumb}>
-        <Link to="/pets">Mascotas</Link>
-        <span aria-hidden="true">/</span>
-        <span aria-current="page">{pet.name}</span>
-      </nav>
-
       <header className={styles.hero}>
         <div className={styles.photo}>
           {photo && !photoFailed ? (

@@ -34,9 +34,68 @@ const EXPLORE_LINKS = [
   },
 ]
 
-export default function HomePage() {
-  const isAdmin = getSession().role === ROLES.SHELTER_ADMIN
+const ADMIN_ACTIONS = [
+  {
+    title: 'Refugios',
+    description: 'Registra un refugio y mantenlo disponible para quienes buscan adoptar.',
+    label: 'Registrar refugio',
+    path: '/shelters/new',
+    Icon: HeartIcon,
+  },
+  {
+    title: 'Mascotas',
+    description: 'Agrega mascotas y sus datos de ingreso para que puedan encontrar un hogar.',
+    label: 'Registrar mascota',
+    path: '/pets/new',
+    Icon: PawIcon,
+  },
+  {
+    title: 'Veterinarios',
+    description: 'Crea cuentas para profesionales que apoyan el cuidado de las mascotas.',
+    label: 'Registrar veterinario',
+    path: '/veterinarians/new',
+    Icon: UserIcon,
+  },
+]
 
+function AdminHomePage() {
+  const { name } = getSession()
+  return (
+    <div className={styles.page}>
+      <section className={styles.adminHero} aria-labelledby="admin-home-title">
+        <p className={styles.eyebrow}>Panel de administración</p>
+        <h1 id="admin-home-title" className={styles.heroTitle}>
+          Hola{name ? `, ${name}` : ''}. <span>Gestionemos Huellitas Seguras.</span>
+        </h1>
+        <p className={styles.heroText}>
+          Desde aquí puedes registrar los recursos que mantienen conectados a los refugios,
+          profesionales y mascotas con sus futuras familias.
+        </p>
+      </section>
+
+      <section className={styles.explore} aria-labelledby="admin-actions-title">
+        <header className={styles.sectionHeader}>
+          <p className={styles.eyebrow}>Acciones de administración</p>
+          <h2 id="admin-actions-title" className={styles.sectionTitle}>
+            ¿Qué te gustaría registrar?
+          </h2>
+        </header>
+        <ul className={styles.cardGrid}>
+          {ADMIN_ACTIONS.map(({ title, description, label, path, Icon }) => (
+            <li key={path} className={styles.card}>
+              <span className={styles.cardIcon}><Icon /></span>
+              <h3 className={styles.cardTitle}>{title}</h3>
+              <p className={styles.cardText}>{description}</p>
+              <Link to={path} className={styles.cardLink}>{label}<span aria-hidden="true"> →</span></Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  )
+}
+
+function PublicHomePage() {
   return (
     <div className={styles.page}>
       <section className={styles.hero} aria-labelledby="home-title">
@@ -132,20 +191,10 @@ export default function HomePage() {
         </ol>
       </section>
 
-      {isAdmin && (
-        <section className={styles.adminCallout} aria-labelledby="admin-title">
-          <span className={styles.adminIcon}><PawIcon /></span>
-          <div>
-            <p className={styles.eyebrow}>Para quienes cuidan</p>
-            <h2 id="admin-title">¿Administras un refugio?</h2>
-            <p>Registra refugios y mascotas para que más personas puedan conocer sus historias.</p>
-          </div>
-          <div className={styles.adminActions}>
-            <Link to="/shelters/new" className={styles.secondaryAction}>Registrar refugio</Link>
-            <Link to="/pets/new" className={styles.primaryAction}>Registrar mascota</Link>
-          </div>
-        </section>
-      )}
     </div>
   )
+}
+
+export default function HomePage() {
+  return getSession().role === ROLES.ADMIN ? <AdminHomePage /> : <PublicHomePage />
 }

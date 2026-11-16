@@ -6,7 +6,7 @@ import { getSession, ROLES } from '../../config/session'
 
 vi.mock('../../config/session', () => ({
   getSession: vi.fn(),
-  ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN' },
+  ROLES: { ADMIN: 'ADMIN', SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
 }))
 
 function renderPage() {
@@ -20,10 +20,10 @@ function renderPage() {
 describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    getSession.mockReturnValue({ role: ROLES.SHELTER_ADMIN })
+    getSession.mockReturnValue({ role: ROLES.ADOPTER, name: 'Ana' })
   })
 
-  it('welcomes visitors and gives clear paths to pets and shelters', () => {
+  it('shows the adoption landing page to regular users', () => {
     renderPage()
 
     expect(
@@ -52,10 +52,12 @@ describe('HomePage', () => {
     )
   })
 
-  it('offers shelter and pet registration to shelter administrators only', () => {
-    const { rerender } = renderPage()
+  it('shows a dedicated administration home with registration shortcuts to admins', () => {
+    getSession.mockReturnValue({ role: ROLES.ADMIN, name: 'Luna' })
+    renderPage()
 
-    expect(screen.getByRole('heading', { name: '¿Administras un refugio?' })).toBeInTheDocument()
+    expect(screen.getByText('Panel de administración')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Hola, Luna/ })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Registrar refugio' })).toHaveAttribute(
       'href',
       '/shelters/new',
@@ -64,14 +66,10 @@ describe('HomePage', () => {
       'href',
       '/pets/new',
     )
-
-    getSession.mockReturnValue({ role: 'ADOPTER' })
-    rerender(
-      <MemoryRouter>
-        <HomePage />
-      </MemoryRouter>,
+    expect(screen.getByRole('link', { name: 'Registrar veterinario' })).toHaveAttribute(
+      'href',
+      '/veterinarians/new',
     )
-
-    expect(screen.queryByRole('heading', { name: '¿Administras un refugio?' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 1, name: /Un hogar cambia una vida/ })).not.toBeInTheDocument()
   })
 })

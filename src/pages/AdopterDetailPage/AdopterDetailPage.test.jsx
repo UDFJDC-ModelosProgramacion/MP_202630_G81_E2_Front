@@ -7,7 +7,7 @@ import { getAdopter } from '../../services/adopterService'
 
 vi.mock('../../services/adopterService', () => ({ getAdopter: vi.fn() }))
 vi.mock('../../config/session', () => ({
-  ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
+  ROLES: { ADMIN: 'ADMIN', SHELTER_ADMIN: 'SHELTER_ADMIN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
 }))
 
@@ -49,7 +49,7 @@ function renderPage() {
 }
 
 beforeEach(() => {
-  vi.mocked(getSession).mockReturnValue({ role: 'SHELTER_ADMIN' })
+  vi.mocked(getSession).mockReturnValue({ role: 'ADMIN' })
   vi.mocked(getAdopter).mockReset()
   vi.mocked(getAdopter).mockResolvedValue(adopter)
 })
@@ -96,14 +96,12 @@ describe('AdopterDetailPage', () => {
     expect(screen.getByRole('link', { name: 'Volver al listado' })).toBeInTheDocument()
   })
 
-  it('blocks roles other than the shelter administrator', () => {
-    vi.mocked(getSession).mockReturnValue({ role: 'ADOPTER' })
+  it('blocks roles other than the global administrator', () => {
+    vi.mocked(getSession).mockReturnValue({ role: 'SHELTER_ADMIN' })
     renderPage()
 
     expect(
-      screen.getByText(
-        'Solo el administrador del refugio puede consultar el detalle del adoptante.',
-      ),
+      screen.getByText('Solo un administrador puede consultar el detalle del adoptante.'),
     ).toBeInTheDocument()
     expect(getAdopter).not.toHaveBeenCalled()
   })

@@ -15,7 +15,7 @@ vi.mock('../../services/medicalEventService', () => ({ createMedicalEvent: vi.fn
 vi.mock('../../services/petService', () => ({ getPets: vi.fn() }))
 vi.mock('../../services/veterinarianService', () => ({ getVeterinarians: vi.fn() }))
 vi.mock('../../config/session', () => ({
-  ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', VETERINARIAN: 'VETERINARIAN', ADOPTER: 'ADOPTER' },
+  ROLES: { ADMIN: 'ADMIN', SHELTER_ADMIN: 'SHELTER_ADMIN', VETERINARIAN: 'VETERINARIAN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
 }))
 
@@ -179,13 +179,11 @@ describe('MedicalEventRegisterPage', () => {
 
     expect(
       await screen.findByText(
-        'No hay mascotas activas registradas: registra una mascota antes de crear un evento médico.',
+        'No hay mascotas activas registradas. Solicita a un administrador que registre una mascota antes de crear un evento médico.',
       ),
     ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Registrar mascota' })).toHaveAttribute(
-      'href',
-      '/pets/new',
-    )
+    expect(screen.queryByRole('link', { name: 'Registrar mascota' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Registrar veterinario' })).not.toBeInTheDocument()
   })
 
   it('does not allow roles outside the shelter staff', () => {

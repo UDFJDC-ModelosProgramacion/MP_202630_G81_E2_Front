@@ -73,17 +73,13 @@ describe('PetInventoryPage', () => {
     expect(within(rows[0]).getByRole('button', { name: 'Eliminar a Luna' })).toBeInTheDocument()
   })
 
-  it('shows an empty state and keeps a registration action available', async () => {
+  it('shows an empty state without exposing pet registration to shelter administrators', async () => {
     getShelter.mockResolvedValue({ ...SHELTER, pets: [] })
 
     renderPage()
 
     expect(await screen.findByText('Tu refugio aún no tiene mascotas registradas')).toBeInTheDocument()
-    expect(screen.getAllByRole('link', { name: 'Registrar mascota' })).toHaveLength(1)
-    expect(screen.getByRole('link', { name: 'Registrar mascota' })).toHaveAttribute(
-      'href',
-      '/pets/new',
-    )
+    expect(screen.queryByRole('link', { name: 'Registrar mascota' })).not.toBeInTheDocument()
     expect(screen.getByText('0 mascotas registradas')).toBeInTheDocument()
   })
 
@@ -120,6 +116,25 @@ describe('PetInventoryPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Inventario de mascotas' })).toBeInTheDocument()
     expect(getShelter).toHaveBeenCalledTimes(2)
+  })
+
+  it('shows a useful fallback when the backend error has no message', async () => {
+    getShelter.mockRejectedValueOnce(new Error(''))
+
+    renderPage()
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No se pudo cargar el inventario de mascotas.',
+    )
+  })
+
+  it('shows a fallback summary when a pet has no descriptive fields', async () => {
+    getShelter.mockResolvedValue({ ...SHELTER, pets: [{ id: 23, name: 'Nube' }] })
+
+    renderPage()
+
+    expect(await screen.findByRole('heading', { name: 'Nube' })).toBeInTheDocument()
+    expect(screen.getByText('Datos generales no registrados')).toBeInTheDocument()
   })
 
   it('requires confirmation before deleting a pet', async () => {
@@ -169,6 +184,20 @@ describe('PetInventoryPage', () => {
     expect(screen.getByRole('heading', { name: 'Luna' })).toBeInTheDocument()
   })
 
+  it('shows a fallback when a deletion error has no message', async () => {
+    const user = userEvent.setup()
+    deletePet.mockRejectedValueOnce({ message: '', status: 500 })
+    renderPage()
+
+    await screen.findByRole('heading', { name: 'Inventario de mascotas' })
+    await user.click(screen.getByRole('button', { name: 'Eliminar a Luna' }))
+    await user.click(screen.getByRole('button', { name: 'Eliminar mascota' }))
+
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(
+      'El servidor no pudo eliminar la mascota.',
+    )
+  })
+
   it('reloads inventory when the backend reports that the pet no longer exists', async () => {
     const user = userEvent.setup()
     deletePet.mockRejectedValueOnce({ message: 'Mascota no encontrada', status: 404 })
@@ -191,6 +220,17 @@ describe('PetInventoryPage', () => {
 
     unmount()
     await act(async () => resolve(SHELTER))
+
+    expect(container).toBeEmptyDOMElement()
+  })
+
+  it('ignores an error after leaving the page', async () => {
+    let reject
+    getShelter.mockReturnValue(new Promise((_, fail) => { reject = fail }))
+    const { container, unmount } = renderPage()
+
+    unmount()
+    await act(async () => reject(new Error('late error')))
 
     expect(container).toBeEmptyDOMElement()
   })

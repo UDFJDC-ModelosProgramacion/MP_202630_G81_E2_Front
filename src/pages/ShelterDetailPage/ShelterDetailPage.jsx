@@ -46,14 +46,14 @@ function Panel({ title, badge, action, children }) {
   )
 }
 
-function PetsPanel({ pets, canManage }) {
+function PetsPanel({ pets, canRegister }) {
   const total = `${pets.length} ${pets.length === 1 ? 'mascota' : 'mascotas'} en total`
   return (
     <Panel
       title="Mascotas"
       badge={total}
       action={
-        canManage && (
+        canRegister && (
           <Link to="/pets/new" className={styles.cta}>
             + Registrar mascota
           </Link>
@@ -161,15 +161,10 @@ function ShelterDetail({ shelterId }) {
   }
 
   const canManage = canManageShelter(getSession(), shelter, ROLES.SHELTER_ADMIN)
+  const canRegisterPet = getSession().role === ROLES.ADMIN
 
   return (
     <section className={styles.page}>
-      <nav aria-label="Ruta de navegación" className={styles.breadcrumb}>
-        <Link to="/shelters">Refugios</Link>
-        <span aria-hidden="true">/</span>
-        <span aria-current="page">{shelter.name}</span>
-      </nav>
-
       <header className={styles.header}>
         <span className={styles.mark} aria-hidden="true">
           <HeartIcon className={styles.markIcon} />
@@ -210,7 +205,7 @@ function ShelterDetail({ shelterId }) {
       </header>
 
       <div className={styles.columns}>
-        <PetsPanel pets={shelter.pets} canManage={canManage} />
+        <PetsPanel pets={shelter.pets} canRegister={canRegisterPet} />
         <EventsPanel events={shelter.events} canManage={canManage} shelterId={shelter.id} />
       </div>
     </section>

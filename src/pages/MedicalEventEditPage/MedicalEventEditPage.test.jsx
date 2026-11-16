@@ -15,7 +15,7 @@ vi.mock('../../services/medicalEventService', () => ({
 }))
 vi.mock('../../services/veterinarianService', () => ({ getVeterinarians: vi.fn() }))
 vi.mock('../../config/session', () => ({
-  ROLES: { SHELTER_ADMIN: 'SHELTER_ADMIN', VETERINARIAN: 'VETERINARIAN', ADOPTER: 'ADOPTER' },
+  ROLES: { ADMIN: 'ADMIN', SHELTER_ADMIN: 'SHELTER_ADMIN', VETERINARIAN: 'VETERINARIAN', ADOPTER: 'ADOPTER' },
   getSession: vi.fn(),
 }))
 
@@ -151,7 +151,7 @@ describe('MedicalEventEditPage', () => {
 
     expect(
       await screen.findByText(
-        'No hay veterinarios registrados: registra un veterinario antes de editar el evento.',
+        'No hay veterinarios registrados. Solicita a un administrador que registre un veterinario antes de editar el evento.',
       ),
     ).toBeInTheDocument()
     expect(
