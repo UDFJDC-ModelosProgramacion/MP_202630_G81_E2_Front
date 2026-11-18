@@ -215,6 +215,20 @@ For a separately hosted frontend and API, the backend must allow credentialed CO
 |---|---|---|---|
 | **HU73** | Register a new user | `/register` | Implemented |
 | **HU74** | View and update user profile | `/profile` | Implemented |
+| **HU75** | User directory with filters | `/users` | Implemented |
+| **HU76** | Delete user account | `/users` | Implemented |
+| **HU77** | Send message | `/messages` | Implemented |
+| **HU78** | View received messages / conversation | `/messages` | Implemented |
+| **HU79** | Mark message as read | `/messages` | Implemented |
+| **HU80** | Delete message | `/messages` | Implemented |
+| **HU81** | Submit adoption request | `/adoption-requests` | Implemented |
+| **HU82** | List adoption requests | `/adoption-requests` | Implemented |
+| **HU83** | Approve / reject adoption request | `/adoption-requests` | Implemented |
+| **HU84** | Cancel adoption request | `/adoption-requests` | Implemented |
+| **HU85** | Register pet return | `/returns` | Implemented |
+| **HU86** | Consult return requests list | `/returns` | Implemented |
+| **HU87** | View return request details | `/returns` | Implemented |
+| **HU88** | Update return reason | `/returns` | Implemented |
 | **HU72** | Update a veterinarian's specialization and availability | `/veterinarians/:veterinarianId/edit` | Implemented |
 | **HU70** | Veterinarian list with filters and profile | `/veterinarians` | ✅ Implemented |
 | **HU01** | Register a shelter | `/shelters/new` | ✅ Implemented |
@@ -294,6 +308,78 @@ Displays the current user's profile information (**name, email, phone, and role*
 2. Verify that your name, email, phone, and assigned role are displayed.
 3. Click "Editar Perfil", modify contact details, and click "Cancelar": changes are safely discarded.
 4. Click "Editar Perfil", make valid updates, and click "Guardar Cambios": a confirmation modal verifies that changes were saved successfully.
+
+### HU75 & HU76 – User Directory and Account Deletion
+
+**Route:** `/users` · **Role:** Administrators (`SHELTER_ADMIN`).
+
+Provides a centralized directory for shelter administrators to inspect platform users, filter by role, search by name or email, and permanently delete accounts with safety confirmations.
+
+- **Back-end:** `GET /api/users?role={role}` and `DELETE /api/users/{id}`.
+- **Filtering & Search:** Real-time search across full name and email, alongside role filters (`SHELTER_ADMIN`, `VETERINARIAN`, `ADOPTER`).
+- **Deletion:** Deleting an account triggers a `ConfirmDialog` warning that account removal is irreversible.
+- **Automated tests:** `UsersDirectoryPage.test.jsx`, `usersDirectory.test.js`, and `userService.test.js`.
+
+**Manual Testing:**
+
+1. Open `/users` while signed in as administrator.
+2. Use the search input to filter users by name or email.
+3. Select a role filter (e.g. `ADOPTER`) to view users belonging to that role.
+4. Click "Eliminar" on an account, confirm the dialog, and verify the user is removed from the list.
+
+### HU77 to HU80 – Internal Messaging System
+
+**Route:** `/messages` · **Role:** All authenticated users.
+
+Facilitates direct communication between platform members. Users can initiate conversations, review inbox threads, mark unread messages as read, and delete obsolete messages.
+
+- **Back-end:** `POST /api/messages`, `GET /api/messages`, `PUT /api/messages/{id}`, and `DELETE /api/messages/{id}`.
+- **Conversation Threading:** Messages are organized into conversations by contact, tracking unread badges and chronological message flow.
+- **Actions:** Quick replies, mark-as-read toggles, and deletion confirmation dialogs.
+- **Automated tests:** `MessagesPage.test.jsx`, `messageForm.test.js`, and `messageService.test.js`.
+
+**Manual Testing:**
+
+1. Navigate to `/messages`.
+2. Click "Nuevo Mensaje", select a recipient, type a message body, and submit.
+3. Verify the conversation appears on the left panel with preview text and unread count.
+4. Select the conversation, mark messages as read, and test deleting individual messages.
+
+### HU81 to HU84 – Adoption Requests Management
+
+**Route:** `/adoption-requests` · **Role:** Adopters (`ADOPTER`) and Administrators (`SHELTER_ADMIN`).
+
+Enables prospective adopters to file adoption requests for available pets, and provides shelter administrators with a dashboard to review, approve, or reject submissions.
+
+- **Back-end:** `POST /api/adoption-requests`, `GET /api/adoption-requests`, `PUT /api/adoption-requests/{id}`, and `DELETE /api/adoption-requests/{id}`.
+- **Role Differentiation:** Adopters can create new requests with housing details and motivation notes, and cancel (`DELETE`) their pending submissions. Administrators can review request details and approve or reject submissions (`PUT`).
+- **Status Indicators:** Color-coded badges for `PENDING`, `APPROVED`, `REJECTED`, and `CANCELLED`.
+- **Automated tests:** `AdoptionRequestsPage.test.jsx`, `adoptionRequestLogic.test.js`, and `adoptionRequestService.test.js`.
+
+**Manual Testing:**
+
+1. Navigate to `/adoption-requests`.
+2. As an adopter, click "Nueva Solicitud", choose a pet, provide household details, and submit.
+3. As an administrator, locate the pending request and click "Aprobar" or "Rechazar" to update the adoption state.
+4. Verify status transitions reflect immediately in the table.
+
+### HU85 to HU88 – Pet Returns Management
+
+**Route:** `/returns` · **Role:** Adopters and Administrators.
+
+Handles post-adoption returns systematically. Allows registration of return motives, detailed inspection of return cases, and editing of return reasons while pending evaluation.
+
+- **Back-end:** `POST /api/returns`, `GET /api/returns`, `GET /api/returns/{id}`, and `PUT /api/returns/{id}`.
+- **Reason Modification:** Adopters or administrators can update the stated reason for return prior to formal shelter resolution.
+- **Detailed Inspection:** Dedicated modal view providing full context on pet history, adopter details, and return rationale.
+- **Automated tests:** `ReturnsPage.test.jsx`, `returnLogic.test.js`, and `returnService.test.js`.
+
+**Manual Testing:**
+
+1. Navigate to `/returns`.
+2. Click "Registrar Devolución", select the adopted pet, provide reason and notes, and submit.
+3. Click "Ver Detalle" on any return item to inspect comprehensive return information.
+4. Click "Editar Motivo" to update the reason text and verify changes persist.
 
 ### HU70 – Veterinarian List with Filters
 
@@ -713,6 +799,10 @@ Current state: **56 test files, 555 tests, all passing** (about 93% statement co
 
 - **HU73:** `UserRegisterPage.test.jsx`, `userForm.test.js`, and `userService.test.js`.
 - **HU74:** `UserProfilePage.test.jsx`, `profileForm.test.js`, and `userService.test.js`.
+- **HU75 & HU76:** `UsersDirectoryPage.test.jsx`, `usersDirectory.test.js`, and `userService.test.js`.
+- **HU77 to HU80:** `MessagesPage.test.jsx`, `messageForm.test.js`, and `messageService.test.js`.
+- **HU81 to HU84:** `AdoptionRequestsPage.test.jsx`, `adoptionRequestLogic.test.js`, and `adoptionRequestService.test.js`.
+- **HU85 to HU88:** `ReturnsPage.test.jsx`, `returnLogic.test.js`, and `returnService.test.js`.
 - **HU70:** `VeterinariansPage.test.jsx`, `VeterinarianProfilePage.test.jsx`, and `veterinarianService.test.js`.
 - **HU01:** `ShelterRegisterPage.test.jsx`, `shelterForm.test.js`, and `shelterService.test.js`.
 - **HU02:** `ShelterListPage.test.jsx` and `shelterService.test.js`.

@@ -15,6 +15,11 @@ export function updateUser(userId, userData) {
   return api.put(`/users/${userId}`, userData)
 }
 
+// Retrieve all registered users for administrators (HU75)
+export function getAllUsers(role = 'ADMIN') {
+  return api.get(`/users?role=${encodeURIComponent(role)}`)
+}
+
 // Delete user account by ID (HU76)
 export function deleteUser(userId) {
   return api.delete(`/users/${userId}`)

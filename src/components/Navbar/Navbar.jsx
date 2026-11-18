@@ -16,6 +16,9 @@ const PRIMARY_LINKS = [
 const COMMON_MORE_LINKS = [
   { path: '/veterinarians', label: 'Veterinarios' },
   { path: '/medical-events', label: 'Eventos médicos' },
+  { path: '/messages', label: 'Mensajes' },
+  { path: '/adoption-requests', label: 'Solicitudes' },
+  { path: '/returns', label: 'Devoluciones' },
 ]
 
 const MORE_LINKS_BY_ROLE = {
@@ -33,6 +36,7 @@ const MORE_LINKS_BY_ROLE = {
 }
 
 const ADMIN_LINKS = [
+  { path: '/users', label: 'Directorio de usuarios' },
   { path: '/shelters/new', label: 'Registrar refugio' },
   { path: '/pets/new', label: 'Registrar mascota' },
   { path: '/veterinarians/new', label: 'Registrar veterinario' },

@@ -32,6 +32,10 @@ import ShelterRegisterPage from './pages/ShelterRegisterPage/ShelterRegisterPage
 import UpdateVeterinarianPage from './pages/UpdateVeterinarianPage/UpdateVeterinarianPage'
 import UserProfilePage from './pages/UserProfilePage/UserProfilePage'
 import UserRegisterPage from './pages/UserRegisterPage/UserRegisterPage'
+import AdoptionRequestsPage from './pages/AdoptionRequestsPage/AdoptionRequestsPage'
+import MessagesPage from './pages/MessagesPage/MessagesPage'
+import ReturnsPage from './pages/ReturnsPage/ReturnsPage'
+import UsersDirectoryPage from './pages/UsersDirectoryPage/UsersDirectoryPage'
 import VeterinarianProfilePage from './pages/VeterinarianProfilePage/VeterinarianProfilePage'
 import VeterinariansPage from './pages/VeterinariansPage/VeterinariansPage'
 import WriteReviewPage from './pages/WriteReviewPage/WriteReviewPage'
@@ -48,6 +52,12 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<UserRegisterPage />} />
         <Route path="/profile" element={<UserProfilePage />} />
+        <Route path="/users" element={<UsersDirectoryPage />} />
+
+        {/* Mensajería, Solicitudes y Devoluciones */}
+        <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/adoption-requests" element={<AdoptionRequestsPage />} />
+        <Route path="/returns" element={<ReturnsPage />} />
 
         {/* Mascotas */}
         <Route path="/pets" element={<PetsPage />} />

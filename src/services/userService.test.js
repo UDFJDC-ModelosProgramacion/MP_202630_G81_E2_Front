@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createUser, deleteUser, getUser, updateUser } from './userService'
+import { createUser, deleteUser, getAllUsers, getUser, updateUser } from './userService'
 
 vi.mock('./apiClient', () => ({
   api: {
@@ -34,6 +34,17 @@ describe('userService', () => {
     const result = await getUser(5)
     expect(api.get).toHaveBeenCalledWith('/users/5')
     expect(result.firstName).toBe('Luna')
+  })
+
+  it('calls api.get on getAllUsers', async () => {
+    api.get.mockResolvedValueOnce([
+      { id: 1, firstName: 'Admin', email: 'admin@example.com' },
+      { id: 2, firstName: 'Adopter', email: 'adopter@example.com' },
+    ])
+
+    const result = await getAllUsers('ADMIN')
+    expect(api.get).toHaveBeenCalledWith('/users?role=ADMIN')
+    expect(result).toHaveLength(2)
   })
 
   it('calls api.put on updateUser', async () => {
