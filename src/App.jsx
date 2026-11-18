@@ -7,6 +7,7 @@ import AdopterEditPage from './pages/AdopterEditPage/AdopterEditPage'
 import AdopterRegisterPage from './pages/AdopterRegisterPage/AdopterRegisterPage'
 import AdoptersPage from './pages/AdoptersPage/AdoptersPage'
 import CreateVaccinationRecordPage from './pages/CreateVaccinationRecordPage/CreateVaccinationRecordPage'
+import EditNotificationPage from './pages/EditNotificationPage/EditNotificationPage'
 import EditReviewPage from './pages/EditReviewPage/EditReviewPage'
 import FollowUpEditPage from './pages/FollowUpEditPage/FollowUpEditPage'
 import FollowUpRegisterPage from './pages/FollowUpRegisterPage/FollowUpRegisterPage'
@@ -19,6 +20,7 @@ import MedicalEventEditPage from './pages/MedicalEventEditPage/MedicalEventEditP
 import MedicalEventHistoryPage from './pages/MedicalEventHistoryPage/MedicalEventHistoryPage'
 import MedicalEventRegisterPage from './pages/MedicalEventRegisterPage/MedicalEventRegisterPage'
 import MedicalEventsPage from './pages/MedicalEventsPage/MedicalEventsPage'
+import NotificationsPage from './pages/NotificationsPage/NotificationsPage'
 import PetDetailPage from './pages/PetDetailPage/PetDetailPage'
 import PetInventoryPage from './pages/PetInventoryPage/PetInventoryPage'
 import PetsPage from './pages/PetsPage/PetsPage'
@@ -26,6 +28,7 @@ import PetRegisterPage from './pages/PetRegisterPage/PetRegisterPage'
 import PetReviewsPage from './pages/PetReviewsPage/PetReviewsPage'
 import PetVaccinationRecordPage from './pages/PetVaccinationRecordPage/PetVaccinationRecordPage'
 import RegisterVeterinarianPage from './pages/RegisterVeterinarianPage/RegisterVeterinarianPage'
+import ScheduleNotificationPage from './pages/ScheduleNotificationPage/ScheduleNotificationPage'
 import ShelterDetailPage from './pages/ShelterDetailPage/ShelterDetailPage'
 import ShelterListPage from './pages/ShelterListPage/ShelterListPage'
 import ShelterRegisterPage from './pages/ShelterRegisterPage/ShelterRegisterPage'
@@ -98,7 +101,9 @@ export default function App() {
         />
 
         {/* Otros */}
-        <Route path="/notifications" element={<PendingPage title="Notificaciones" />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/notifications/new" element={<ScheduleNotificationPage />} />
+        <Route path="/notifications/:notificationId/edit" element={<EditNotificationPage />} />
       </Route>
     </Routes>
   )
