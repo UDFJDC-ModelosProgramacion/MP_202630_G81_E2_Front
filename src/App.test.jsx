@@ -5,9 +5,8 @@ import App from './App'
 import { setSession } from './config/session'
 import { getMedicalEvent, getMedicalEvents } from './services/medicalEventService'
 import { getPet, getPets } from './services/petService'
-import { getReviews } from './services/reviewService'
+import { getNotification, getNotifications } from './services/notificationService'
 import { getShelter, getShelters } from './services/shelterService'
-import { getVaccinationRecordByPet } from './services/vaccinationRecordService'
 import { getVeterinarian, getVeterinarians } from './services/veterinarianService'
 
 vi.mock('./services/shelterService', () => ({
@@ -39,18 +38,12 @@ vi.mock('./services/medicalEventService', () => ({
   deleteMedicalEvent: vi.fn(),
 }))
 
-vi.mock('./services/reviewService', () => ({
-  getReviews: vi.fn(),
-  getReview: vi.fn(),
-  createReview: vi.fn(),
-  updateReview: vi.fn(),
-  deleteReview: vi.fn(),
-}))
-
-vi.mock('./services/vaccinationRecordService', () => ({
-  getVaccinationRecordByPet: vi.fn(),
-  createVaccinationRecord: vi.fn(),
-  deleteVaccinationRecord: vi.fn(),
+vi.mock('./services/notificationService', () => ({
+  getNotifications: vi.fn(),
+  getNotification: vi.fn(),
+  createNotification: vi.fn(),
+  updateNotification: vi.fn(),
+  deleteNotification: vi.fn(),
 }))
 
 function renderAt(path) {
@@ -77,8 +70,8 @@ describe('App', () => {
       veterinarian: null,
     })
     getShelters.mockResolvedValue([])
-    getReviews.mockResolvedValue([])
-    getVaccinationRecordByPet.mockResolvedValue({ id: 1, vaccines: [] })
+    getNotifications.mockResolvedValue([])
+    getNotification.mockResolvedValue({ id: 1, message: 'Hola', channel: 'EMAIL', sent: false })
   })
 
   it('shows the navbar and the veterinarians page', async () => {
@@ -214,16 +207,16 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'Actualizar veterinario' })).toBeInTheDocument()
   })
 
-  it('shows the reviews of a pet', async () => {
-    renderAt('/pets/1/reviews')
+  it('shows the notifications list on /notifications', async () => {
+    renderAt('/notifications')
 
-    expect(await screen.findByRole('heading', { name: 'Reseñas de Luna' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Mis notificaciones' })).toBeInTheDocument()
   })
 
-  it('shows the vaccination record of a pet', async () => {
-    renderAt('/pets/1/vaccination-record')
+  it('shows the schedule form on /notifications/new', () => {
+    renderAt('/notifications/new')
 
-    expect(await screen.findByRole('heading', { name: 'Carnet de vacunación' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Programar notificación' })).toBeInTheDocument()
   })
 
   it('shows the form to create a vaccination record', async () => {
